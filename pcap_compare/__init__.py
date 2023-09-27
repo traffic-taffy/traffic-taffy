@@ -105,9 +105,9 @@ class PcapCompare:
         for packet in packets:
             prefix = "."
             for payload in packet.iterpayloads():
-                results[prefix[:-1]][payload.name] += 1  # count the prefix itself too
+                results[prefix[1:-1]][payload.name] += 1  # count the prefix itself too
                 prefix = f"{prefix}{payload.name}."
-                self.add_layer(payload, results, prefix)
+                self.add_layer(payload, results, prefix[1:])
 
         return results
 
