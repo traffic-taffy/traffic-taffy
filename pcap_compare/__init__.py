@@ -27,6 +27,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-t",
+        "--print-threshold",
+        default=None,
+        type=float,
+        help="Don't print results with abs(value) less than threshold",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -45,12 +53,17 @@ class PcapCompare:
     "Takes a set of PCAPs to then perform various comparisons upon"
 
     def __init__(
-        self, pcaps: List[str], maximum_count: int = None, deep: bool = True
+        self,
+        pcaps: List[str],
+        maximum_count: int = None,
+        deep: bool = True,
+        print_threshold: float = None,
     ) -> None:
 
         self.pcaps = pcaps
         self.deep = deep
         self.maximum_count = maximum_count
+        self.print_threshold = print_threshold
 
         if len(self.pcaps) < 2:
             raise ValueError("Must pass at least two PCAP files")
@@ -100,7 +113,8 @@ class PcapCompare:
         for key in report:
             print(f"====== {key}")
             for subkey, value in sorted(report[key].items(), key=lambda x: x[1]):
-                print(f"{subkey:<30} {value}")
+                if not self.print_threshold or abs(value) > self.print_threshold:
+                    print(f"{subkey:<30} {value}")
 
     def compare(self) -> None:
         "Compares each pcap against the original source"
@@ -120,7 +134,11 @@ class PcapCompare:
 
 def main():
     args = parse_args()
-    pc = PcapCompare(args.pcap_files, maximum_count=args.packet_count)
+    pc = PcapCompare(
+        args.pcap_files,
+        maximum_count=args.packet_count,
+        print_threshold=args.print_threshold,
+    )
     pc.compare()
 
 
