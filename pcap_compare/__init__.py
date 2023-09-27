@@ -36,6 +36,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-c",
+        "--print-minimum-count",
+        default=None,
+        type=float,
+        help="Don't print results without this high of a count",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -59,12 +67,14 @@ class PcapCompare:
         maximum_count: int | None = None,
         deep: bool = True,
         print_threshold: float | None = None,
+        print_minimum_count: int | None = None,
     ) -> None:
 
         self.pcaps = pcaps
         self.deep = deep
         self.maximum_count = maximum_count
         self.print_threshold = print_threshold
+        self.print_minimum_count = print_minimum_count
 
         if len(self.pcaps) < 2:
             raise ValueError("Must pass at least two PCAP files")
@@ -151,13 +161,34 @@ class PcapCompare:
     def print_report(self, report: dict) -> None:
         "prints a report to the console"
         for key in sorted(report):
-            reported = False
+            reported: bool = False
             for subkey, data in sorted(
                 report[key].items(), key=lambda x: x[1]["delta"]
             ):
-                delta = data["delta"]
-                total = data["total"]
-                if not self.print_threshold or abs(delta) > self.print_threshold:
+                delta: float = data["delta"]
+                total: int = data["total"]
+                print_it: bool = False
+
+                if not self.print_threshold and not self.print_minimum_count:
+                    # always print
+                    print_it = True
+                elif self.print_threshold and not self.print_minimum_count:
+                    # check print_threshold as a fraction
+                    if abs(delta) > self.print_threshold:
+                        print_it = True
+                elif not self.print_threshold and self.print_minimum_count:
+                    # just check print_minimum_count
+                    if total > self.print_minimum_count:
+                        print_it = True
+                else:
+                    # require both
+                    if (
+                        total > self.print_minimum_count
+                        and abs(delta) > self.print_threshold
+                    ):
+                        print_it = True
+
+                if print_it:
                     # print the header
                     if not reported:
                         print(f"====== {key}")
@@ -192,6 +223,7 @@ def main():
         args.pcap_files,
         maximum_count=args.packet_count,
         print_threshold=args.print_threshold,
+        print_minimum_count=args.print_minimum_count,
     )
     pc.compare()
 
