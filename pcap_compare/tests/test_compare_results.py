@@ -8,9 +8,9 @@ def test_compare_results():
 
     expected = {
         "src": {
-            "a": {"delta": 5.0 / 15.0 - 15.0 / 30.0},
-            "b": {"delta": 10.0 / 15.0 - 0.0},
-            "c": {"delta": 0.0 - 15.0 / 30.0},
+            "a": {"delta": 5.0 / 15.0 - 15.0 / 30.0, "total": 20},
+            "b": {"delta": 10.0 / 15.0 - 0.0, "total": 10},
+            "c": {"delta": 0.0 - 15.0 / 30.0, "total": 15},
         }
     }
 
