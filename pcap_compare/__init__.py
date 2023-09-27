@@ -45,6 +45,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-l",
+        "--load-report",
+        default=None,
+        type=str,
+        help="Load a report from a pickle file rather than use pcaps",
+    )
+
+    parser.add_argument(
         "-c",
         "--print-minimum-count",
         default=None,
@@ -59,7 +67,7 @@ def parse_args():
         help="Define the logging verbosity level (debug, info, warning, error, ...).",
     )
 
-    parser.add_argument("pcap_files", type=str, nargs="+", help="PCAP files to analyze")
+    parser.add_argument("pcap_files", type=str, nargs="*", help="PCAP files to analyze")
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -84,9 +92,6 @@ class PcapCompare:
         self.maximum_count = maximum_count
         self.print_threshold = print_threshold
         self.print_minimum_count = print_minimum_count
-
-        if len(self.pcaps) < 2:
-            raise ValueError("Must pass at least two PCAP files")
 
     def add_layer(self, layer, storage: dict, prefix: str | None = ""):
         "Analyzes a layer to add counts to each layer sub-component"
@@ -254,6 +259,10 @@ class PcapCompare:
         "Saves the generated reports to a pickle file"
         pickle.dump(self.reports, open(where, "wb"))
 
+    def load_report(self, where: str) -> None:
+        "Loads a previous saved report from a file instead of re-parsing pcaps"
+        self.reports = pickle.load(open(where, "rb"))
+
 
 def main():
     args = parse_args()
@@ -263,8 +272,21 @@ def main():
         print_threshold=args.print_threshold,
         print_minimum_count=args.print_minimum_count,
     )
-    pc.compare()
+
+    # TODO: throw an error when both pcaps and load files are specified
+
+    if args.load_report:
+        # load a previous saved dump
+        pc.load_report(args.load_report)
+    else:
+        # actually compare the pcaps
+        pc.compare()
+
+    # print the results
     pc.print()
+
+    # maybe save them
+    # TODO: loading and saving both makes more sense, throw error
     if args.save_report:
         pc.save_report(args.save_report)
 
