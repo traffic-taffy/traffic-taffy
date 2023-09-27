@@ -6,7 +6,7 @@ import logging
 from collections import defaultdict, Counter
 
 # TODO: make scapy optional or use dpkt for shallow but faster
-from scapy.all import rdpcap, IP
+from scapy.all import rdpcap
 from rich import print
 
 
@@ -68,15 +68,22 @@ class PcapCompare:
         if len(self.pcaps) < 2:
             raise ValueError("Must pass at least two PCAP files")
 
+    def add_layer(self, layer, storage: dict, prefix: str | None = ""):
+        "Analyzes a layer to add counts to each layer sub-component"
+        storage[prefix + "src"][layer.src] += 1
+        storage[prefix + "dst"][layer.dst] += 1
+
     def load_pcap(self, pcap_file: str | None = None) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
         results = defaultdict(Counter)
         packets = rdpcap(pcap_file, count=self.maximum_count)
 
+        prefix = ""
+
         for packet in packets:
-            if IP in packet:
-                results["src"][packet[IP].src] += 1
-                results["dst"][packet[IP].dst] += 1
+            payload1 = packet.payload
+            if payload1.name == "IP":
+                self.add_layer(payload1, results, prefix + payload1.name + ".")
 
         return results
 
