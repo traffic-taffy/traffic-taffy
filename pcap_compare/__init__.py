@@ -125,17 +125,21 @@ class PcapCompare:
             report[key] = {}
 
             for subkey in report1[key].keys():
+                delta = 0.0
                 if subkey in report1[key] and subkey in report2[key]:
-                    report[key][subkey] = (
+                    delta = (
                         report1[key][subkey] / report1_total
                         - report2[key][subkey] / report2_total
                     )
                 else:
-                    report[key][subkey] = report1[key][subkey] / report1_total
+                    delta = report1[key][subkey] / report1_total
+
+                report[key][subkey] = {"delta": delta}
 
             for subkey in report2[key].keys():
                 if subkey not in report[key]:
-                    report[key][subkey] = 0.0 - report2[key][subkey] / report2_total
+                    delta = 0.0 - report2[key][subkey] / report2_total
+                    report[key][subkey] = {"delta": delta}
 
         return report
 
@@ -156,10 +160,16 @@ class PcapCompare:
 
         reports = []
 
+        # TODO: use parallel processes to load multiple at a time
+
+        # load the first as a reference pcap
         reference = self.load_pcap(self.pcaps[0])
         for pcap in self.pcaps[1:]:
+
+            # load the next pcap
             other = self.load_pcap(pcap)
 
+            # compare the two
             reports.append(self.compare_results(reference, other))
 
         for n, report in enumerate(reports):
