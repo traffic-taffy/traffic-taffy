@@ -87,12 +87,16 @@ class PcapCompare:
         results = defaultdict(Counter)
         packets = rdpcap(pcap_file, count=self.maximum_count)
 
-        prefix = ""
+        # for packet in packets:
+        #     payload1 = packet.payload
+        #     if payload1.name == "IP":
+        #         self.add_layer(payload1, results, prefix + payload1.name + ".")
 
         for packet in packets:
-            payload1 = packet.payload
-            if payload1.name == "IP":
-                self.add_layer(payload1, results, prefix + payload1.name + ".")
+            prefix = ""
+            for payload in packet.iterpayloads():
+                prefix = f"{prefix}{payload.name}."
+                self.add_layer(payload, results, prefix + payload.name + ".")
 
         return results
 
