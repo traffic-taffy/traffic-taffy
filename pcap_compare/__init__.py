@@ -7,6 +7,7 @@ from collections import defaultdict, Counter
 
 # TODO: make scapy optional or use dpkt for shallow but faster
 from scapy.all import rdpcap, IP
+from rich import print
 
 
 def parse_args():
@@ -64,14 +65,49 @@ class PcapCompare:
                 results["src"][packet[IP].src] += 1
                 results["dst"][packet[IP].dst] += 1
 
+        print(results)
         return results
 
+    def compare_results(self, report1, report2):
+        "compares the results from two reports"
+
+        # TODO: handle recursive depths, where items are subtrees rather than Counters
+
+        report = {}
+
+        for key in report1:
+            # TODO: deal with missing keys from one set
+            report1_total = report1[key].total()
+            report2_total = report2[key].total()
+            report[key] = {}
+
+            for subkey in report1[key].keys():
+                if subkey in report1[key] and subkey in report2[key]:
+                    report[key][subkey] = (
+                        report1[key][subkey] / report1_total
+                        - report2[key][subkey] / report2_total
+                    )
+                else:
+                    report[key][subkey] = report1[key][subkey] / report1_total
+
+            for subkey in report2[key].keys():
+                if subkey not in report[key]:
+                    report[key][subkey] = 0.0 - report2[key][subkey] / report2_total
+
+            return report
+
     def compare(self) -> None:
+        "Compares each pcap against the original source"
+
+        reports = []
+
         reference = self.load_pcap(self.pcaps[0])
         for pcap in self.pcaps[1:]:
             other = self.load_pcap(pcap)
-        print(reference)
-        print(other)
+
+            reports.append(self.compare_results(reference, other))
+
+        print(reports)
 
 
 def main():
