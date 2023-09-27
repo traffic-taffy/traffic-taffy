@@ -152,13 +152,17 @@ class PcapCompare:
         "prints a report to the console"
         for key in sorted(report):
             reported = False
-            for subkey, value in sorted(report[key].items(), key=lambda x: x[1]):
-                if not self.print_threshold or abs(value) > self.print_threshold:
+            for subkey, data in sorted(
+                report[key].items(), key=lambda x: x[1]["delta"]
+            ):
+                delta = data["delta"]
+                total = data["total"]
+                if not self.print_threshold or abs(delta) > self.print_threshold:
                     # print the header
                     if not reported:
                         print(f"====== {key}")
                         reported = True
-                    print(f"{subkey:<40} {value}")
+                    print(f" {key:<50} {delta:>6.3f} {total:>8}")
 
     def compare(self) -> None:
         "Compares each pcap against the original source"
