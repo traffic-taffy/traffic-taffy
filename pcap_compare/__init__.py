@@ -78,6 +78,8 @@ def parse_args():
 class PcapCompare:
     "Takes a set of PCAPs to then perform various comparisons upon"
 
+    REPORT_VERSION: int = 1
+
     def __init__(
         self,
         pcaps: List[str],
@@ -257,11 +259,31 @@ class PcapCompare:
 
     def save_report(self, where: str) -> None:
         "Saves the generated reports to a pickle file"
-        pickle.dump(self.reports, open(where, "wb"))
+
+        # wrap the report in a version header
+        versioned_report = {
+            "PCAP_COMPARE_VERSION": self.REPORT_VERSION,
+            "reports": self.reports,
+        }
+
+        # save it
+        pickle.dump(versioned_report, open(where, "wb"))
 
     def load_report(self, where: str) -> None:
         "Loads a previous saved report from a file instead of re-parsing pcaps"
         self.reports = pickle.load(open(where, "rb"))
+
+        # check that the version header matches something we understand
+        if self.reports["PCAP_COMPARE_VERSION"] != self.REPORT_VERSION:
+            raise ValueError(
+                "improper saved version: report version = "
+                + str(self.reports["PCAP_COMPARE_VERSION"])
+                + ", our version: "
+                + str(self.REPORT_VERSION)
+            )
+
+        # proceed as normal beyond this
+        self.reports = self.reports["reports"]
 
 
 def main():
