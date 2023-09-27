@@ -55,9 +55,9 @@ class PcapCompare:
     def __init__(
         self,
         pcaps: List[str],
-        maximum_count: int = None,
+        maximum_count: int | None = None,
         deep: bool = True,
-        print_threshold: float = None,
+        print_threshold: float | None = None,
     ) -> None:
 
         self.pcaps = pcaps
@@ -68,7 +68,7 @@ class PcapCompare:
         if len(self.pcaps) < 2:
             raise ValueError("Must pass at least two PCAP files")
 
-    def load_pcap(self, pcap_file: str = None) -> dict:
+    def load_pcap(self, pcap_file: str | None = None) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
         results = defaultdict(Counter)
         packets = rdpcap(pcap_file, count=self.maximum_count)
