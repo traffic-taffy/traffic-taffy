@@ -106,7 +106,7 @@ class PcapCompare:
                 if subkey not in report[key]:
                     report[key][subkey] = 0.0 - report2[key][subkey] / report2_total
 
-            return report
+        return report
 
     def print_report(self, report: dict) -> None:
         "prints a report to the console"
