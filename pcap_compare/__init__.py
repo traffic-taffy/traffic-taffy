@@ -162,7 +162,7 @@ class PcapCompare:
                     if not reported:
                         print(f"====== {key}")
                         reported = True
-                    print(f" {key:<50} {delta:>6.3f} {total:>8}")
+                    print(f" {subkey:<50} {delta:>6.3f} {total:>8}")
 
     def compare(self) -> None:
         "Compares each pcap against the original source"
