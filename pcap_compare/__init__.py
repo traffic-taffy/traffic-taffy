@@ -126,20 +126,25 @@ class PcapCompare:
 
             for subkey in report1[key].keys():
                 delta = 0.0
+                total = 0
                 if subkey in report1[key] and subkey in report2[key]:
                     delta = (
                         report1[key][subkey] / report1_total
                         - report2[key][subkey] / report2_total
                     )
+                    total = report1[key][subkey] + report2[key][subkey]
                 else:
                     delta = report1[key][subkey] / report1_total
+                    total = report1[key][subkey]
 
-                report[key][subkey] = {"delta": delta}
+                report[key][subkey] = {"delta": delta, "total": total}
 
             for subkey in report2[key].keys():
                 if subkey not in report[key]:
                     delta = 0.0 - report2[key][subkey] / report2_total
-                    report[key][subkey] = {"delta": delta}
+                    total = report2[key][subkey]
+
+                    report[key][subkey] = {"delta": delta, "total": total}
 
         return report
 
