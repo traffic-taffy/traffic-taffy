@@ -65,10 +65,9 @@ class PcapCompare:
                 results["src"][packet[IP].src] += 1
                 results["dst"][packet[IP].dst] += 1
 
-        print(results)
         return results
 
-    def compare_results(self, report1, report2):
+    def compare_results(self, report1: dict, report2: dict) -> dict:
         "compares the results from two reports"
 
         # TODO: handle recursive depths, where items are subtrees rather than Counters
@@ -96,6 +95,13 @@ class PcapCompare:
 
             return report
 
+    def print_report(self, report: dict) -> None:
+        "prints a report to the console"
+        for key in report:
+            print(f"====== {key}")
+            for subkey, value in sorted(report[key].items(), key=lambda x: x[1]):
+                print(f"{subkey:<30} {value}")
+
     def compare(self) -> None:
         "Compares each pcap against the original source"
 
@@ -107,7 +113,9 @@ class PcapCompare:
 
             reports.append(self.compare_results(reference, other))
 
-        print(reports)
+        for n, report in enumerate(reports):
+            print(f"************ report #{n}")
+            self.print_report(report)
 
 
 def main():
