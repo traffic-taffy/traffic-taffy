@@ -73,14 +73,24 @@ class PcapCompare:
         "Analyzes a layer to add counts to each layer sub-component"
 
         for field_name in [field.name for field in layer.fields_desc]:
-            val = getattr(layer, field_name)
-            if isinstance(val, list):
-                if len(val) > 0:
-                    warning(f"ignoring non-zero list: {field_name}")
+            field_value = getattr(layer, field_name)
+            if isinstance(field_value, list):
+                if len(field_value) > 0:
+                    # if it's a list of tuples, count the (eg TCP option) names
+                    # TODO: values can be always the same or things like timestamps
+                    #       that will always change
+                    if isinstance(field_value[0], tuple):
+                        for item in field_value:
+                            storage[prefix + field_name][item[0]] += 1
+                    else:
+                        warning(f"ignoring non-zero list: {field_name}")
                 else:
                     debug(f"ignoring empty-list: {field_name}")
             else:
-                storage[prefix + field_name][str(getattr(layer, field_name))] += 1
+                if isinstance(field_value, str) or isinstance(field_value, int):
+                    storage[prefix + field_name][field_value] += 1
+                else:
+                    debug(f"ignoring field value of {str(field_value)}")
 
     def load_pcap(self, pcap_file: str | None = None) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
