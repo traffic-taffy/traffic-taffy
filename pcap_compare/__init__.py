@@ -37,6 +37,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-m",
+        "--print-match-string",
+        default=None,
+        type=str,
+        help="Only report on data with this substring in the header",
+    )
+
+    parser.add_argument(
         "-s",
         "--save-report",
         default=None,
@@ -87,6 +95,7 @@ class PcapCompare:
         deep: bool = True,
         print_threshold: float | None = None,
         print_minimum_count: int | None = None,
+        print_match_string: str | None = None,
     ) -> None:
 
         self.pcaps = pcaps
@@ -94,6 +103,7 @@ class PcapCompare:
         self.maximum_count = maximum_count
         self.print_threshold = print_threshold
         self.print_minimum_count = print_minimum_count
+        self.print_match_string = print_match_string
 
     def add_layer(self, layer, storage: dict, prefix: str | None = ""):
         "Analyzes a layer to add counts to each layer sub-component"
@@ -194,6 +204,10 @@ class PcapCompare:
         "prints a report to the console"
         for key in sorted(report):
             reported: bool = False
+
+            if self.print_match_string and self.print_match_string not in key:
+                continue
+
             for subkey, data in sorted(
                 report[key].items(), key=lambda x: x[1]["delta"]
             ):
@@ -293,6 +307,7 @@ def main():
         maximum_count=args.packet_count,
         print_threshold=args.print_threshold,
         print_minimum_count=args.print_minimum_count,
+        print_match_string=args.print_match_string,
     )
 
     # TODO: throw an error when both pcaps and load files are specified
