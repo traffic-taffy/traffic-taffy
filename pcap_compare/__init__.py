@@ -96,7 +96,7 @@ class PcapCompare:
             prefix = ""
             for payload in packet.iterpayloads():
                 prefix = f"{prefix}{payload.name}."
-                self.add_layer(payload, results, prefix + payload.name + ".")
+                self.add_layer(payload, results, prefix)
 
         return results
 
