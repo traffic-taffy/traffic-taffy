@@ -143,18 +143,34 @@ class PcapCompare:
                         - report2[key][subkey] / report2_total
                     )
                     total = report1[key][subkey] + report2[key][subkey]
+                    ref_count = report1[key][subkey]
+                    comp_count = report2[key][subkey]
                 else:
                     delta = report1[key][subkey] / report1_total
                     total = report1[key][subkey]
+                    ref_count = report1[key][subkey]
+                    comp_count = 0
 
-                report[key][subkey] = {"delta": delta, "total": total}
+                report[key][subkey] = {
+                    "delta": delta,
+                    "total": total,
+                    "ref_count": ref_count,
+                    "comp_count": comp_count,
+                }
 
             for subkey in report2[key].keys():
                 if subkey not in report[key]:
                     delta = 0.0 - report2[key][subkey] / report2_total
                     total = report2[key][subkey]
+                    ref_count = 0
+                    comp_count = report2[key][subkey]
 
-                    report[key][subkey] = {"delta": delta, "total": total}
+                    report[key][subkey] = {
+                        "delta": delta,
+                        "total": total,
+                        "ref_count": ref_count,
+                        "comp_count": comp_count,
+                    }
 
         return report
 
@@ -167,6 +183,8 @@ class PcapCompare:
             ):
                 delta: float = data["delta"]
                 total: int = data["total"]
+                comp_count: int = data["comp_count"]
+                ref_count: int = data["ref_count"]
                 print_it: bool = False
 
                 if not self.print_threshold and not self.print_minimum_count:
@@ -193,7 +211,10 @@ class PcapCompare:
                     if not reported:
                         print(f"====== {key}")
                         reported = True
-                    print(f" {subkey:<50} {delta:>6.3f} {total:>8}")
+                    print(
+                        f" {subkey:<50} {delta:>6.3f} {total:>8} "
+                        + f"{comp_count:>8} {ref_count:>8}"
+                    )
 
     def compare(self) -> None:
         "Compares each pcap against the original source"
