@@ -8,6 +8,7 @@ from collections import defaultdict, Counter
 # TODO: make scapy optional or use dpkt for shallow but faster
 from scapy.all import rdpcap
 from rich import print
+from logging import debug, warning
 
 
 def parse_args():
@@ -70,8 +71,16 @@ class PcapCompare:
 
     def add_layer(self, layer, storage: dict, prefix: str | None = ""):
         "Analyzes a layer to add counts to each layer sub-component"
-        storage[prefix + "src"][layer.src] += 1
-        storage[prefix + "dst"][layer.dst] += 1
+
+        for field_name in [field.name for field in layer.fields_desc]:
+            val = getattr(layer, field_name)
+            if isinstance(val, list):
+                if len(val) > 0:
+                    warning(f"ignoring non-zero list: {field_name}")
+                else:
+                    debug(f"ignoring empty-list: {field_name}")
+            else:
+                storage[prefix + field_name][str(getattr(layer, field_name))] += 1
 
     def load_pcap(self, pcap_file: str | None = None) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
