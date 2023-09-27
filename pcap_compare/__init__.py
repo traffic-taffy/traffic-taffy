@@ -9,6 +9,7 @@ from collections import defaultdict, Counter
 from scapy.all import rdpcap
 from rich import print
 from logging import debug, warning
+import pickle
 
 
 def parse_args():
@@ -33,6 +34,14 @@ def parse_args():
         default=None,
         type=float,
         help="Don't print results with abs(value) less than threshold",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--save-report",
+        default=None,
+        type=str,
+        help="Where to save a report file for quicker future loading",
     )
 
     parser.add_argument(
@@ -216,6 +225,12 @@ class PcapCompare:
                         + f"{comp_count:>8} {ref_count:>8}"
                     )
 
+    def print(self) -> None:
+        "outputs the results"
+        for n, report in enumerate(self.reports):
+            print(f"************ report #{n}")
+            self.print_report(report)
+
     def compare(self) -> None:
         "Compares each pcap against the original source"
 
@@ -233,9 +248,11 @@ class PcapCompare:
             # compare the two
             reports.append(self.compare_results(reference, other))
 
-        for n, report in enumerate(reports):
-            print(f"************ report #{n}")
-            self.print_report(report)
+        self.reports = reports
+
+    def save_report(self, where: str) -> None:
+        "Saves the generated reports to a pickle file"
+        pickle.dump(self.reports, open(where, "wb"))
 
 
 def main():
@@ -247,6 +264,9 @@ def main():
         print_minimum_count=args.print_minimum_count,
     )
     pc.compare()
+    pc.print()
+    if args.save_report:
+        pc.save_report(args.save_report)
 
 
 if __name__ == "__main__":
