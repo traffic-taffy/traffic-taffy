@@ -140,11 +140,15 @@ class PcapCompare:
 
     def print_report(self, report: dict) -> None:
         "prints a report to the console"
-        for key in report:
-            print(f"====== {key}")
+        for key in sorted(report):
+            reported = False
             for subkey, value in sorted(report[key].items(), key=lambda x: x[1]):
                 if not self.print_threshold or abs(value) > self.print_threshold:
-                    print(f"{subkey:<30} {value}")
+                    # print the header
+                    if not reported:
+                        print(f"====== {key}")
+                        reported = True
+                    print(f"{subkey:<40} {value}")
 
     def compare(self) -> None:
         "Compares each pcap against the original source"
