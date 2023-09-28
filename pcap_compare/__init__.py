@@ -140,11 +140,20 @@ class PcapCompare:
                         for item in field_value:
                             storage[prefix + field_name][item[0]] += 1
                     else:
-                        warning(f"ignoring non-zero list: {field_name}")
+                        for item in field_value:
+                            self.add_layer(item, storage, prefix + field_name + ".")
                 else:
                     debug(f"ignoring empty-list: {field_name}")
             elif isinstance(field_value, str) or isinstance(field_value, int):
                 storage[prefix + field_name][field_value] += 1
+
+            elif isinstance(field_value, bytes):
+                try:
+                    converted = field_value.decode("utf-8")
+                    storage[prefix + field_name][converted] += 1
+                except Exception:
+                    converted = "0x" + field_value.hex()
+                    storage[prefix + field_name][converted] += 1
 
             elif hasattr(field_value, "fields"):
                 self.add_layer(field_value, storage, prefix + field_name + ".")
