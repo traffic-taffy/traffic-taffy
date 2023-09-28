@@ -86,7 +86,7 @@ def parse_args():
 class PcapCompare:
     "Takes a set of PCAPs to then perform various comparisons upon"
 
-    REPORT_VERSION: int = 1
+    REPORT_VERSION: int = 2
 
     def __init__(
         self,
@@ -165,14 +165,14 @@ class PcapCompare:
                 total = 0
                 if subkey in report1[key] and subkey in report2[key]:
                     delta = (
-                        report1[key][subkey] / report1_total
-                        - report2[key][subkey] / report2_total
+                        report2[key][subkey] / report2_total
+                        - report1[key][subkey] / report1_total
                     )
-                    total = report1[key][subkey] + report2[key][subkey]
+                    total = report2[key][subkey] + report1[key][subkey]
                     ref_count = report1[key][subkey]
                     comp_count = report2[key][subkey]
                 else:
-                    delta = report1[key][subkey] / report1_total
+                    delta = -1.0
                     total = report1[key][subkey]
                     ref_count = report1[key][subkey]
                     comp_count = 0
@@ -186,7 +186,7 @@ class PcapCompare:
 
             for subkey in report2[key].keys():
                 if subkey not in report[key]:
-                    delta = 0.0 - report2[key][subkey] / report2_total
+                    delta = 1.0
                     total = report2[key][subkey]
                     ref_count = 0
                     comp_count = report2[key][subkey]
