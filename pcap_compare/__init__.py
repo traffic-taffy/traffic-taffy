@@ -118,6 +118,36 @@ class PcapCompare:
         self.only_positive = only_positive
         self.only_negative = only_negative
 
+    def add_item(self, field_value, storage: dict, prefix: str) -> None:
+        "Adds an item to the storage regardless of it's various types"
+        if isinstance(field_value, list):
+            if len(field_value) > 0:
+                # if it's a list of tuples, count the (eg TCP option) names
+                # TODO: values can be always the same or things like timestamps
+                #       that will always change or are too unique
+                if isinstance(field_value[0], tuple):
+                    for item in field_value:
+                        storage[prefix][item[0]] += 1
+                else:
+                    for item in field_value:
+                        self.add_item(item, storage, prefix)
+            else:
+                debug(f"ignoring empty-list: {field_value}")
+        elif (
+            isinstance(field_value, str)
+            or isinstance(field_value, int)
+            or isinstance(field_value, float)
+        ):
+            storage[prefix][field_value] += 1
+
+        elif isinstance(field_value, bytes):
+            try:
+                converted = field_value.decode("utf-8")
+                storage[prefix][converted] += 1
+            except Exception:
+                converted = "0x" + field_value.hex()
+                storage[prefix][converted] += 1
+
     def add_layer(self, layer, storage: dict, prefix: str | None = "") -> None:
         "Analyzes a layer to add counts to each layer sub-component"
 
@@ -131,34 +161,10 @@ class PcapCompare:
 
         for field_name in name_list:
             field_value = getattr(layer, field_name)
-            if isinstance(field_value, list):
-                if len(field_value) > 0:
-                    # if it's a list of tuples, count the (eg TCP option) names
-                    # TODO: values can be always the same or things like timestamps
-                    #       that will always change
-                    if isinstance(field_value[0], tuple):
-                        for item in field_value:
-                            storage[prefix + field_name][item[0]] += 1
-                    else:
-                        for item in field_value:
-                            self.add_layer(item, storage, prefix + field_name + ".")
-                else:
-                    debug(f"ignoring empty-list: {field_name}")
-            elif isinstance(field_value, str) or isinstance(field_value, int):
-                storage[prefix + field_name][field_value] += 1
-
-            elif isinstance(field_value, bytes):
-                try:
-                    converted = field_value.decode("utf-8")
-                    storage[prefix + field_name][converted] += 1
-                except Exception:
-                    converted = "0x" + field_value.hex()
-                    storage[prefix + field_name][converted] += 1
-
-            elif hasattr(field_value, "fields"):
+            if hasattr(field_value, "fields"):
                 self.add_layer(field_value, storage, prefix + field_name + ".")
             else:
-                debug(f"ignoring field value of {str(field_value)}")
+                self.add_item(field_value, storage, prefix + field_name)
 
     def load_pcap(self, pcap_file: str | None = None) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
@@ -275,6 +281,8 @@ class PcapCompare:
                     if not reported:
                         print(f"====== {key}")
                         reported = True
+
+                    # apply some fancy styling
                     style = ""
                     if delta < -0.5:
                         style = "[bold red]"
