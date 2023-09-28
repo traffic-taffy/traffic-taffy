@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument(
         "-n",
         "--packet-count",
-        default=None,
+        default=-1,
         type=int,
         help="Maximum number of packets to analyze",
     )
