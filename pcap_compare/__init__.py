@@ -284,10 +284,14 @@ class PcapCompare:
                         style = "[bold green]"
                     elif delta > 0.0:
                         style = "[green]"
-                    endstyle = style.replace("[]", "[/")
+                    endstyle = style.replace("[", "[/")
+
+                    # construct the output line with styling
                     line = f"  {style}{subkey:<50}{endstyle}"
                     line += f"{delta:>6.3f} {total:>8} "
-                    line += f"{comp_count:>8} {ref_count:>8}"
+                    line += f"{ref_count:>8} {comp_count:>8}"
+
+                    # print it to the rich console
                     console.print(line)
 
     def print(self) -> None:
