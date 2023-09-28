@@ -70,6 +70,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-P", "--only-positive", action="store_true", help="Only show positive entries"
+    )
+
+    parser.add_argument(
+        "-N", "--only-negative", action="store_true", help="Only show negative entries"
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -97,6 +105,8 @@ class PcapCompare:
         print_threshold: float | None = None,
         print_minimum_count: int | None = None,
         print_match_string: str | None = None,
+        only_positive: bool = False,
+        only_negative: bool = False,
     ) -> None:
 
         self.pcaps = pcaps
@@ -105,6 +115,8 @@ class PcapCompare:
         self.print_threshold = print_threshold
         self.print_minimum_count = print_minimum_count
         self.print_match_string = print_match_string
+        self.only_positive = only_positive
+        self.only_negative = only_negative
 
     def add_layer(self, layer, storage: dict, prefix: str | None = ""):
         "Analyzes a layer to add counts to each layer sub-component"
@@ -219,6 +231,12 @@ class PcapCompare:
                 ref_count: int = data["ref_count"]
                 print_it: bool = False
 
+                if self.only_positive and delta <= 0:
+                    continue
+
+                if self.only_negative and delta >= 0:
+                    continue
+
                 if not self.print_threshold and not self.print_minimum_count:
                     # always print
                     print_it = True
@@ -322,6 +340,8 @@ def main():
         print_threshold=args.print_threshold,
         print_minimum_count=args.print_minimum_count,
         print_match_string=args.print_match_string,
+        only_positive=args.only_positive,
+        only_negative=args.only_negative,
     )
 
     # TODO: throw an error when both pcaps and load files are specified
