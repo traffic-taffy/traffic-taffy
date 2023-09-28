@@ -118,10 +118,18 @@ class PcapCompare:
         self.only_positive = only_positive
         self.only_negative = only_negative
 
-    def add_layer(self, layer, storage: dict, prefix: str | None = ""):
+    def add_layer(self, layer, storage: dict, prefix: str | None = "") -> None:
         "Analyzes a layer to add counts to each layer sub-component"
 
-        for field_name in [field.name for field in layer.fields_desc]:
+        if hasattr(layer, "fields_desc"):
+            name_list = [field.name for field in layer.fields_desc]
+        elif hasattr(layer, "fields"):
+            name_list = [field.name for field in layer.fields]
+        else:
+            warning(f"unavailable to deep dive into: {layer}")
+            return
+
+        for field_name in name_list:
             field_value = getattr(layer, field_name)
             if isinstance(field_value, list):
                 if len(field_value) > 0:
@@ -135,11 +143,13 @@ class PcapCompare:
                         warning(f"ignoring non-zero list: {field_name}")
                 else:
                     debug(f"ignoring empty-list: {field_name}")
+            elif isinstance(field_value, str) or isinstance(field_value, int):
+                storage[prefix + field_name][field_value] += 1
+
+            elif hasattr(field_value, "fields"):
+                self.add_layer(field_value, storage, prefix + field_name + ".")
             else:
-                if isinstance(field_value, str) or isinstance(field_value, int):
-                    storage[prefix + field_name][field_value] += 1
-                else:
-                    debug(f"ignoring field value of {str(field_value)}")
+                debug(f"ignoring field value of {str(field_value)}")
 
     def load_pcap(self, pcap_file: str | None = None) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
@@ -258,19 +268,18 @@ class PcapCompare:
                         reported = True
                     style = ""
                     if delta < -0.5:
-                        style = "bold red"
+                        style = "[bold red]"
                     elif delta < 0.0:
-                        style = "red"
+                        style = "[red]"
                     elif delta > 0.5:
-                        style = "bold green"
+                        style = "[bold green]"
                     elif delta > 0.0:
-                        style = "green"
-                    console.print(
-                        f" [{style}]{subkey:<50}[/{style}]"
-                        + f"{delta:>6.3f} {total:>8} "
-                        + f"{comp_count:>8} {ref_count:>8}",
-                        style=style,
-                    )
+                        style = "[green]"
+                    endstyle = style.replace("[]", "[/")
+                    line = f"  {style}{subkey:<50}{endstyle}"
+                    line += f"{delta:>6.3f} {total:>8} "
+                    line += f"{comp_count:>8} {ref_count:>8}"
+                    console.print(line)
 
     def print(self) -> None:
         "outputs the results"
