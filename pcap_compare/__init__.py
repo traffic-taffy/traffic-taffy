@@ -8,6 +8,7 @@ from collections import defaultdict, Counter
 # TODO: make scapy optional or use dpkt for shallow but faster
 from scapy.all import rdpcap
 from rich import print
+from rich.console import Console
 from logging import debug, warning
 import pickle
 
@@ -202,6 +203,7 @@ class PcapCompare:
 
     def print_report(self, report: dict) -> None:
         "prints a report to the console"
+        console = Console()
         for key in sorted(report):
             reported: bool = False
 
@@ -241,9 +243,16 @@ class PcapCompare:
                     if not reported:
                         print(f"====== {key}")
                         reported = True
-                    print(
-                        f" {subkey:<50} {delta:>6.3f} {total:>8} "
-                        + f"{comp_count:>8} {ref_count:>8}"
+                    style = ""
+                    if delta < 0.0:
+                        style = "red"
+                    elif delta > 0.0:
+                        style = "green"
+                    console.print(
+                        f" [{style}]{subkey:<50}[/{style}]"
+                        + f"{delta:>6.3f} {total:>8} "
+                        + f"{comp_count:>8} {ref_count:>8}",
+                        style=style,
                     )
 
     def print(self) -> None:
