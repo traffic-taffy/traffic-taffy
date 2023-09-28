@@ -244,8 +244,12 @@ class PcapCompare:
                         print(f"====== {key}")
                         reported = True
                     style = ""
-                    if delta < 0.0:
+                    if delta < -0.5:
+                        style = "bold red"
+                    elif delta < 0.0:
                         style = "red"
+                    elif delta > 0.5:
+                        style = "bold green"
                     elif delta > 0.0:
                         style = "green"
                     console.print(
