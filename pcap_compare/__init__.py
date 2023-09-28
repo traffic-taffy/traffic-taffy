@@ -278,6 +278,7 @@ class PcapCompare:
         versioned_report = {
             "PCAP_COMPARE_VERSION": self.REPORT_VERSION,
             "reports": self.reports,
+            "files": self.pcaps,
         }
 
         # save it
