@@ -6,11 +6,27 @@ def test_compare_results():
     test_data1 = {"src": Counter({"a": 5, "b": 10})}  # total = 15
     test_data2 = {"src": Counter({"a": 15, "c": 15})}  # total = 30
 
+    # this should be positive when test_data2 is larger
     expected = {
         "src": {
-            "a": {"delta": 5.0 / 15.0 - 15.0 / 30.0, "total": 20},
-            "b": {"delta": 10.0 / 15.0 - 0.0, "total": 10},
-            "c": {"delta": 0.0 - 15.0 / 30.0, "total": 15},
+            "a": {
+                "delta": 15.0 / 30.0 - 5.0 / 15.0,
+                "total": 20,
+                "ref_count": 5,
+                "comp_count": 15,
+            },
+            "b": {
+                "delta": -1.0,
+                "total": 10,  # only in 1
+                "ref_count": 10,
+                "comp_count": 0,
+            },
+            "c": {
+                "delta": 1.0,
+                "total": 15,  # only in 2
+                "ref_count": 0,
+                "comp_count": 15,
+            },
         }
     }
 
