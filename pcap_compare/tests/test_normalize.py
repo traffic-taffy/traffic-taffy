@@ -12,4 +12,8 @@ def test_pcap_normalize():
         data["b"][i] += 1
 
     results = pg.normalize_bins(data)
-    assert results == {"a": [1, 0] * 4 + [1], "b": [1, 0, 0] * 3}
+    assert results == {
+        "time": list(range(0, 9)),
+        "a": [1, 0] * 4 + [1],
+        "b": [1, 0, 0] * 3,
+    }

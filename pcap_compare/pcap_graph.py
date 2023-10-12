@@ -101,7 +101,7 @@ class PcapGraph:
         start_key = time_keys[0]
         end_key = time_keys[-1]
 
-        results = {}
+        results = {"time": list(range(start_key, end_key + 1, self.bin_size))}
         for key in counters:
             results[key] = [
                 counters[key][x] for x in range(start_key, end_key + 1, self.bin_size)
@@ -113,6 +113,7 @@ class PcapGraph:
         "Graph the results of the data collection"
         sns.set_theme()
 
+        # data = self.normalize_bins(self.times)
         df = DataFrame(
             {
                 "time": to_datetime(list(self.times["all"].keys()), unit="s"),
