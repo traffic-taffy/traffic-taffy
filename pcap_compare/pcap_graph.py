@@ -3,7 +3,7 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import collections
-from pandas import DataFrame
+from pandas import DataFrame, to_datetime
 from scapy.all import rdpcap
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -28,7 +28,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-n", "--packet-count", default=None, type=int, help="How many packets to read"
+        "-n", "--packet-count", default=0, type=int, help="How many packets to read"
     )
 
     parser.add_argument(
@@ -67,22 +67,41 @@ class PcapGraph:
         self.maximum_count = maximum_count
         self.bin_size = bin_size
         self.times = {"all": collections.Counter()}
+        self.subsections = None
+        self.pkt_filter = None
+
+    def dpkt_counter(self, timestamp: float, packet: bytes):
+        time_stamp = int(timestamp)
+        time_stamp = time_stamp - time_stamp % self.bin_size
+        self.times["all"][time_stamp] += 1
 
     def load_pcap(self):
         "loads the pcap and counts things into bins"
         info(f"reading {self.pcap_file}")
-        packets = rdpcap(self.pcap_file, count=self.maximum_count)
-        for packet in packets:
-            time_stamp = int(packet.time)
-            time_stamp = time_stamp - time_stamp % self.bin_size
-            self.times["all"][time_stamp] += 1
+
+        if self.subsections:
+            packets = rdpcap(self.pcap_file, count=self.maximum_count)
+            for packet in packets:
+                time_stamp = int(packet.time)
+                time_stamp = time_stamp - time_stamp % self.bin_size
+                self.times["all"][time_stamp] += 1
+        else:  # use the faster dpkt
+            import dpkt
+
+            pcap = dpkt.pcap.Reader(open(self.pcap_file, "rb"))
+            if self.pkt_filter:
+                pcap.setfilter(self.pkt_filter)
+            pcap.dispatch(self.maximum_count, self.dpkt_counter)
 
     def create_graph(self):
         "Graph the results of the data collection"
         sns.set_theme()
 
         df = DataFrame(
-            {"time": self.times["all"].keys(), "counts": self.times["all"].values()}
+            {
+                "time": to_datetime(list(self.times["all"].keys()), unit="s"),
+                "counts": self.times["all"].values(),
+            }
         )
         debug(df)
 
