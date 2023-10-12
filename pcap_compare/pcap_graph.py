@@ -80,6 +80,7 @@ class PcapGraph:
         info(f"reading {self.pcap_file}")
 
         if self.subsections:
+            # TODO: actually break apart better
             packets = rdpcap(self.pcap_file, count=self.maximum_count)
             for packet in packets:
                 time_stamp = int(packet.time)
@@ -92,6 +93,21 @@ class PcapGraph:
             if self.pkt_filter:
                 pcap.setfilter(self.pkt_filter)
             pcap.dispatch(self.maximum_count, self.dpkt_counter)
+
+    def normalize_bins(self, counters):
+        results = {}
+        first_key = list(counters.keys())[0]
+        time_keys = list(counters[first_key])
+        start_key = time_keys[0]
+        end_key = time_keys[-1]
+
+        results = {}
+        for key in counters:
+            results[key] = [
+                counters[key][x] for x in range(start_key, end_key + 1, self.bin_size)
+            ]
+
+        return results
 
     def create_graph(self):
         "Graph the results of the data collection"
