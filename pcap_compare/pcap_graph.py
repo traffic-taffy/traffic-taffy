@@ -1,5 +1,6 @@
 """Read a PCAP file and graph it or parts of it"""
 
+import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 import collections
@@ -125,7 +126,7 @@ class PcapGraph:
         for dataset in self.data:
             data = self.normalize_bins(self.data[dataset])
             data = DataFrame.from_records(data)
-            data["filename"] = dataset
+            data["filename"] = os.path.basename(dataset)
             data["time"] = to_datetime(data["time"], unit="s")
             datasets.append(data)
         datasets = pandas.concat(datasets)
