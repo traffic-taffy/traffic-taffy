@@ -16,6 +16,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "pcap-compare = pcap_compare:main",
+            "pcap-graph = pcap_graph:main",
         ]
     },
     classifiers=[
