@@ -51,6 +51,7 @@ def parse_args():
     args = parser.parse_args()
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
+    logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
     return args
 
 
@@ -113,16 +114,13 @@ class PcapGraph:
         "Graph the results of the data collection"
         sns.set_theme()
 
-        # data = self.normalize_bins(self.times)
-        df = DataFrame(
-            {
-                "time": to_datetime(list(self.times["all"].keys()), unit="s"),
-                "counts": self.times["all"].values(),
-            }
-        )
+        data = self.normalize_bins(self.times)
+        df = DataFrame.from_records(data)
+        df["time"] = to_datetime(df["time"], unit="s")
         debug(df)
 
-        sns.relplot(data=df, kind="line", x="time", y="counts", aspect=1.77)
+        ax = sns.relplot(data=df, kind="line", x="time", y="all", aspect=1.77)
+        ax.set(xlabel="time", ylabel="count")
         plt.xticks(rotation=45)
         info(f"saving to {self.output_file}")
         plt.savefig(self.output_file)
