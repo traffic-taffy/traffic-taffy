@@ -3,6 +3,7 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import collections
+import pandas
 from pandas import DataFrame, to_datetime
 from scapy.all import rdpcap
 
@@ -50,7 +51,7 @@ def parse_args():
         help="Define verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
-    parser.add_argument("input_file", type=str, help="PCAP file to graph")
+    parser.add_argument("input_file", type=str, help="PCAP file to graph", nargs="+")
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -62,42 +63,47 @@ def parse_args():
 class PcapGraph:
     def __init__(
         self,
-        pcap_file: str,
+        pcap_files: str,
         output_file: str,
         maximum_count: int = None,
         bin_size: int = None,
     ):
-        self.pcap_file = pcap_file
+        self.pcap_files = pcap_files
         self.output_file = output_file
         self.maximum_count = maximum_count
         self.bin_size = bin_size
-        self.times = {"all": collections.Counter()}
         self.subsections = None
         self.pkt_filter = None
 
     def dpkt_counter(self, timestamp: float, packet: bytes):
         time_stamp = int(timestamp)
         time_stamp = time_stamp - time_stamp % self.bin_size
-        self.times["all"][time_stamp] += 1
+        self.times["count"][time_stamp] += 1
 
-    def load_pcap(self):
+    def load_pcaps(self):
         "loads the pcap and counts things into bins"
-        info(f"reading {self.pcap_file}")
+        self.data = {}
+        for pcap_file in self.pcap_files:
+            self.times = {"count": collections.Counter()}
+            self.current_pcap = pcap_file
+            info(f"reading {pcap_file}")
 
-        if self.subsections:
-            # TODO: actually break apart better
-            packets = rdpcap(self.pcap_file, count=self.maximum_count)
-            for packet in packets:
-                time_stamp = int(packet.time)
-                time_stamp = time_stamp - time_stamp % self.bin_size
-                self.times["all"][time_stamp] += 1
-        else:  # use the faster dpkt
-            import dpkt
+            if self.subsections:
+                # TODO: actually break apart better
+                packets = rdpcap(pcap_file, count=self.maximum_count)
+                for packet in packets:
+                    time_stamp = int(packet.time)
+                    time_stamp = time_stamp - time_stamp % self.bin_size
+                    self.times["count"][time_stamp] += 1
+            else:  # use the faster dpkt
+                import dpkt
 
-            pcap = dpkt.pcap.Reader(open(self.pcap_file, "rb"))
-            if self.pkt_filter:
-                pcap.setfilter(self.pkt_filter)
-            pcap.dispatch(self.maximum_count, self.dpkt_counter)
+                pcap = dpkt.pcap.Reader(open(pcap_file, "rb"))
+                if self.pkt_filter:
+                    pcap.setfilter(self.pkt_filter)
+                pcap.dispatch(self.maximum_count, self.dpkt_counter)
+
+            self.data[pcap_file] = self.times
 
     def normalize_bins(self, counters):
         results = {}
@@ -114,16 +120,27 @@ class PcapGraph:
 
         return results
 
+    def merge_datasets(self):
+        datasets = []
+        for dataset in self.data:
+            data = self.normalize_bins(self.data[dataset])
+            data = DataFrame.from_records(data)
+            data["filename"] = dataset
+            data["time"] = to_datetime(data["time"], unit="s")
+            datasets.append(data)
+        datasets = pandas.concat(datasets)
+        return datasets
+
     def create_graph(self):
         "Graph the results of the data collection"
         sns.set_theme()
 
-        data = self.normalize_bins(self.times)
-        df = DataFrame.from_records(data)
-        df["time"] = to_datetime(df["time"], unit="s")
+        df = self.merge_datasets()
         debug(df)
 
-        ax = sns.relplot(data=df, kind="line", x="time", y="all", aspect=1.77)
+        ax = sns.relplot(
+            data=df, kind="line", x="time", y="count", hue="filename", aspect=1.77
+        )
         ax.set(xlabel="time", ylabel="count")
         plt.xticks(rotation=45)
         info(f"saving to {self.output_file}")
@@ -133,7 +150,7 @@ class PcapGraph:
             plt.show()
 
     def graph_it(self):
-        self.load_pcap()
+        self.load_pcaps()
         self.create_graph()
 
 
