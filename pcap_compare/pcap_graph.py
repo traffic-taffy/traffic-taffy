@@ -36,6 +36,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-o",
+        "--output-file",
+        default=None,
+        type=str,
+        help="Where to save the output (png)",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -43,10 +51,6 @@ def parse_args():
     )
 
     parser.add_argument("input_file", type=str, help="PCAP file to graph")
-
-    parser.add_argument(
-        "output_file", type=str, help="Where to store the resulting graph (png)"
-    )
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -123,7 +127,10 @@ class PcapGraph:
         ax.set(xlabel="time", ylabel="count")
         plt.xticks(rotation=45)
         info(f"saving to {self.output_file}")
-        plt.savefig(self.output_file)
+        if self.output_file:
+            plt.savefig(self.output_file)
+        else:
+            plt.show()
 
     def graph_it(self):
         self.load_pcap()
