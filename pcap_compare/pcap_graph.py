@@ -32,7 +32,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-b", "--bin-size", default=15, type=int, help="Time bin size in seconds"
+        "-b", "--bin-size", default=1, type=int, help="Time bin size in seconds"
     )
 
     parser.add_argument(
