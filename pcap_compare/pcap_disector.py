@@ -65,6 +65,7 @@ class PCAPDisector:
         if self.pcap_filter:
             pcap.setfilter(self.pcap_filter)
         pcap.dispatch(self.maximum_count, self.dpkt_callback)
+        return self.data
 
 
 def main():
