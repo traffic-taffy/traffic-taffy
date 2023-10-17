@@ -81,6 +81,10 @@ def main():
         )
 
         parser.add_argument(
+            "-b", "--bin-size", default=1, type=int, help="bin size to use"
+        )
+
+        parser.add_argument(
             "--log-level",
             "--ll",
             default="info",
@@ -97,7 +101,7 @@ def main():
     args = parse_args()
     pd = PCAPDisector(
         args.input_file,
-        bin_size=1,
+        bin_size=args.bin_size,
         disector_type=PCAPDisectorType.COUNT_ONLY,
         maximum_count=1000,
     )
