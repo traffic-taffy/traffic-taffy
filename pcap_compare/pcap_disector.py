@@ -13,6 +13,7 @@ class PCAPDisectorType(Enum):
 class PCAPDisector:
     "loads a pcap file and counts the contents in both time and depth"
     TOTAL_COUNT: str = "__TOTAL__"
+    TOTAL_SUBKEY: str = "packet"
 
     def __init__(
         self,
@@ -27,7 +28,8 @@ class PCAPDisector:
         self.disector_type = disector_type
         self.pcap_filter = pcap_filter
         self.maximum_count = maximum_count
-        self.data = defaultdict(Counter)
+        # TODO: convert to a factory
+        self.data = {0: defaultdict(Counter)}
 
         if disector_type == PCAPDisectorType.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
@@ -52,11 +54,13 @@ class PCAPDisector:
         # if binning is requested, save it in a binned time slot
         if self.bin_size:
             time_stamp = time_stamp - time_stamp % self.bin_size
-            self.data[time_stamp][self.TOTAL_COUNT] += 1
+            if time_stamp not in self.data:
+                self.data[time_stamp] = defaultdict(Counter)
+            self.data[time_stamp][self.TOTAL_COUNT][self.TOTAL_SUBKEY] += 1
 
         # always save a total count at the zero bin
         # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
-        self.data[0][self.TOTAL_COUNT] += 1
+        self.data[0][self.TOTAL_COUNT][self.TOTAL_SUBKEY] += 1
 
     def load_via_dpkt(self) -> dict:
         import dpkt
