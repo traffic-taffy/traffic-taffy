@@ -27,6 +27,7 @@ class PCAPDisector:
         self.disector_type = disector_type
         self.pcap_filter = pcap_filter
         self.maximum_count = maximum_count
+        self.data = defaultdict(Counter)
 
         if disector_type == PCAPDisectorType.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
