@@ -3,6 +3,7 @@ from logging import debug, warning
 from collections import defaultdict, Counter
 from scapy.all import rdpcap
 from rich.console import Console
+from pcap_disector import PCAPDisector, PCAPDisectorType
 import pickle
 
 class PcapCompare:
@@ -31,74 +32,15 @@ class PcapCompare:
         self.only_positive = only_positive
         self.only_negative = only_negative
 
-    def add_item(self, field_value, storage: dict, prefix: str) -> None:
-        "Adds an item to the storage regardless of it's various types"
-        if isinstance(field_value, list):
-            if len(field_value) > 0:
-                # if it's a list of tuples, count the (eg TCP option) names
-                # TODO: values can be always the same or things like timestamps
-                #       that will always change or are too unique
-                if isinstance(field_value[0], tuple):
-                    for item in field_value:
-                        storage[prefix][item[0]] += 1
-                else:
-                    for item in field_value:
-                        self.add_item(item, storage, prefix)
-            else:
-                debug(f"ignoring empty-list: {field_value}")
-        elif (
-            isinstance(field_value, str)
-            or isinstance(field_value, int)
-            or isinstance(field_value, float)
-        ):
-            storage[prefix][field_value] += 1
-
-        elif isinstance(field_value, bytes):
-            try:
-                converted = field_value.decode("utf-8")
-                storage[prefix][converted] += 1
-            except Exception:
-                converted = "0x" + field_value.hex()
-                storage[prefix][converted] += 1
-
-    def add_layer(self, layer, storage: dict, prefix: str | None = "") -> None:
-        "Analyzes a layer to add counts to each layer sub-component"
-
-        if hasattr(layer, "fields_desc"):
-            name_list = [field.name for field in layer.fields_desc]
-        elif hasattr(layer, "fields"):
-            name_list = [field.name for field in layer.fields]
-        else:
-            warning(f"unavailable to deep dive into: {layer}")
-            return
-
-        for field_name in name_list:
-            field_value = getattr(layer, field_name)
-            if hasattr(field_value, "fields"):
-                self.add_layer(field_value, storage, prefix + field_name + ".")
-            else:
-                self.add_item(field_value, storage, prefix + field_name)
-
-    def load_pcap(self, pcap_file: str | None = None) -> dict:
-        "Loads a pcap file into a nested dictionary of statistical counts"
-        results = defaultdict(Counter)
-        packets = rdpcap(pcap_file, count=self.maximum_count)
-
-        for packet in packets:
-            prefix = "."
-            for payload in packet.iterpayloads():
-                results[prefix[1:-1]][payload.name] += 1  # count the prefix itself too
-                prefix = f"{prefix}{payload.name}."
-                self.add_layer(payload, results, prefix[1:])
-
-        return results
-
     def compare_results(self, report1: dict, report2: dict) -> dict:
         "compares the results from two reports"
 
         # TODO: handle recursive depths, where items are subtrees rather than Counters
 
         report = {}
+
+        report1 = report1[0]
+        report2 = report2[0]
 
         for key in report1:
             # TODO: deal with missing keys from one set
@@ -229,11 +171,13 @@ class PcapCompare:
         # TODO: use parallel processes to load multiple at a time
 
         # load the first as a reference pcap
-        reference = self.load_pcap(self.pcaps[0])
+        pd = PCAPDisector(self.pcaps[0], bin_size=None, maximum_count=self.maximum_count)
+        reference = pd.load()
         for pcap in self.pcaps[1:]:
 
             # load the next pcap
-            other = self.load_pcap(pcap)
+            pd = PCAPDisector(pcap, bin_size=None, maximum_count=self.maximum_count)
+            other = pd.load()
 
             # compare the two
             reports.append(self.compare_results(reference, other))

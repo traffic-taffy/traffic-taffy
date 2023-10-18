@@ -4,7 +4,7 @@ def test_disector_load():
     assert isinstance(pd, PCAPDisector)
     assert pd.data == {0: {}}
 
-def test_disector_callback():
+def test_disector_simple_callback():
     from collections import Counter
     from pcap_compare.pcap_disector import PCAPDisector, PCAPDisectorType
     pd = PCAPDisector("bogus", disector_type = PCAPDisectorType.DETAILED,
@@ -24,3 +24,6 @@ def test_disector_callback():
     assert pd.data == {0: {pd.TOTAL_COUNT: {pd.TOTAL_SUBKEY: 3}},
                        10: {pd.TOTAL_COUNT: {pd.TOTAL_SUBKEY: 2}},
                        12: {pd.TOTAL_COUNT: {pd.TOTAL_SUBKEY: 1}}}
+
+def test_disector_scapy_callback():
+    assert True

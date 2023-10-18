@@ -3,7 +3,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 
-from pcap_compare.pcap_compare import PcapCompare
+from pcap_compare import PcapCompare
 
 def parse_args():
     "Parse the command line arguments."
