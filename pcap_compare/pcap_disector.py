@@ -4,6 +4,7 @@ from enum import Enum
 from logging import warning, debug
 from collections import Counter, defaultdict
 from scapy.all import rdpcap, sniff
+from typing import Any
 
 class PCAPDisectorType(Enum):
     DETAILED = 1
@@ -42,6 +43,15 @@ class PCAPDisector:
     def data(self, value):
         self.__data = value
 
+    def incr(self, key: str, value: Any, count: int = 1):
+        # always save a total count at the zero bin
+        # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
+        self.data[0][key][value] += count
+        if self.timestamp:
+            if self.timestamp not in self.data:
+                self.data[self.timestamp] = defaultdict(Counter)
+            self.data[self.timestamp][key][value] += count
+
     def load(self) -> dict:
         if self.disector_type == PCAPDisectorType.COUNT_ONLY:
             return self.load_via_dpkt()
@@ -49,18 +59,11 @@ class PCAPDisector:
             return self.load_via_scapy()
 
     def dpkt_callback(self, timestamp: float, packet: bytes):
-        time_stamp = int(timestamp)
-
         # if binning is requested, save it in a binned time slot
+        self.timestamp = int(timestamp)
         if self.bin_size:
-            time_stamp = time_stamp - time_stamp % self.bin_size
-            if time_stamp not in self.data:
-                self.data[time_stamp] = defaultdict(Counter)
-            self.data[time_stamp][self.TOTAL_COUNT][self.TOTAL_SUBKEY] += 1
-
-        # always save a total count at the zero bin
-        # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
-        self.data[0][self.TOTAL_COUNT][self.TOTAL_SUBKEY] += 1
+            self.timestamp = self.timestamp - self.timestamp % self.bin_size
+        self.incr(self.TOTAL_COUNT, self.TOTAL_SUBKEY)
 
     def load_via_dpkt(self) -> dict:
         import dpkt
@@ -81,7 +84,7 @@ class PCAPDisector:
                 #       that will always change or are too unique
                 if isinstance(field_value[0], tuple):
                     for item in field_value:
-                        self.data[0][prefix][item[0]] += 1
+                        self.incr(prefix, item[0])
                 else:
                     for item in field_value:
                         self.add_scapy_item(item, prefix)
@@ -92,15 +95,15 @@ class PCAPDisector:
             or isinstance(field_value, int)
             or isinstance(field_value, float)
         ):
-            self.data[0][prefix][field_value] += 1
+            self.incr(prefix, field_value)
 
         elif isinstance(field_value, bytes):
             try:
                 converted = field_value.decode("utf-8")
-                self.data[0][prefix][converted] += 1
+                self.incr(prefix, converted)
             except Exception:
                 converted = "0x" + field_value.hex()
-                self.data[0][prefix][converted] += 1
+                self.incr(prefix, converted)
 
     def add_scapy_layer(self, layer, prefix: str | None = "") -> None:
         "Analyzes a layer to add counts to each layer sub-component"
@@ -122,6 +125,11 @@ class PCAPDisector:
 
     def scapy_callback(self, packet):
         prefix = "."
+        self.timestamp = int(packet.time)
+        if self.bin_size:
+            self.timestamp = self.timestamp - self.timestamp % self.bin_size
+
+        self.incr(self.TOTAL_COUNT, self.TOTAL_SUBKEY)
         for payload in packet.iterpayloads():
             prefix = f"{prefix}{payload.name}."
             self.add_scapy_layer(payload, prefix[1:])
