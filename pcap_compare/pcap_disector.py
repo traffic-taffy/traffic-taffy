@@ -65,7 +65,7 @@ class PCAPDisector:
     def load_via_dpkt(self) -> dict:
         import dpkt
 
-        self.data = defaultdict(Counter)
+        self.data = {0: defaultdict(Counter)}
         pcap = dpkt.pcap.Reader(open(self.pcap_file, "rb"))
         if self.pcap_filter:
             pcap.setfilter(self.pcap_filter)
@@ -81,7 +81,7 @@ class PCAPDisector:
                 #       that will always change or are too unique
                 if isinstance(field_value[0], tuple):
                     for item in field_value:
-                        self.data[prefix][item[0]] += 1
+                        self.data[0][prefix][item[0]] += 1
                 else:
                     for item in field_value:
                         self.add_scapy_item(item, prefix)
@@ -92,15 +92,15 @@ class PCAPDisector:
             or isinstance(field_value, int)
             or isinstance(field_value, float)
         ):
-            self.data[prefix][field_value] += 1
+            self.data[0][prefix][field_value] += 1
 
         elif isinstance(field_value, bytes):
             try:
                 converted = field_value.decode("utf-8")
-                self.data[prefix][converted] += 1
+                self.data[0][prefix][converted] += 1
             except Exception:
                 converted = "0x" + field_value.hex()
-                self.data[prefix][converted] += 1
+                self.data[0][prefix][converted] += 1
 
     def add_scapy_layer(self, layer, prefix: str | None = "") -> None:
         "Analyzes a layer to add counts to each layer sub-component"
