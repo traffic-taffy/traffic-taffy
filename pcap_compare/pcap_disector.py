@@ -3,7 +3,7 @@
 from enum import Enum
 from logging import warning, debug
 from collections import Counter, defaultdict
-from scapy.all import rdpcap
+from scapy.all import rdpcap, sniff
 
 class PCAPDisectorType(Enum):
     DETAILED = 1
@@ -120,18 +120,17 @@ class PCAPDisector:
             else:
                 self.add_scapy_item(field_value, prefix + field_name)
 
+    def scapy_callback(self, packet):
+        prefix = "."
+        for payload in packet.iterpayloads():
+            prefix = f"{prefix}{payload.name}."
+            self.add_scapy_layer(payload, prefix[1:])
+        
+
     def load_via_scapy(self) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
-        results = defaultdict(Counter)
-        packets = rdpcap(self.pcap_file, count=self.maximum_count)
-
-        for packet in packets:
-            prefix = "."
-            for payload in packet.iterpayloads():
-                prefix = f"{prefix}{payload.name}."
-                self.add_scapy_layer(payload, prefix[1:])
-
-        return results
+        sniff(offline=self.pcap_file, prn=self.scapy_callback, store=0, count=self.maximum_count, filter=self.pcap_filter)
+        return self.data
 
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
