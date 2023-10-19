@@ -5,6 +5,7 @@ import logging
 
 from pcap_compare import PcapCompare
 
+
 def parse_args():
     "Parse the command line arguments."
     parser = ArgumentParser(
@@ -31,7 +32,7 @@ def parse_args():
 
     parser.add_argument(
         "-m",
-        "--print-match-string",
+        "--match-string",
         default=None,
         type=str,
         help="Only report on data with this substring in the header",

@@ -45,6 +45,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-m",
+        "--match-string",
+        default=None,
+        type=str,
+        help="Only report on data with this substring in the header",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
@@ -67,6 +75,7 @@ class PcapGraph:
         output_file: str,
         maximum_count: int = None,
         bin_size: int = None,
+        match_string: str = None,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -74,6 +83,7 @@ class PcapGraph:
         self.bin_size = bin_size
         self.subsections = None
         self.pkt_filter = None
+        self.match_string = match_string
 
     def load_pcaps(self):
         "loads the pcap and counts things into bins"
@@ -82,11 +92,15 @@ class PcapGraph:
 
             info(f"reading {pcap_file}")
 
+            disector_type: PCAPDisectorType = PCAPDisectorType.DETAILED
+            if self.match_string:
+                disector_type = PCAPDisectorType.DETAILED
+
             pd = PCAPDisector(
                 pcap_file,
                 bin_size=self.bin_size,
                 maximum_count=self.maximum_count,
-                disector_type=PCAPDisectorType.COUNT_ONLY,
+                disector_type=disector_type,
                 pcap_filter=self.pkt_filter,
             )
             pd.load()
@@ -102,13 +116,22 @@ class PcapGraph:
 
         list(counters.keys())[0]
 
-        results = {"time": list(range(start_time, end_time + 1, self.bin_size))}
+        results = {"time": [], "count": [], "index": []}
         for key in counters[start_time]:
             for subkey in counters[start_time][key]:
-                results[key + "." + subkey] = [
+                index = key + "=" + str(subkey)
+                debug(index)
+                if self.match_string and self.match_string not in index:
+                    continue
+                counts = [
                     counters.get(x, {key: {subkey: 0}})[key][subkey]
                     for x in range(start_time, end_time + 1, self.bin_size)
                 ]
+                results["index"].extend([index] * len(counts))
+                results["count"].extend(counts)
+                results["time"].extend(
+                    list(range(start_time, end_time + 1, self.bin_size))
+                )
 
         return results
 
@@ -134,8 +157,8 @@ class PcapGraph:
             data=df,
             kind="line",
             x="time",
-            y=PCAPDisector.TOTAL_COUNT + "." + PCAPDisector.TOTAL_SUBKEY,
-            hue="filename",
+            y="count",
+            hue="index",
             aspect=1.77,
         )
         ax.set(xlabel="time", ylabel="count")
@@ -159,6 +182,7 @@ def main():
         args.output_file,
         maximum_count=args.packet_count,
         bin_size=args.bin_size,
+        match_string=args.match_string,
     )
     pc.graph_it()
 

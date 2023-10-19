@@ -1,10 +1,11 @@
 """Loads a PCAP file and counts contents with various levels of storage"""
 
 from enum import Enum
-from logging import warning, debug
+from logging import warning
 from collections import Counter, defaultdict
-from scapy.all import rdpcap, sniff
+from scapy.all import sniff
 from typing import Any
+
 
 class PCAPDisectorType(Enum):
     DETAILED = 1
@@ -88,8 +89,8 @@ class PCAPDisector:
                 else:
                     for item in field_value:
                         self.add_scapy_item(item, prefix)
-            else:
-                debug(f"ignoring empty-list: {field_value}")
+            # else:
+            #     debug(f"ignoring empty-list: {field_value}")
         elif (
             isinstance(field_value, str)
             or isinstance(field_value, int)
@@ -133,12 +134,18 @@ class PCAPDisector:
         for payload in packet.iterpayloads():
             prefix = f"{prefix}{payload.name}."
             self.add_scapy_layer(payload, prefix[1:])
-        
 
     def load_via_scapy(self) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
-        sniff(offline=self.pcap_file, prn=self.scapy_callback, store=0, count=self.maximum_count, filter=self.pcap_filter)
+        sniff(
+            offline=self.pcap_file,
+            prn=self.scapy_callback,
+            store=0,
+            count=self.maximum_count,
+            filter=self.pcap_filter,
+        )
         return self.data
+
 
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -156,8 +163,12 @@ def main():
             "-b", "--bin-size", default=1, type=int, help="bin size to use"
         )
 
-        parser.add_argument("-f", "--full-dump", action="store_true",
-                            help="Full deep-inspect the packet")
+        parser.add_argument(
+            "-f",
+            "--full-dump",
+            action="store_true",
+            help="Full deep-inspect the packet",
+        )
 
         parser.add_argument(
             "--log-level",
