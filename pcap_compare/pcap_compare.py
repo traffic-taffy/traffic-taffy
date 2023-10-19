@@ -1,10 +1,8 @@
 from typing import List
-from logging import debug, warning
-from collections import defaultdict, Counter
-from scapy.all import rdpcap
 from rich.console import Console
-from pcap_disector import PCAPDisector, PCAPDisectorType
+from pcap_disector import PCAPDisector
 import pickle
+
 
 class PcapCompare:
     "Takes a set of PCAPs to then perform various comparisons upon"
@@ -39,6 +37,7 @@ class PcapCompare:
 
         report = {}
 
+        # TODO: we're only (currently) doing full pcap compares
         report1 = report1[0]
         report2 = report2[0]
 
@@ -171,7 +170,9 @@ class PcapCompare:
         # TODO: use parallel processes to load multiple at a time
 
         # load the first as a reference pcap
-        pd = PCAPDisector(self.pcaps[0], bin_size=None, maximum_count=self.maximum_count)
+        pd = PCAPDisector(
+            self.pcaps[0], bin_size=None, maximum_count=self.maximum_count
+        )
         reference = pd.load()
         for pcap in self.pcaps[1:]:
 
@@ -212,5 +213,3 @@ class PcapCompare:
 
         # proceed as normal beyond this
         self.reports = self.reports["reports"]
-
-

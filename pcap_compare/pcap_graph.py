@@ -3,10 +3,9 @@
 import os
 import seaborn as sns
 import matplotlib.pyplot as plt
-import collections
 import pandas
 from pandas import DataFrame, to_datetime
-from scapy.all import rdpcap
+from pcap_disector import PCAPDisector, PCAPDisectorType
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from logging import debug, info
@@ -76,48 +75,40 @@ class PcapGraph:
         self.subsections = None
         self.pkt_filter = None
 
-    def dpkt_counter(self, timestamp: float, packet: bytes):
-        time_stamp = int(timestamp)
-        time_stamp = time_stamp - time_stamp % self.bin_size
-        self.times["count"][time_stamp] += 1
-
     def load_pcaps(self):
         "loads the pcap and counts things into bins"
         self.data = {}
         for pcap_file in self.pcap_files:
-            self.times = {"count": collections.Counter()}
-            self.current_pcap = pcap_file
+
             info(f"reading {pcap_file}")
 
-            if self.subsections:
-                # TODO: actually break apart better
-                packets = rdpcap(pcap_file, count=self.maximum_count)
-                for packet in packets:
-                    time_stamp = int(packet.time)
-                    time_stamp = time_stamp - time_stamp % self.bin_size
-                    self.times["count"][time_stamp] += 1
-            else:  # use the faster dpkt
-                import dpkt
-
-                pcap = dpkt.pcap.Reader(open(pcap_file, "rb"))
-                if self.pkt_filter:
-                    pcap.setfilter(self.pkt_filter)
-                pcap.dispatch(self.maximum_count, self.dpkt_counter)
-
-            self.data[pcap_file] = self.times
+            pd = PCAPDisector(
+                pcap_file,
+                bin_size=self.bin_size,
+                maximum_count=self.maximum_count,
+                disector_type=PCAPDisectorType.COUNT_ONLY,
+                pcap_filter=self.pkt_filter,
+            )
+            pd.load()
+            self.data[pcap_file] = pd.data
 
     def normalize_bins(self, counters):
         results = {}
-        first_key = list(counters.keys())[0]
-        time_keys = list(counters[first_key])
-        start_key = time_keys[0]
-        end_key = time_keys[-1]
+        time_keys = list(counters.keys())
+        if time_keys[0] == 0:  # likely always
+            time_keys.pop(0)
+        start_time = time_keys[0]
+        end_time = time_keys[-1]
 
-        results = {"time": list(range(start_key, end_key + 1, self.bin_size))}
-        for key in counters:
-            results[key] = [
-                counters[key][x] for x in range(start_key, end_key + 1, self.bin_size)
-            ]
+        list(counters.keys())[0]
+
+        results = {"time": list(range(start_time, end_time + 1, self.bin_size))}
+        for key in counters[start_time]:
+            for subkey in counters[start_time][key]:
+                results[key + "." + subkey] = [
+                    counters.get(x, {key: {subkey: 0}})[key][subkey]
+                    for x in range(start_time, end_time + 1, self.bin_size)
+                ]
 
         return results
 
@@ -140,7 +131,12 @@ class PcapGraph:
         debug(df)
 
         ax = sns.relplot(
-            data=df, kind="line", x="time", y="count", hue="filename", aspect=1.77
+            data=df,
+            kind="line",
+            x="time",
+            y=PCAPDisector.TOTAL_COUNT + "." + PCAPDisector.TOTAL_SUBKEY,
+            hue="filename",
+            aspect=1.77,
         )
         ax.set(xlabel="time", ylabel="count")
         plt.xticks(rotation=45)
