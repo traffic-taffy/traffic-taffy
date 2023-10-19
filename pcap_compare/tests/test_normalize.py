@@ -1,37 +1,43 @@
 from unittest.mock import Mock
-from pcap_compare.pcap_graph import PcapGraph
+from pcap_compare.graph import PcapGraph
 from collections import Counter, defaultdict
 
 
 def test_pcap_normalize():
     pg = PcapGraph(Mock(), Mock(), bin_size=1)
-    data = defaultdict(Counter)
+    data = {}
     for i in range(0, 10, 2):
-        data["a"][i] += 1
+        data[i] = defaultdict(Counter)
+        data[i]["a"]["b"] += 1
     for i in range(0, 10, 3):
-        data["b"][i] += 1
+        if i not in data:
+            data[i] = defaultdict(Counter)
+        data[i]["c"]["d"] += 1
 
     results = pg.normalize_bins(data)
     assert results == {
-        "time": list(range(0, 9)),
-        "a": [1, 0] * 4 + [1],
-        "b": [1, 0, 0] * 3,
+        "time": list(range(2, 10)),
+        "index": ["a=b"] * 8,
+        "count": [1, 0] * 4,
     }
 
 
 def test_pcap_normalize_with_gaps():
     pg = PcapGraph(Mock(), Mock(), bin_size=7)
     data = defaultdict(Counter)
-    for i in range(0, 100, 7):
+    for i in range(14, 100, 7):
+        data[i] = defaultdict(Counter)
         if i % 14 == 0:
-            data["a"][i] += 1
-    for i in range(0, 100, 7):
+            data[i]["a"]["b"] += 1
+    for i in range(14, 100, 7):
         if i % 21 == 0:
-            data["b"][i] += 1
+            if i not in data:
+                data[i] = defaultdict(Counter)
+            data[i]["c"]["d"] += 1
 
     results = pg.normalize_bins(data)
     assert results == {
-        "time": list(range(0, 100, 7)),
-        "a": [1, 0] * 7 + [1],
-        "b": [1, 0, 0] * 5,
+        "time": list(range(14, 100, 7)),
+        "count": [1, 0] * 6 + [1],
+        "index": ["a=b"] * 13,
     }

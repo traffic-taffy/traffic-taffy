@@ -1,6 +1,6 @@
 from typing import List
 from rich.console import Console
-from pcap_disector import PCAPDisector
+from pcap_compare.disector import PCAPDisector
 import pickle
 
 

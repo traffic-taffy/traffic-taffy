@@ -3,7 +3,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import logging
 
-from pcap_compare import PcapCompare
+from pcap_compare.compare import PcapCompare
 
 
 def parse_args():

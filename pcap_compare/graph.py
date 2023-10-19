@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas
 from pandas import DataFrame, to_datetime
-from pcap_disector import PCAPDisector, PCAPDisectorType
+from pcap_compare.disector import PCAPDisector, PCAPDisectorType
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from logging import debug, info
@@ -113,8 +113,6 @@ class PcapGraph:
             time_keys.pop(0)
         start_time = time_keys[0]
         end_time = time_keys[-1]
-
-        list(counters.keys())[0]
 
         results = {"time": [], "count": [], "index": []}
         for key in counters[start_time]:

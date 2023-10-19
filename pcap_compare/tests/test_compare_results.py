@@ -1,10 +1,10 @@
 from collections import Counter
-from pcap_compare import PcapCompare
+from pcap_compare.compare import PcapCompare
 
 
 def test_compare_results():
-    test_data1 = {"src": Counter({"a": 5, "b": 10})}  # total = 15
-    test_data2 = {"src": Counter({"a": 15, "c": 15})}  # total = 30
+    test_data1 = {0: {"src": Counter({"a": 5, "b": 10})}}  # total = 15
+    test_data2 = {0: {"src": Counter({"a": 15, "c": 15})}}  # total = 30
 
     # this should be positive when test_data2 is larger
     expected = {

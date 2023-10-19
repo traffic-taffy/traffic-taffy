@@ -5,6 +5,7 @@ from logging import warning
 from collections import Counter, defaultdict
 from scapy.all import sniff
 from typing import Any
+import pickle
 
 
 class PCAPDisectorType(Enum):
@@ -16,6 +17,7 @@ class PCAPDisector:
     "loads a pcap file and counts the contents in both time and depth"
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
+    DISECTION_VERSION: int = 2
 
     def __init__(
         self,
@@ -145,6 +147,48 @@ class PCAPDisector:
             filter=self.pcap_filter,
         )
         return self.data
+
+    def save(self, where: str) -> None:
+        "Saves a generated disection to a pickle file"
+
+        # wrap the report in a version header
+        versioned_report = {
+            "PCAP_DISECTION_VERSION": self.DISECTION_VERSION,
+            "file": self.pcap_file,
+            "parameters": {
+                "bin_size": self.bin_size,
+                "maximum_count": self.maximum_count,
+                "pcap_filter": self.pcap_filter,
+                "disector_type": self.disector_type,
+            },
+            "disection": self.data,
+        }
+
+        # save it
+        pickle.dump(versioned_report, open(where, "wb"))
+
+    def load_saved(self, where: str) -> None:
+        "Loads a previous saved report from a file instead of re-parsing pcaps"
+        contents = pickle.load(open(where, "rb"))
+
+        # check that the version header matches something we understand
+        if contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
+            raise ValueError(
+                "improper saved disection version: report version = "
+                + str(contents["PCAP_COMPARE_VERSION"])
+                + ", our version: "
+                + str(self.DISECTION_VERSION)
+            )
+
+        # proceed as normal beyond this
+        self.pcap_file = contents["file"]
+        self.bin_size = contents["parameters"]["bin_size"]
+        self.disector_type = contents["parameters"]["disector_type"]
+        self.pcap_filter = contents["parameters"]["pcap_filter"]
+        self.maximum_count = contents["parameters"]["maximum_count"]
+
+        # TODO: convert to a factory
+        self.data = contents["disection"]
 
 
 def main():
