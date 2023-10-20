@@ -5,7 +5,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas
 from pandas import DataFrame, to_datetime
-from pcap_compare.disector import PCAPDisector, PCAPDisectorType
+from pcap_compare.disector import PCAPDisectorType
+from pcap_compare.disectmany import PCAPDisectMany
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from logging import debug, info
@@ -53,10 +54,18 @@ def parse_args():
 
     parser.add_argument(
         "-m",
-        "--match-string",
+        "--match-key",
         default=None,
         type=str,
-        help="Only report on data with this substring in the header",
+        help="Only report on data with this substring in the packet attribute name",
+    )
+
+    parser.add_argument(
+        "-M",
+        "--match-value",
+        default=None,
+        type=str,
+        help="Only report on data with this substring in the packet value field",
     )
 
     parser.add_argument(
@@ -82,7 +91,8 @@ class PcapGraph:
         output_file: str,
         maximum_count: int = None,
         bin_size: int = None,
-        match_string: str = None,
+        match_key: str = None,
+        match_value: str = None,
         cache_pcap_results: bool = False,
     ):
         self.pcap_files = pcap_files
@@ -91,30 +101,32 @@ class PcapGraph:
         self.bin_size = bin_size
         self.subsections = None
         self.pkt_filter = None
-        self.match_string = match_string
+        self.match_key = match_key
+        self.match_value = match_value
         self.cache_pcap_results = cache_pcap_results
 
     def load_pcaps(self):
         "loads the pcap and counts things into bins"
         self.data = {}
-        for pcap_file in self.pcap_files:
 
-            info(f"reading {pcap_file}")
+        disector_type: PCAPDisectorType = PCAPDisectorType.COUNT_ONLY
+        if self.match_key or self.match_value:
+            disector_type = PCAPDisectorType.DETAILED
 
-            disector_type: PCAPDisectorType = PCAPDisectorType.DETAILED
-            if self.match_string:
-                disector_type = PCAPDisectorType.DETAILED
+        info("reading pcap files")
+        pdm = PCAPDisectMany(
+            self.pcap_files,
+            bin_size=self.bin_size,
+            maximum_count=self.maximum_count,
+            disector_type=disector_type,
+            pcap_filter=self.pkt_filter,
+            cache_results=self.cache_pcap_results,
+        )
+        results = pdm.load_all()
 
-            pd = PCAPDisector(
-                pcap_file,
-                bin_size=self.bin_size,
-                maximum_count=self.maximum_count,
-                disector_type=disector_type,
-                pcap_filter=self.pkt_filter,
-                cache_results=self.cache_pcap_results,
-            )
-            pd.load()
-            self.data[pcap_file] = pd.data
+        for result in results:
+            self.data[result["file"]] = result["data"]
+        info("done reading pcap files")
 
     def normalize_bins(self, counters):
         results = {}
@@ -131,10 +143,13 @@ class PcapGraph:
             if timestamp not in counters:
                 continue
             for key in counters[timestamp]:
+                if self.match_key and self.match_key not in key:
+                    continue
                 for subkey in counters[timestamp][key]:
-                    index = key + "=" + str(subkey)
-                    if self.match_string and self.match_string not in index:
+                    subkey_s = str(subkey)
+                    if self.match_value and self.match_value not in subkey_s:
                         continue
+                    index = key + "=" + subkey_s
                     results["count"].append(counters[timestamp][key][subkey])
                     results["index"].append(index)
                     results["time"].append(timestamp)
@@ -160,12 +175,16 @@ class PcapGraph:
         df = self.merge_datasets()
         debug(df)
 
+        hue_variable = "index"
+        if df[hue_variable].nunique() == 1:
+            hue_variable = None
+
         ax = sns.relplot(
             data=df,
             kind="line",
             x="time",
             y="count",
-            hue="index",
+            hue=hue_variable,
             aspect=1.77,
         )
         ax.set(xlabel="time", ylabel="count")
@@ -192,7 +211,8 @@ def main():
         args.output_file,
         maximum_count=args.packet_count,
         bin_size=args.bin_size,
-        match_string=args.match_string,
+        match_key=args.match_key,
+        match_value=args.match_value,
         cache_pcap_results=args.cache_pcap_results,
     )
     pc.graph_it()
