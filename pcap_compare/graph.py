@@ -125,21 +125,18 @@ class PcapGraph:
         end_time = time_keys[-1]
 
         results = {"time": [], "count": [], "index": []}
-        for key in counters[start_time]:
-            for subkey in counters[start_time][key]:
-                index = key + "=" + str(subkey)
-                debug(index)
-                if self.match_string and self.match_string not in index:
-                    continue
-                counts = [
-                    counters.get(x, {key: {subkey: 0}})[key][subkey]
-                    for x in range(start_time, end_time + 1, self.bin_size)
-                ]
-                results["index"].extend([index] * len(counts))
-                results["count"].extend(counts)
-                results["time"].extend(
-                    list(range(start_time, end_time + 1, self.bin_size))
-                )
+        # TODO: this could likely be made much more efficient
+        for timestamp in range(start_time, end_time + 1, self.bin_size):
+            if timestamp not in counters:
+                continue
+            for key in counters[timestamp]:
+                for subkey in counters[timestamp][key]:
+                    index = key + "=" + str(subkey)
+                    if self.match_string and self.match_string not in index:
+                        continue
+                    results["count"].append(counters[timestamp][key][subkey])
+                    results["index"].append(index)
+                    results["time"].append(timestamp)
 
         return results
 
