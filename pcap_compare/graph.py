@@ -37,7 +37,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-c",
+        "-C",
         "--cache-pcap-results",
         action="store_true",
         help="Cache and use PCAP results into/from a .pkl file",
@@ -83,6 +83,7 @@ class PcapGraph:
         maximum_count: int = None,
         bin_size: int = None,
         match_string: str = None,
+        cache_pcap_results: bool = False,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -91,6 +92,7 @@ class PcapGraph:
         self.subsections = None
         self.pkt_filter = None
         self.match_string = match_string
+        self.cache_pcap_results = cache_pcap_results
 
     def load_pcaps(self):
         "loads the pcap and counts things into bins"
@@ -109,6 +111,7 @@ class PcapGraph:
                 maximum_count=self.maximum_count,
                 disector_type=disector_type,
                 pcap_filter=self.pkt_filter,
+                cache_results=self.cache_pcap_results,
             )
             pd.load()
             self.data[pcap_file] = pd.data
@@ -153,6 +156,7 @@ class PcapGraph:
 
     def create_graph(self):
         "Graph the results of the data collection"
+        debug("creating the graph")
         sns.set_theme()
 
         df = self.merge_datasets()
@@ -168,14 +172,17 @@ class PcapGraph:
         )
         ax.set(xlabel="time", ylabel="count")
         plt.xticks(rotation=45)
-        info(f"saving to {self.output_file}")
+
+        info(f"saving graph to {self.output_file}")
         if self.output_file:
             plt.savefig(self.output_file)
         else:
             plt.show()
 
     def graph_it(self):
+        debug("--- loading pcaps")
         self.load_pcaps()
+        debug("--- creating graph")
         self.create_graph()
 
 
@@ -188,6 +195,7 @@ def main():
         maximum_count=args.packet_count,
         bin_size=args.bin_size,
         match_string=args.match_string,
+        cache_pcap_results=args.cache_pcap_results,
     )
     pc.graph_it()
 

@@ -1,7 +1,10 @@
+"""Takes a set of pcap files to compare and creates a report"""
+
+import logging
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
 from rich.console import Console
 from pcap_compare.disector import PCAPDisector
-import pickle
 
 
 class PcapCompare:
@@ -19,6 +22,7 @@ class PcapCompare:
         print_match_string: str | None = None,
         only_positive: bool = False,
         only_negative: bool = False,
+        cache_results: bool = False,
     ) -> None:
 
         self.pcaps = pcaps
@@ -29,6 +33,7 @@ class PcapCompare:
         self.print_match_string = print_match_string
         self.only_positive = only_positive
         self.only_negative = only_negative
+        self.cache_results = cache_results
 
     def compare_results(self, report1: dict, report2: dict) -> dict:
         "compares the results from two reports"
@@ -171,13 +176,21 @@ class PcapCompare:
 
         # load the first as a reference pcap
         pd = PCAPDisector(
-            self.pcaps[0], bin_size=None, maximum_count=self.maximum_count
+            self.pcaps[0],
+            bin_size=None,
+            maximum_count=self.maximum_count,
+            cache_results=self.cache_results,
         )
         reference = pd.load()
         for pcap in self.pcaps[1:]:
 
             # load the next pcap
-            pd = PCAPDisector(pcap, bin_size=None, maximum_count=self.maximum_count)
+            pd = PCAPDisector(
+                pcap,
+                bin_size=None,
+                maximum_count=self.maximum_count,
+                cache_results=self.cache_results,
+            )
             other = pd.load()
 
             # compare the two
@@ -185,31 +198,123 @@ class PcapCompare:
 
         self.reports = reports
 
-    def save_report(self, where: str) -> None:
-        "Saves the generated reports to a pickle file"
 
-        # wrap the report in a version header
-        versioned_report = {
-            "PCAP_COMPARE_VERSION": self.REPORT_VERSION,
-            "reports": self.reports,
-            "files": self.pcaps,
-        }
+def parse_args():
+    "Parse the command line arguments."
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        epilog="Exmaple Usage: ",
+    )
 
-        # save it
-        pickle.dump(versioned_report, open(where, "wb"))
+    parser.add_argument(
+        "-n",
+        "--packet-count",
+        default=-1,
+        type=int,
+        help="Maximum number of packets to analyze",
+    )
 
-    def load_report(self, where: str) -> None:
-        "Loads a previous saved report from a file instead of re-parsing pcaps"
-        self.reports = pickle.load(open(where, "rb"))
+    parser.add_argument(
+        "-t",
+        "--print-threshold",
+        default=None,
+        type=float,
+        help="Don't print results with abs(value) less than threshold",
+    )
 
-        # check that the version header matches something we understand
-        if self.reports["PCAP_COMPARE_VERSION"] != self.REPORT_VERSION:
-            raise ValueError(
-                "improper saved version: report version = "
-                + str(self.reports["PCAP_COMPARE_VERSION"])
-                + ", our version: "
-                + str(self.REPORT_VERSION)
-            )
+    parser.add_argument(
+        "-m",
+        "--match-string",
+        default=None,
+        type=str,
+        help="Only report on data with this substring in the header",
+    )
 
-        # proceed as normal beyond this
-        self.reports = self.reports["reports"]
+    parser.add_argument(
+        "-s",
+        "--save-report",
+        default=None,
+        type=str,
+        help="Where to save a report file for quicker future loading",
+    )
+
+    parser.add_argument(
+        "-l",
+        "--load-report",
+        default=None,
+        type=str,
+        help="Load a report from a pickle file rather than use pcaps",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--print-minimum-count",
+        default=None,
+        type=float,
+        help="Don't print results without this high of a count",
+    )
+
+    parser.add_argument(
+        "-C",
+        "--cache-pcap-results",
+        action="store_true",
+        help="Cache and use PCAP results into/from a .pkl file",
+    )
+
+    parser.add_argument(
+        "-P", "--only-positive", action="store_true", help="Only show positive entries"
+    )
+
+    parser.add_argument(
+        "-N", "--only-negative", action="store_true", help="Only show negative entries"
+    )
+
+    parser.add_argument(
+        "--log-level",
+        "--ll",
+        default="info",
+        help="Define the logging verbosity level (debug, info, warning, error, ...).",
+    )
+
+    parser.add_argument("pcap_files", type=str, nargs="*", help="PCAP files to analyze")
+
+    args = parser.parse_args()
+    log_level = args.log_level.upper()
+    logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
+    return args
+
+
+def main():
+    args = parse_args()
+    pc = PcapCompare(
+        args.pcap_files,
+        maximum_count=args.packet_count,
+        print_threshold=args.print_threshold,
+        print_minimum_count=args.print_minimum_count,
+        print_match_string=args.match_string,
+        only_positive=args.only_positive,
+        only_negative=args.only_negative,
+        cache_results=args.cache_pcap_results,
+    )
+
+    # TODO: throw an error when both pcaps and load files are specified
+
+    if args.load_report:
+        # load a previous saved dump
+        pc.load_report(args.load_report)
+    else:
+        # actually compare the pcaps
+        pc.compare()
+
+    # print the results
+    pc.print()
+
+    # maybe save them
+    # TODO: loading and saving both makes more sense, throw error
+    if args.save_report:
+        pc.save_report(args.save_report)
+
+
+if __name__ == "__main__":
+    main()

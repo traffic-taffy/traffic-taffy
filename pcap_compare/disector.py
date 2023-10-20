@@ -1,11 +1,12 @@
 """Loads a PCAP file and counts contents with various levels of storage"""
 
+import os
+import pickle
 from enum import Enum
-from logging import warning
+from logging import warning, info
 from collections import Counter, defaultdict
 from scapy.all import sniff
 from typing import Any
-import pickle
 
 
 class PCAPDisectorType(Enum):
@@ -67,9 +68,9 @@ class PCAPDisector:
             self.data[self.timestamp][key][value] += count
 
     def load(self) -> dict:
-        if self.cache_results:
-            self.pcap_file + ".pkl"
-            cached_contents = self.load_saved(dont_overwrite=True)
+        cached_file = self.pcap_file + ".pkl"
+        if self.cache_results and os.path.exists(cached_file):
+            cached_contents = self.load_saved(cached_file, dont_overwrite=True)
 
             ok_to_load = True
 
@@ -77,15 +78,20 @@ class PCAPDisector:
                 ok_to_load = False
 
             for parameter in self.parameters:
-                if getattr(self, parameter) != cached_contents[parameter]:
+                if (
+                    getattr(self, parameter)
+                    and getattr(self, parameter)
+                    != cached_contents["parameters"][parameter]
+                ):
                     ok_to_load = False
 
             if ok_to_load:
+                info(f"loading cached pcap contents from {cached_file}")
                 self.load_saved_contents(cached_contents)
                 return self.data
 
             warning(
-                f"Failed to load data from a cache for {self.pcap_file} due to differences"
+                f"Failed to load cached data for {self.pcap_file} due to differences"
             )
 
         if self.disector_type == PCAPDisectorType.COUNT_ONLY:
@@ -108,6 +114,9 @@ class PCAPDisector:
         if self.pcap_filter:
             pcap.setfilter(self.pcap_filter)
         pcap.dispatch(self.maximum_count, self.dpkt_callback)
+
+        if self.cache_results:
+            self.save(self.pcap_file + ".pkl")
         return self.data
 
     def add_scapy_item(self, field_value, prefix: str) -> None:
@@ -178,6 +187,8 @@ class PCAPDisector:
             count=self.maximum_count,
             filter=self.pcap_filter,
         )
+        if self.cache_results:
+            self.save(self.pcap_file + ".pkl")
         return self.data
 
     def save(self, where: str) -> None:
@@ -195,6 +206,7 @@ class PCAPDisector:
             versioned_cache["parameters"][parameter] = getattr(self, parameter)
 
         # save it
+        info(f"caching PCAP data to 'f{where}'")
         pickle.dump(versioned_cache, open(where, "wb"))
 
     def load_saved_contents(self, versioned_cache):
