@@ -125,7 +125,8 @@ class PcapGraph:
         end_time = time_keys[-1]
 
         results = {"time": [], "count": [], "index": []}
-        # TODO: this could likely be made much more efficient
+
+        # TODO: this could likely be made much more efficient and needs hole-filling
         for timestamp in range(start_time, end_time + 1, self.bin_size):
             if timestamp not in counters:
                 continue
