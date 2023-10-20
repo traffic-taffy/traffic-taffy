@@ -206,7 +206,7 @@ class PCAPDisector:
             versioned_cache["parameters"][parameter] = getattr(self, parameter)
 
         # save it
-        info(f"caching PCAP data to 'f{where}'")
+        info(f"caching PCAP data to '{where}'")
         pickle.dump(versioned_cache, open(where, "wb"))
 
     def load_saved_contents(self, versioned_cache):
