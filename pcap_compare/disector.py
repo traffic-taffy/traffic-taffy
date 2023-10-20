@@ -26,12 +26,23 @@ class PCAPDisector:
         maximum_count: int = 0,
         disector_type: PCAPDisectorType = PCAPDisectorType.DETAILED,
         pcap_filter: str | None = None,
+        cache_results: bool = False,
     ):
         self.pcap_file = pcap_file
         self.bin_size = bin_size
         self.disector_type = disector_type
         self.pcap_filter = pcap_filter
         self.maximum_count = maximum_count
+        self.cache_results = cache_results
+
+        self.parameters = [
+            "pcap_file",
+            "bin_size",
+            "disector_type",
+            "pcap_filter",
+            "maximum_count",
+        ]
+
         # TODO: convert to a factory
         self.data = {0: defaultdict(Counter)}
 
@@ -56,6 +67,27 @@ class PCAPDisector:
             self.data[self.timestamp][key][value] += count
 
     def load(self) -> dict:
+        if self.cache_results:
+            self.pcap_file + ".pkl"
+            cached_contents = self.load_saved(dont_overwrite=True)
+
+            ok_to_load = True
+
+            if cached_contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
+                ok_to_load = False
+
+            for parameter in self.parameters:
+                if getattr(self, parameter) != cached_contents[parameter]:
+                    ok_to_load = False
+
+            if ok_to_load:
+                self.load_saved_contents(cached_contents)
+                return self.data
+
+            warning(
+                f"Failed to load data from a cache for {self.pcap_file} due to differences"
+            )
+
         if self.disector_type == PCAPDisectorType.COUNT_ONLY:
             return self.load_via_dpkt()
         else:
@@ -152,22 +184,28 @@ class PCAPDisector:
         "Saves a generated disection to a pickle file"
 
         # wrap the report in a version header
-        versioned_report = {
+        versioned_cache = {
             "PCAP_DISECTION_VERSION": self.DISECTION_VERSION,
             "file": self.pcap_file,
-            "parameters": {
-                "bin_size": self.bin_size,
-                "maximum_count": self.maximum_count,
-                "pcap_filter": self.pcap_filter,
-                "disector_type": self.disector_type,
-            },
+            "parameters": {},
             "disection": self.data,
         }
 
-        # save it
-        pickle.dump(versioned_report, open(where, "wb"))
+        for parameter in self.parameters:
+            versioned_cache["parameters"][parameter] = getattr(self, parameter)
 
-    def load_saved(self, where: str) -> None:
+        # save it
+        pickle.dump(versioned_cache, open(where, "wb"))
+
+    def load_saved_contents(self, versioned_cache):
+        # set the local parameters from the cache
+        for parameter in self.parameters:
+            setattr(self, parameter, versioned_cache["parameters"][parameter])
+
+        # load the data
+        self.data = versioned_cache["disection"]
+
+    def load_saved(self, where: str, dont_overwrite: bool = False) -> dict:
         "Loads a previous saved report from a file instead of re-parsing pcaps"
         contents = pickle.load(open(where, "rb"))
 
@@ -180,15 +218,10 @@ class PCAPDisector:
                 + str(self.DISECTION_VERSION)
             )
 
-        # proceed as normal beyond this
-        self.pcap_file = contents["file"]
-        self.bin_size = contents["parameters"]["bin_size"]
-        self.disector_type = contents["parameters"]["disector_type"]
-        self.pcap_filter = contents["parameters"]["pcap_filter"]
-        self.maximum_count = contents["parameters"]["maximum_count"]
+        if not dont_overwrite:
+            self.load_saved_contents(contents)
 
-        # TODO: convert to a factory
-        self.data = contents["disection"]
+        return contents
 
 
 def main():

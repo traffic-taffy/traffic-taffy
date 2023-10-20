@@ -37,6 +37,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        "-c",
+        "--cache-pcap-results",
+        action="store_true",
+        help="Cache and use PCAP results into/from a .pkl file",
+    )
+
+    parser.add_argument(
         "-o",
         "--output-file",
         default=None,
