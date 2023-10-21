@@ -158,7 +158,7 @@ class PcapCompare:
 
                     # construct the output line with styling
                     line = f"  {style}{subkey:<50}{endstyle}"
-                    line += f"{100*delta:>6.3f} {total:>8} "
+                    line += f"{100*delta:>6.2f} {total:>8} "
                     line += f"{ref_count:>8} {comp_count:>8}"
 
                     # print it to the rich console
