@@ -1,10 +1,11 @@
 """Takes a set of pcap files to compare and creates a report"""
 
 import logging
+from logging import info
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
 from rich.console import Console
-from pcap_compare.disector import PCAPDisector
+from pcap_compare.disectmany import PCAPDisectMany
 
 
 class PcapCompare:
@@ -20,6 +21,7 @@ class PcapCompare:
         print_threshold: float | None = None,
         print_minimum_count: int | None = None,
         print_match_string: str | None = None,
+        pkt_filter: str | None = None,
         only_positive: bool = False,
         only_negative: bool = False,
         cache_results: bool = False,
@@ -31,6 +33,7 @@ class PcapCompare:
         self.print_threshold = print_threshold
         self.print_minimum_count = print_minimum_count
         self.print_match_string = print_match_string
+        self.pkt_filter = pkt_filter
         self.only_positive = only_positive
         self.only_negative = only_negative
         self.cache_results = cache_results
@@ -155,7 +158,7 @@ class PcapCompare:
 
                     # construct the output line with styling
                     line = f"  {style}{subkey:<50}{endstyle}"
-                    line += f"{delta:>6.3f} {total:>8} "
+                    line += f"{100*delta:>6.3f} {total:>8} "
                     line += f"{ref_count:>8} {comp_count:>8}"
 
                     # print it to the rich console
@@ -175,26 +178,20 @@ class PcapCompare:
         # TODO: use parallel processes to load multiple at a time
 
         # load the first as a reference pcap
-        pd = PCAPDisector(
-            self.pcaps[0],
+        info("reading pcap files")
+        pdm = PCAPDisectMany(
+            self.pcaps,
             bin_size=None,
             maximum_count=self.maximum_count,
+            pcap_filter=self.pkt_filter,
             cache_results=self.cache_results,
         )
-        reference = pd.load()
-        for pcap in self.pcaps[1:]:
+        results = pdm.load_all()
 
-            # load the next pcap
-            pd = PCAPDisector(
-                pcap,
-                bin_size=None,
-                maximum_count=self.maximum_count,
-                cache_results=self.cache_results,
-            )
-            other = pd.load()
-
+        reference = next(results)
+        for other in results:
             # compare the two
-            reports.append(self.compare_results(reference, other))
+            reports.append(self.compare_results(reference["data"], other["data"]))
 
         self.reports = reports
 
@@ -220,7 +217,7 @@ def parse_args():
         "--print-threshold",
         default=None,
         type=float,
-        help="Don't print results with abs(value) less than threshold",
+        help="Don't print results with abs(percent) less than this threshold",
     )
 
     parser.add_argument(
@@ -290,7 +287,7 @@ def main():
     pc = PcapCompare(
         args.pcap_files,
         maximum_count=args.packet_count,
-        print_threshold=args.print_threshold,
+        print_threshold=float(args.print_threshold) / 100.0,
         print_minimum_count=args.print_minimum_count,
         print_match_string=args.match_string,
         only_positive=args.only_positive,
