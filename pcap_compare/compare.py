@@ -1,11 +1,12 @@
 """Takes a set of pcap files to compare and creates a report"""
 
 import logging
-from logging import info
+from logging import info, error
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
 from rich.console import Console
-from pcap_compare.disectmany import PCAPDisectMany
+from pcap_compare.dissectmany import PCAPDissectMany
+from pcap_compare.dissector import PCAPDissectorType
 
 
 class PcapCompare:
@@ -25,6 +26,7 @@ class PcapCompare:
         only_positive: bool = False,
         only_negative: bool = False,
         cache_results: bool = False,
+        dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
     ) -> None:
 
         self.pcaps = pcaps
@@ -37,6 +39,7 @@ class PcapCompare:
         self.only_positive = only_positive
         self.only_negative = only_negative
         self.cache_results = cache_results
+        self.dissection_level = dissection_level
 
     def compare_results(self, report1: dict, report2: dict) -> dict:
         "compares the results from two reports"
@@ -178,13 +181,14 @@ class PcapCompare:
         # TODO: use parallel processes to load multiple at a time
 
         # load the first as a reference pcap
-        info("reading pcap files")
-        pdm = PCAPDisectMany(
+        info(f"reading pcap files using level={self.dissection_level}")
+        pdm = PCAPDissectMany(
             self.pcaps,
             bin_size=None,
             maximum_count=self.maximum_count,
             pcap_filter=self.pkt_filter,
             cache_results=self.cache_results,
+            dissector_level=self.dissection_level,
         )
         results = pdm.load_all()
 
@@ -202,6 +206,14 @@ def parse_args():
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
         epilog="Exmaple Usage: ",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--dump-level",
+        default=PCAPDissectorType.THROUGH_IP,
+        type=int,
+        help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
     )
 
     parser.add_argument(
@@ -279,6 +291,18 @@ def parse_args():
     args = parser.parse_args()
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
+
+    dissector_type = args.dump_level
+
+    current_dissection_levels = [
+        PCAPDissectorType.COUNT_ONLY.value,
+        PCAPDissectorType.THROUGH_IP.value,
+        PCAPDissectorType.DETAILED.value,
+    ]
+    if dissector_type not in current_dissection_levels:
+        error(f"currently supported dissection levels: {current_dissection_levels}")
+        exit(1)
+
     return args
 
 
@@ -293,6 +317,7 @@ def main():
         only_positive=args.only_positive,
         only_negative=args.only_negative,
         cache_results=args.cache_pcap_results,
+        dissection_level=args.dump_level,
     )
 
     # TODO: throw an error when both pcaps and load files are specified

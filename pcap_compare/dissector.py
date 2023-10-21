@@ -3,35 +3,36 @@
 import os
 import pickle
 from enum import Enum
-from logging import warning, info
+from logging import warning, info, error
 from collections import Counter, defaultdict
 from scapy.all import sniff
 from typing import Any
 
 
-class PCAPDisectorType(Enum):
-    DETAILED = 1
-    COUNT_ONLY = 2
+class PCAPDissectorType(Enum):
+    COUNT_ONLY = 1
+    THROUGH_IP = 2
+    DETAILED = 10
 
 
-class PCAPDisector:
+class PCAPDissector:
     "loads a pcap file and counts the contents in both time and depth"
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
-    DISECTION_VERSION: int = 2
+    DISECTION_VERSION: int = 3
 
     def __init__(
         self,
         pcap_file: str,
         bin_size: int = 0,
         maximum_count: int = 0,
-        disector_type: PCAPDisectorType = PCAPDisectorType.DETAILED,
+        dissector_level: PCAPDissectorType = PCAPDissectorType.DETAILED,
         pcap_filter: str | None = None,
         cache_results: bool = False,
     ):
         self.pcap_file = pcap_file
         self.bin_size = bin_size
-        self.disector_type = disector_type
+        self.dissector_level = dissector_level
         self.pcap_filter = pcap_filter
         self.maximum_count = maximum_count
         self.cache_results = cache_results
@@ -39,7 +40,7 @@ class PCAPDisector:
         self.parameters = [
             "pcap_file",
             "bin_size",
-            "disector_type",
+            "dissector_level",
             "pcap_filter",
             "maximum_count",
         ]
@@ -47,7 +48,7 @@ class PCAPDisector:
         # TODO: convert to a factory
         self.data = {0: defaultdict(Counter)}
 
-        if disector_type == PCAPDisectorType.COUNT_ONLY and bin_size == 0:
+        if dissector_level == PCAPDissectorType.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
 
     @property
@@ -94,10 +95,13 @@ class PCAPDisector:
                 f"Failed to load cached data for {self.pcap_file} due to differences"
             )
 
-        if self.disector_type == PCAPDisectorType.COUNT_ONLY:
-            return self.load_via_dpkt()
-        else:
+        if (
+            self.dissector_level == PCAPDissectorType.DETAILED
+            or self.dissector_level == PCAPDissectorType.DETAILED.value
+        ):
             return self.load_via_scapy()
+        else:
+            return self.load_via_dpkt()
 
     def dpkt_callback(self, timestamp: float, packet: bytes):
         # if binning is requested, save it in a binned time slot
@@ -192,14 +196,14 @@ class PCAPDisector:
         return self.data
 
     def save(self, where: str) -> None:
-        "Saves a generated disection to a pickle file"
+        "Saves a generated dissection to a pickle file"
 
         # wrap the report in a version header
         versioned_cache = {
             "PCAP_DISECTION_VERSION": self.DISECTION_VERSION,
             "file": self.pcap_file,
             "parameters": {},
-            "disection": self.data,
+            "dissection": self.data,
         }
 
         for parameter in self.parameters:
@@ -215,7 +219,7 @@ class PCAPDisector:
             setattr(self, parameter, versioned_cache["parameters"][parameter])
 
         # load the data
-        self.data = versioned_cache["disection"]
+        self.data = versioned_cache["dissection"]
 
     def load_saved(self, where: str, dont_overwrite: bool = False) -> dict:
         "Loads a previous saved report from a file instead of re-parsing pcaps"
@@ -224,7 +228,7 @@ class PCAPDisector:
         # check that the version header matches something we understand
         if contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
             raise ValueError(
-                "improper saved disection version: report version = "
+                "improper saved dissection version: report version = "
                 + str(contents["PCAP_COMPARE_VERSION"])
                 + ", our version: "
                 + str(self.DISECTION_VERSION)
@@ -253,10 +257,11 @@ def main():
         )
 
         parser.add_argument(
-            "-f",
-            "--full-dump",
+            "-d",
+            "--dump-level",
+            default=PCAPDissectorType.THROUGH_IP,
             action="store_true",
-            help="Full deep-inspect the packet",
+            help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
         )
 
         parser.add_argument(
@@ -274,13 +279,21 @@ def main():
         return args
 
     args = parse_args()
-    disect_type = PCAPDisectorType.COUNT_ONLY
-    if args.full_dump:
-        disect_type = PCAPDisectorType.DETAILED
-    pd = PCAPDisector(
+
+    dissector_level = args.dump_level
+
+    current_dissection_levels = [
+        PCAPDissectorType.COUNT_ONLY,
+        PCAPDissectorType.THROUGH_IP,
+        PCAPDissectorType.DETAILED,
+    ]
+    if dissector_level not in current_dissection_levels:
+        error("currently supported dissection levels: {current_dissection_levels}")
+
+    pd = PCAPDissector(
         args.input_file,
         bin_size=args.bin_size,
-        disector_type=disect_type,
+        dissector_level=dissector_level,
         maximum_count=1000,
     )
     pd.load()

@@ -1,18 +1,18 @@
 import os
 
 
-def test_disector_load():
-    from pcap_compare.disector import PCAPDisector
+def test_dissector_load():
+    from pcap_compare.dissector import PCAPDissector
 
-    pd = PCAPDisector("bogus")
-    assert isinstance(pd, PCAPDisector)
+    pd = PCAPDissector("bogus")
+    assert isinstance(pd, PCAPDissector)
     assert pd.data == {0: {}}
 
 
-def test_disector_simple_callback():
-    from pcap_compare.disector import PCAPDisector, PCAPDisectorType
+def test_dissector_simple_callback():
+    from pcap_compare.dissector import PCAPDissector, PCAPDissectorType
 
-    pd = PCAPDisector("bogus", disector_type=PCAPDisectorType.DETAILED, bin_size=2)
+    pd = PCAPDissector("bogus", dissector_type=PCAPDissectorType.DETAILED, bin_size=2)
 
     pd.dpkt_callback(10, b"")
     assert pd.data == {
@@ -34,14 +34,14 @@ def test_disector_simple_callback():
         12: {pd.TOTAL_COUNT: {pd.TOTAL_SUBKEY: 1}},
     }
 
-    save_file = "/tmp/disector-test.pkl"
+    save_file = "/tmp/dissector-test.pkl"
     if os.path.exists(save_file):
         os.unlink(save_file)
 
     pd.save(save_file)
 
     # create a new one to make sure it's blank
-    pd = PCAPDisector("bogusx", disector_type=PCAPDisectorType.DETAILED, bin_size=20)
+    pd = PCAPDissector("bogusx", dissector_type=PCAPDissectorType.DETAILED, bin_size=20)
 
     pd.load_saved(save_file)
 
@@ -52,5 +52,5 @@ def test_disector_simple_callback():
     }
 
 
-def test_disector_scapy_callback():
+def test_dissector_scapy_callback():
     assert True

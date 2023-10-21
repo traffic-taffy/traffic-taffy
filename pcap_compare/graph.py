@@ -5,8 +5,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas
 from pandas import DataFrame, to_datetime
-from pcap_compare.disector import PCAPDisectorType
-from pcap_compare.disectmany import PCAPDisectMany
+from pcap_compare.dissector import PCAPDissectorType
+from pcap_compare.dissectmany import PCAPDissectMany
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from logging import debug, info
@@ -35,6 +35,14 @@ def parse_args():
 
     parser.add_argument(
         "-b", "--bin-size", default=1, type=int, help="Time bin size in seconds"
+    )
+
+    parser.add_argument(
+        "-d",
+        "--dump-level",
+        default=PCAPDissectorType.THROUGH_IP,
+        type=int,
+        help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
     )
 
     parser.add_argument(
@@ -94,6 +102,7 @@ class PcapGraph:
         match_key: str = None,
         match_value: str = None,
         cache_pcap_results: bool = False,
+        dissector_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -104,21 +113,18 @@ class PcapGraph:
         self.match_key = match_key
         self.match_value = match_value
         self.cache_pcap_results = cache_pcap_results
+        self.dissector_level = dissector_level
 
     def load_pcaps(self):
         "loads the pcap and counts things into bins"
         self.data = {}
 
-        disector_type: PCAPDisectorType = PCAPDisectorType.COUNT_ONLY
-        if self.match_key or self.match_value:
-            disector_type = PCAPDisectorType.DETAILED
-
         info("reading pcap files")
-        pdm = PCAPDisectMany(
+        pdm = PCAPDissectMany(
             self.pcap_files,
             bin_size=self.bin_size,
             maximum_count=self.maximum_count,
-            disector_type=disector_type,
+            dissector_level=self.dissector_level,
             pcap_filter=self.pkt_filter,
             cache_results=self.cache_pcap_results,
         )
@@ -214,6 +220,7 @@ def main():
         match_key=args.match_key,
         match_value=args.match_value,
         cache_pcap_results=args.cache_pcap_results,
+        dissector_level=args.dump_level,
     )
     pc.graph_it()
 
