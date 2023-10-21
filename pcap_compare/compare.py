@@ -105,7 +105,7 @@ class PcapCompare:
                 continue
 
             for subkey, data in sorted(
-                report[key].items(), key=lambda x: x[1]["delta"]
+                report[key].items(), key=lambda x: x[1]["delta"], reverse=True
             ):
                 delta: float = data["delta"]
                 total: int = data["total"]
