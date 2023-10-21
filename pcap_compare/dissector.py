@@ -7,6 +7,7 @@ from logging import warning, info, error
 from collections import Counter, defaultdict
 from scapy.all import sniff
 from typing import Any
+import dpkt
 
 
 class PCAPDissectorType(Enum):
@@ -110,9 +111,14 @@ class PCAPDissector:
             self.timestamp = self.timestamp - self.timestamp % self.bin_size
         self.incr(self.TOTAL_COUNT, self.TOTAL_SUBKEY)
 
-    def load_via_dpkt(self) -> dict:
-        import dpkt
+        if self.dissector_level == PCAPDissectorType.THROUGH_IP.value:
+            eth = dpkt.ethernet.Ethernet(packet)
+            # these names are designed to match scapy names
+            self.incr("Ethernet.dst", eth.dst)
+            self.incr("Ethernet.src", eth.src)
+            self.incr("Ethernet.type", eth.type)
 
+    def load_via_dpkt(self) -> dict:
         self.data = {0: defaultdict(Counter)}
         pcap = dpkt.pcap.Reader(open(self.pcap_file, "rb"))
         if self.pcap_filter:
@@ -259,8 +265,8 @@ def main():
         parser.add_argument(
             "-d",
             "--dump-level",
-            default=PCAPDissectorType.THROUGH_IP,
-            action="store_true",
+            default=PCAPDissectorType.THROUGH_IP.value,
+            type=int,
             help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
         )
 
@@ -283,12 +289,13 @@ def main():
     dissector_level = args.dump_level
 
     current_dissection_levels = [
-        PCAPDissectorType.COUNT_ONLY,
-        PCAPDissectorType.THROUGH_IP,
-        PCAPDissectorType.DETAILED,
+        PCAPDissectorType.COUNT_ONLY.value,
+        PCAPDissectorType.THROUGH_IP.value,
+        PCAPDissectorType.DETAILED.value,
     ]
     if dissector_level not in current_dissection_levels:
         error("currently supported dissection levels: {current_dissection_levels}")
+        exit(1)
 
     pd = PCAPDissector(
         args.input_file,
