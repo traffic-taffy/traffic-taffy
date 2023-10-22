@@ -153,7 +153,17 @@ class PCAPDissector:
 
                 elif isinstance(ip.data, dpkt.tcp.TCP):
                     # TODO
-                    pass
+                    tcp = ip.data
+                    self.incr(f"Ethernet.{IPVER}.TCP.sport", tcp.sport)
+                    self.incr(f"Ethernet.{IPVER}.TCP.dport", tcp.dport)
+                    self.incr(f"Ethernet.{IPVER}.TCP.seq", tcp.seq)
+                    self.incr(f"Ethernet.{IPVER}.TCP.flags", tcp.flags)
+                    # self.incr(f"Ethernet.{IPVER}.TCP.reserved", tcp.reserved)
+                    self.incr(f"Ethernet.{IPVER}.TCP.window", tcp.win)
+                    self.incr(f"Ethernet.{IPVER}.TCP.chksum", tcp.sum)
+                    self.incr(f"Ethernet.{IPVER}.TCP.options", tcp.opts)
+
+                    # TODO: handle DNS and others for level 3
 
     def load_via_dpkt(self) -> dict:
         self.data = {0: defaultdict(Counter)}
