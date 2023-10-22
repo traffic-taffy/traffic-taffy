@@ -8,6 +8,7 @@ from collections import Counter, defaultdict
 from scapy.all import sniff
 from typing import Any
 import dpkt
+from rich import print
 
 
 class PCAPDissectorType(Enum):
@@ -117,6 +118,42 @@ class PCAPDissector:
             self.incr("Ethernet.dst", eth.dst)
             self.incr("Ethernet.src", eth.src)
             self.incr("Ethernet.type", eth.type)
+
+            if isinstance(eth.data, dpkt.ip.IP):
+                ip = eth.data
+
+                IPVER = "IP"
+                if ip.v == 6:
+                    IPVER = "IPv6"
+
+                # TODO: make sure all these match scapy
+                self.incr(f"Ethernet.{IPVER}.dst", ip.dst)
+                self.incr(f"Ethernet.{IPVER}.src", ip.src)
+                self.incr(f"Ethernet.{IPVER}.df", ip.df)
+                self.incr(f"Ethernet.{IPVER}.offset", ip.offset)
+                self.incr(f"Ethernet.{IPVER}.tos", ip.tos)
+                self.incr(f"Ethernet.{IPVER}.len", ip.len)
+                self.incr(f"Ethernet.{IPVER}.id", ip.id)
+                self.incr(f"Ethernet.{IPVER}.hl", ip.hl)
+                self.incr(f"Ethernet.{IPVER}.rf", ip.rf)
+                self.incr(f"Ethernet.{IPVER}.p", ip.p)
+                self.incr(f"Ethernet.{IPVER}.chksum", ip.sum)
+                self.incr(f"Ethernet.{IPVER}.tos", ip.tos)
+                self.incr(f"Ethernet.{IPVER}.version", ip.v)
+                self.incr(f"Ethernet.{IPVER}.ttl", ip.ttl)
+
+                if isinstance(ip.data, dpkt.udp.UDP):
+                    udp = ip.data
+                    self.incr(f"Ethernet.{IPVER}.UDP.sport", udp.sport)
+                    self.incr(f"Ethernet.{IPVER}.UDP.dport", udp.dport)
+                    self.incr(f"Ethernet.{IPVER}.UDP.len", udp.ulen)
+                    self.incr(f"Ethernet.{IPVER}.UDP.chksum", udp.sum)
+
+                    # TODO: handle DNS and others for level 3
+
+                elif isinstance(ip.data, dpkt.tcp.TCP):
+                    # TODO
+                    pass
 
     def load_via_dpkt(self) -> dict:
         self.data = {0: defaultdict(Counter)}
@@ -245,6 +282,31 @@ class PCAPDissector:
 
         return contents
 
+    def print(self):
+        for key in self.data[0]:
+            for subkey in self.data[0][key]:
+
+                # try to make it printable
+                value = self.data[0][key][subkey]
+                try:
+                    value = str(value)
+                except Exception:
+                    if isinstance(value, bytes):
+                        value = "0x" + value.hex()
+                    else:
+                        value = ["unprintable"]
+
+                # same for the subkey
+                try:
+                    subkey = str(subkey)
+                except Exception:
+                    if isinstance(subkey, bytes):
+                        subkey = "0x" + subkey.hex()
+                    else:
+                        subkey = ["unprintable"]
+
+                print(f"{key:<30} {subkey:<30} {value}")
+
 
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -304,9 +366,7 @@ def main():
         maximum_count=1000,
     )
     pd.load()
-    import rich
-
-    rich.print(pd.data)
+    pd.print()
 
 
 if __name__ == "__main__":
