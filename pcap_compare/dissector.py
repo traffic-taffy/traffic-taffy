@@ -375,23 +375,13 @@ def main():
         )
 
         parser.add_argument(
-            "-b", "--bin-size", default=1, type=int, help="bin size to use"
-        )
-
-        parser.add_argument(
-            "-d",
-            "--dump-level",
-            default=PCAPDissectorType.THROUGH_IP.value,
-            type=int,
-            help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
-        )
-
-        parser.add_argument(
             "--log-level",
             "--ll",
             default="info",
             help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
         )
+
+        dissector_add_parseargs(parser)
 
         parser.add_argument("input_file", type=str, help="input pcap file")
 
