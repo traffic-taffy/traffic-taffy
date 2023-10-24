@@ -318,6 +318,47 @@ class PCAPDissector:
                 print(f"{key:<30} {subkey:<30} {value}")
 
 
+def dissector_add_parseargs(parser):
+    parser.add_argument(
+        "-d",
+        "--dump-level",
+        default=PCAPDissectorType.THROUGH_IP,
+        type=int,
+        help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
+    )
+
+    parser.add_argument(
+        "-n",
+        "--packet-count",
+        default=-1,
+        type=int,
+        help="Maximum number of packets to analyze",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--save-report",
+        default=None,
+        type=str,
+        help="Where to save a report file for quicker future loading",
+    )
+
+    parser.add_argument(
+        "-l",
+        "--load-report",
+        default=None,
+        type=str,
+        help="Load a report from a pickle file rather than use pcaps",
+    )
+
+    parser.add_argument(
+        "-C",
+        "--cache-pcap-results",
+        action="store_true",
+        help="Cache and use PCAP results into/from a .pkl file",
+    )
+
+
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     import logging
