@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas
 from pandas import DataFrame, to_datetime
-from pcap_compare.dissector import PCAPDissectorType
+from pcap_compare.dissector import PCAPDissectorType, dissector_add_parseargs
 from pcap_compare.dissectmany import PCAPDissectMany
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -27,29 +27,6 @@ def parse_args():
         default=None,
         type=str,
         help="Graph these particular elements; the default is packet counts",
-    )
-
-    parser.add_argument(
-        "-n", "--packet-count", default=0, type=int, help="How many packets to read"
-    )
-
-    parser.add_argument(
-        "-b", "--bin-size", default=1, type=int, help="Time bin size in seconds"
-    )
-
-    parser.add_argument(
-        "-d",
-        "--dump-level",
-        default=PCAPDissectorType.THROUGH_IP,
-        type=int,
-        help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
-    )
-
-    parser.add_argument(
-        "-C",
-        "--cache-pcap-results",
-        action="store_true",
-        help="Cache and use PCAP results into/from a .pkl file",
     )
 
     parser.add_argument(
@@ -82,6 +59,8 @@ def parse_args():
         default="info",
         help="Define verbosity level (debug, info, warning, error, fotal, critical).",
     )
+
+    dissector_add_parseargs(parser)
 
     parser.add_argument("input_file", type=str, help="PCAP file to graph", nargs="+")
 

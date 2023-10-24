@@ -247,8 +247,7 @@ def parse_args():
         help="Define the logging verbosity level (debug, info, warning, error, ...).",
     )
 
-    parse_group = parser.add_argument_group("Parsing Options")
-    dissector_add_parseargs(parse_group)
+    dissector_add_parseargs(parser)
 
     parser.add_argument("pcap_files", type=str, nargs="*", help="PCAP files to analyze")
 

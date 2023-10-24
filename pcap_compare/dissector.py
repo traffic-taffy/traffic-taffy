@@ -318,7 +318,10 @@ class PCAPDissector:
                 print(f"{key:<30} {subkey:<30} {value}")
 
 
-def dissector_add_parseargs(parser):
+def dissector_add_parseargs(parser, add_subgroup: bool = True):
+    if add_subgroup:
+        parser = parser.add_argument_group("Parsing Options")
+
     parser.add_argument(
         "-d",
         "--dump-level",
