@@ -5,7 +5,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas
 from pandas import DataFrame, to_datetime
-from pcap_compare.dissector import PCAPDissectorType, dissector_add_parseargs
+from pcap_compare.dissector import (
+    PCAPDissectorType,
+    dissector_add_parseargs,
+    check_dissector_level,
+)
 from pcap_compare.dissectmany import PCAPDissectMany
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -190,6 +194,8 @@ class PcapGraph:
 
 def main():
     args = parse_args()
+
+    check_dissector_level(args.dissection_level)
 
     pc = PcapGraph(
         args.input_file,

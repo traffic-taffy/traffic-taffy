@@ -383,6 +383,18 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
     return parser
 
 
+def check_dissector_level(level: int):
+    current_dissection_levels = [
+        PCAPDissectorType.COUNT_ONLY.value,
+        PCAPDissectorType.THROUGH_IP.value,
+        PCAPDissectorType.DETAILED.value,
+    ]
+    if level not in current_dissection_levels:
+        error(f"currently supported dissection levels: {current_dissection_levels}")
+        exit(1)
+    return True
+
+
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     import logging
@@ -413,21 +425,12 @@ def main():
 
     args = parse_args()
 
-    dissector_level = args.dissection_level
-
-    current_dissection_levels = [
-        PCAPDissectorType.COUNT_ONLY.value,
-        PCAPDissectorType.THROUGH_IP.value,
-        PCAPDissectorType.DETAILED.value,
-    ]
-    if dissector_level not in current_dissection_levels:
-        error("currently supported dissection levels: {current_dissection_levels}")
-        exit(1)
+    check_dissector_level(args.dissection_level)
 
     pd = PCAPDissector(
         args.input_file,
         bin_size=args.bin_size,
-        dissector_level=dissector_level,
+        dissector_level=args.dissection_level,
         maximum_count=1000,
     )
     pd.load()

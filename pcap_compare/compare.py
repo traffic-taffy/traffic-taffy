@@ -1,7 +1,7 @@
 """Takes a set of pcap files to compare and creates a report"""
 
 import logging
-from logging import info, error
+from logging import info
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
 from rich.console import Console
@@ -11,6 +11,7 @@ from pcap_compare.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
     PCAPDissector,
+    check_dissector_level,
 )
 
 
@@ -254,16 +255,7 @@ def parse_args():
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
 
-    dissector_type = args.dissection_level
-
-    current_dissection_levels = [
-        PCAPDissectorType.COUNT_ONLY.value,
-        PCAPDissectorType.THROUGH_IP.value,
-        PCAPDissectorType.DETAILED.value,
-    ]
-    if dissector_type not in current_dissection_levels:
-        error(f"currently supported dissection levels: {current_dissection_levels}")
-        exit(1)
+    check_dissector_level(args.dissection_level)
 
     return args
 
