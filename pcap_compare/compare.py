@@ -108,8 +108,6 @@ class PcapCompare:
         "Returns true if we should include it"
         delta: float = data["delta"]
         total: int = data["total"]
-        data["comp_count"]
-        data["ref_count"]
 
         if self.only_positive and delta <= 0:
             return False
