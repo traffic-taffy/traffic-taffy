@@ -103,6 +103,38 @@ class PcapCompare:
 
         return report
 
+    def filter_check(self, data: dict) -> bool:
+        "Returns true if we should include it"
+        delta: float = data["delta"]
+        total: int = data["total"]
+        data["comp_count"]
+        data["ref_count"]
+
+        if self.only_positive and delta <= 0:
+            return False
+
+        if self.only_negative and delta >= 0:
+            return False
+
+        if not self.print_threshold and not self.print_minimum_count:
+            # always print
+            return True
+
+        if self.print_threshold and not self.print_minimum_count:
+            # check print_threshold as a fraction
+            if abs(delta) > self.print_threshold:
+                return True
+        elif not self.print_threshold and self.print_minimum_count:
+            # just check print_minimum_count
+            if total > self.print_minimum_count:
+                return True
+        else:
+            # require both
+            if total > self.print_minimum_count and abs(delta) > self.print_threshold:
+                return True
+
+        return False
+
     def print_report(self, report: dict) -> None:
         "prints a report to the console"
         console = Console()
@@ -115,63 +147,36 @@ class PcapCompare:
             for subkey, data in sorted(
                 report[key].items(), key=lambda x: x[1]["delta"], reverse=True
             ):
+                if not self.filter_check(data):
+                    continue
+
+                # print the header
+                if not reported:
+                    print(f"====== {key}")
+                    reported = True
+
                 delta: float = data["delta"]
-                total: int = data["total"]
-                comp_count: int = data["comp_count"]
-                ref_count: int = data["ref_count"]
-                print_it: bool = False
 
-                if self.only_positive and delta <= 0:
-                    continue
+                # apply some fancy styling
+                style = ""
+                if delta < -0.5:
+                    style = "[bold red]"
+                elif delta < 0.0:
+                    style = "[red]"
+                elif delta > 0.5:
+                    style = "[bold green]"
+                elif delta > 0.0:
+                    style = "[green]"
+                endstyle = style.replace("[", "[/")
 
-                if self.only_negative and delta >= 0:
-                    continue
+                # construct the output line with styling
+                subkey = PCAPDissector.make_printable(subkey)
+                line = f"  {style}{subkey:<50}{endstyle}"
+                line += f"{100*delta:>6.2f} {data['total']:>8} "
+                line += f"{data['ref_count']:>8} {data['comp_count']:>8}"
 
-                if not self.print_threshold and not self.print_minimum_count:
-                    # always print
-                    print_it = True
-                elif self.print_threshold and not self.print_minimum_count:
-                    # check print_threshold as a fraction
-                    if abs(delta) > self.print_threshold:
-                        print_it = True
-                elif not self.print_threshold and self.print_minimum_count:
-                    # just check print_minimum_count
-                    if total > self.print_minimum_count:
-                        print_it = True
-                else:
-                    # require both
-                    if (
-                        total > self.print_minimum_count
-                        and abs(delta) > self.print_threshold
-                    ):
-                        print_it = True
-
-                if print_it:
-                    # print the header
-                    if not reported:
-                        print(f"====== {key}")
-                        reported = True
-
-                    # apply some fancy styling
-                    style = ""
-                    if delta < -0.5:
-                        style = "[bold red]"
-                    elif delta < 0.0:
-                        style = "[red]"
-                    elif delta > 0.5:
-                        style = "[bold green]"
-                    elif delta > 0.0:
-                        style = "[green]"
-                    endstyle = style.replace("[", "[/")
-
-                    # construct the output line with styling
-                    subkey = PCAPDissector.make_printable(subkey)
-                    line = f"  {style}{subkey:<50}{endstyle}"
-                    line += f"{100*delta:>6.2f} {total:>8} "
-                    line += f"{ref_count:>8} {comp_count:>8}"
-
-                    # print it to the rich console
-                    console.print(line)
+                # print it to the rich console
+                console.print(line)
 
     def print(self) -> None:
         "outputs the results"
