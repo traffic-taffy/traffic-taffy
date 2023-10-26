@@ -6,7 +6,12 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
 from rich.console import Console
 from pcap_compare.dissectmany import PCAPDissectMany
-from pcap_compare.dissector import PCAPDissectorType, dissector_add_parseargs
+from pcap_compare.dissector import (
+    PCAPDissectorType,
+    dissector_add_parseargs,
+    limitor_add_parseargs,
+    PCAPDissector,
+)
 
 
 class PcapCompare:
@@ -19,7 +24,7 @@ class PcapCompare:
         pcaps: List[str],
         maximum_count: int | None = None,
         deep: bool = True,
-        print_threshold: float | None = None,
+        print_threshold: float = 0.0,
         print_minimum_count: int | None = None,
         print_match_string: str | None = None,
         pkt_filter: str | None = None,
@@ -160,6 +165,7 @@ class PcapCompare:
                     endstyle = style.replace("[", "[/")
 
                     # construct the output line with styling
+                    subkey = PCAPDissector.make_printable(subkey)
                     line = f"  {style}{subkey:<50}{endstyle}"
                     line += f"{100*delta:>6.2f} {total:>8} "
                     line += f"{ref_count:>8} {comp_count:>8}"
@@ -208,46 +214,34 @@ def parse_args():
         epilog="Exmaple Usage: ",
     )
 
-    parser.add_argument(
+    limiting_parser = limitor_add_parseargs(parser)
+
+    limiting_parser.add_argument(
         "-t",
         "--print-threshold",
-        default=None,
+        default=0.0,
         type=float,
         help="Don't print results with abs(percent) less than this threshold",
     )
 
-    parser.add_argument(
-        "-m",
-        "--match-string",
-        default=None,
-        type=str,
-        help="Only report on data with this substring in the header",
-    )
-
-    parser.add_argument(
-        "-c",
-        "--print-minimum-count",
-        default=None,
-        type=float,
-        help="Don't print results without this high of a count",
-    )
-
-    parser.add_argument(
+    limiting_parser.add_argument(
         "-P", "--only-positive", action="store_true", help="Only show positive entries"
     )
 
-    parser.add_argument(
+    limiting_parser.add_argument(
         "-N", "--only-negative", action="store_true", help="Only show negative entries"
     )
 
-    parser.add_argument(
+    dissector_add_parseargs(parser)
+
+    debugging_group = parser.add_argument_group("Debugging options")
+
+    debugging_group.add_argument(
         "--log-level",
         "--ll",
         default="info",
         help="Define the logging verbosity level (debug, info, warning, error, ...).",
     )
-
-    dissector_add_parseargs(parser)
 
     parser.add_argument("pcap_files", type=str, nargs="*", help="PCAP files to analyze")
 
@@ -255,7 +249,7 @@ def parse_args():
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
 
-    dissector_type = args.dump_level
+    dissector_type = args.dissection_level
 
     current_dissection_levels = [
         PCAPDissectorType.COUNT_ONLY.value,
@@ -275,12 +269,12 @@ def main():
         args.pcap_files,
         maximum_count=args.packet_count,
         print_threshold=float(args.print_threshold) / 100.0,
-        print_minimum_count=args.print_minimum_count,
+        print_minimum_count=args.minimum_count,
         print_match_string=args.match_string,
         only_positive=args.only_positive,
         only_negative=args.only_negative,
         cache_results=args.cache_pcap_results,
-        dissection_level=args.dump_level,
+        dissection_level=args.dissection_level,
     )
 
     # TODO: throw an error when both pcaps and load files are specified

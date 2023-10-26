@@ -199,7 +199,7 @@ def main():
         match_key=args.match_key,
         match_value=args.match_value,
         cache_pcap_results=args.cache_pcap_results,
-        dissector_level=args.dump_level,
+        dissector_level=args.dissection_level,
     )
     pc.graph_it()
 

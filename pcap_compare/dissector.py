@@ -292,28 +292,24 @@ class PCAPDissector:
 
         return contents
 
-    def print(self):
+    @staticmethod
+    def make_printable(value: Any) -> str:
+        try:
+            value = str(value)
+        except Exception:
+            if isinstance(value, bytes):
+                value = "0x" + value.hex()
+            else:
+                value = ["unprintable"]
+        return value
+
+    def print(self) -> None:
         for key in self.data[0]:
             for subkey in self.data[0][key]:
 
-                # try to make it printable
-                value = self.data[0][key][subkey]
-                try:
-                    value = str(value)
-                except Exception:
-                    if isinstance(value, bytes):
-                        value = "0x" + value.hex()
-                    else:
-                        value = ["unprintable"]
-
-                # same for the subkey
-                try:
-                    subkey = str(subkey)
-                except Exception:
-                    if isinstance(subkey, bytes):
-                        subkey = "0x" + subkey.hex()
-                    else:
-                        subkey = ["unprintable"]
+                # try to make things printable
+                value = self.make_printable(self.data[0][key][subkey])
+                subkey = self.make_printable(subkey)
 
                 print(f"{key:<30} {subkey:<30} {value}")
 
@@ -324,8 +320,8 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
 
     parser.add_argument(
         "-d",
-        "--dump-level",
-        default=PCAPDissectorType.THROUGH_IP,
+        "--dissection-level",
+        default=PCAPDissectorType.THROUGH_IP.value,
         type=int,
         help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
     )
@@ -361,6 +357,31 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         help="Cache and use PCAP results into/from a .pkl file",
     )
 
+    return parser
+
+
+def limitor_add_parseargs(parser, add_subgroup: bool = True):
+    if add_subgroup:
+        parser = parser.add_argument_group("Limiting options")
+
+    parser.add_argument(
+        "-m",
+        "--match-string",
+        default=None,
+        type=str,
+        help="Only report on data with this substring in the header",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--minimum-count",
+        default=None,
+        type=float,
+        help="Don't include results without this high of a record count",
+    )
+
+    return parser
+
 
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -392,7 +413,7 @@ def main():
 
     args = parse_args()
 
-    dissector_level = args.dump_level
+    dissector_level = args.dissection_level
 
     current_dissection_levels = [
         PCAPDissectorType.COUNT_ONLY.value,
