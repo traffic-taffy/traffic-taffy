@@ -65,6 +65,7 @@ class PCAPDissector:
         self,
         timestamps: List[int] | None = None,
         match_string: str | None = None,
+        match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
     ):
@@ -76,18 +77,21 @@ class PCAPDissector:
                 if match_string and match_string not in key:
                     continue
 
-                for subkey, value in sorted(
+                for subkey, count in sorted(
                     data[timestamp][key].items(), key=lambda x: x[1], reverse=True
                 ):
 
-                    if minimum_count and abs(value) < minimum_count:
+                    if minimum_count and abs(count) < minimum_count:
                         continue
 
                     if make_printable:
                         subkey = self.make_printable(subkey)
-                        value = self.make_printable(value)
+                        count = self.make_printable(count)
 
-                    yield (timestamp, key, subkey, value)
+                    if match_value and match_value not in subkey:
+                        continue
+
+                    yield (timestamp, key, subkey, count)
 
     def incr(self, key: str, value: Any, count: int = 1):
         # always save a total count at the zero bin
@@ -335,11 +339,13 @@ class PCAPDissector:
         self,
         timestamps: List[int] | None = [0],
         match_string: str | None = None,
+        match_value: str | None = None,
         minimum_count: int | None = None,
     ) -> None:
         for (timestamp, key, subkey, value) in self.find_data(
             timestamps=timestamps,
             match_string=match_string,
+            match_value=match_value,
             minimum_count=minimum_count,
             make_printable=True,
         ):
@@ -402,6 +408,14 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
         default=None,
         type=str,
         help="Only report on data with this substring in the header",
+    )
+
+    parser.add_argument(
+        "-M",
+        "--match-value",
+        default=None,
+        type=str,
+        help="Only report on data with this substring in the packet value field",
     )
 
     parser.add_argument(
@@ -470,6 +484,7 @@ def main():
     pd.print(
         timestamps=[0],
         match_string=args.match_string,
+        match_value=args.match_value,
         minimum_count=args.minimum_count,
     )
 
