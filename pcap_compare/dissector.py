@@ -6,7 +6,7 @@ from enum import Enum
 from logging import warning, info, error
 from collections import Counter, defaultdict
 from scapy.all import sniff
-from typing import Any
+from typing import Any, List
 import dpkt
 from rich import print
 
@@ -55,11 +55,36 @@ class PCAPDissector:
 
     @property
     def data(self):
-        return self.__data
+        return self._data
 
     @data.setter
     def data(self, value):
-        self.__data = value
+        self._data = value
+
+    def find_data(
+        self,
+        timestamps: List[int] | None = None,
+        match_string: str | None = None,
+        minimum_count: int | None = None,
+        make_printable: bool = False,
+    ):
+        data = self._data
+        if not timestamps:
+            timestamps = data.keys()
+        for timestamp in timestamps:
+            for key in sorted(data[timestamp]):
+                if match_string and match_string not in key:
+                    continue
+
+                for subkey, value in sorted(
+                    data[timestamp][key].items(), key=lambda x: x[1], reverse=True
+                ):
+
+                    if make_printable:
+                        subkey = self.make_printable(subkey)
+                        value = self.make_printable(value)
+
+                    yield (timestamp, key, subkey, value)
 
     def incr(self, key: str, value: Any, count: int = 1):
         # always save a total count at the zero bin
@@ -303,15 +328,19 @@ class PCAPDissector:
                 value = ["unprintable"]
         return value
 
-    def print(self) -> None:
-        for key in self.data[0]:
-            for subkey in self.data[0][key]:
-
-                # try to make things printable
-                value = self.make_printable(self.data[0][key][subkey])
-                subkey = self.make_printable(subkey)
-
-                print(f"{key:<30} {subkey:<30} {value}")
+    def print(
+        self,
+        timestamps: List[int] | None = [0],
+        match_string: str | None = None,
+        minimum_count: int | None = None,
+    ) -> None:
+        for (timestamp, key, subkey, value) in self.find_data(
+            timestamps=timestamps,
+            match_string=match_string,
+            minimum_count=minimum_count,
+            make_printable=True,
+        ):
+            print(f"{key:<30} {subkey:<30} {value}")
 
 
 def dissector_add_parseargs(parser, add_subgroup: bool = True):
@@ -415,6 +444,7 @@ def main():
         )
 
         dissector_add_parseargs(parser)
+        limitor_add_parseargs(parser)
 
         parser.add_argument("input_file", type=str, help="input pcap file")
 
@@ -429,12 +459,16 @@ def main():
 
     pd = PCAPDissector(
         args.input_file,
-        bin_size=args.bin_size,
+        bin_size=0,
         dissector_level=args.dissection_level,
         maximum_count=1000,
     )
     pd.load()
-    pd.print()
+    pd.print(
+        timestamps=[0],
+        match_string=args.match_string,
+        minimum_count=args.minimum_count,
+    )
 
 
 if __name__ == "__main__":
