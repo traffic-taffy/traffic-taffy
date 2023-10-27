@@ -12,8 +12,5 @@ def test_dissector_results_storage():
     A["c"]["d"] += 1
     A["c"]["d"] += 1
 
-    import pdb
-
-    pdb.set_trace()
     assert A["a"]["b"] == 4
     assert A["c"]["d"] == 2
