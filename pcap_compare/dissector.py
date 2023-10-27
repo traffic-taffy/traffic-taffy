@@ -61,15 +61,15 @@ class PCAPDissector:
     def data(self, value):
         self._data = value
 
+    @staticmethod
     def find_data(
-        self,
+        data,
         timestamps: List[int] | None = None,
         match_string: str | None = None,
         match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
     ):
-        data = self._data
         if not timestamps:
             timestamps = data.keys()
         for timestamp in timestamps:
@@ -85,8 +85,8 @@ class PCAPDissector:
                         continue
 
                     if make_printable:
-                        subkey = self.make_printable(subkey)
-                        count = self.make_printable(count)
+                        subkey = PCAPDissector.make_printable(subkey)
+                        count = PCAPDissector.make_printable(count)
 
                     if match_value and match_value not in subkey:
                         continue
@@ -343,6 +343,7 @@ class PCAPDissector:
         minimum_count: int | None = None,
     ) -> None:
         for (timestamp, key, subkey, value) in self.find_data(
+            self._data,
             timestamps=timestamps,
             match_string=match_string,
             match_value=match_value,
