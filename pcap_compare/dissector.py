@@ -80,6 +80,9 @@ class PCAPDissector:
                     data[timestamp][key].items(), key=lambda x: x[1], reverse=True
                 ):
 
+                    if minimum_count and abs(value) < minimum_count:
+                        continue
+
                     if make_printable:
                         subkey = self.make_printable(subkey)
                         value = self.make_printable(value)
