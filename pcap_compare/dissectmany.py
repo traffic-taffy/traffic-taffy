@@ -8,7 +8,6 @@ class PCAPDissectMany:
         self.pcap_files = pcap_files
         self.args = args
         self.kwargs = kwargs
-
         self.futures = {}
 
     def load_pcap(self, pcap_file):

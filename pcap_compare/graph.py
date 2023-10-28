@@ -8,9 +8,10 @@ from pandas import DataFrame, to_datetime
 from pcap_compare.dissector import (
     PCAPDissectorType,
     dissector_add_parseargs,
+    limitor_add_parseargs,
     check_dissector_level,
 )
-from pcap_compare.dissectmany import PCAPDissectMany
+from pcap_compare.dissectmany import PCAPDissectMany, PCAPDissector
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from logging import debug, info
@@ -42,29 +43,22 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-m",
-        "--match-key",
-        default=None,
-        type=str,
-        help="Only report on data with this substring in the packet attribute name",
-    )
-
-    parser.add_argument(
-        "-M",
-        "--match-value",
-        default=None,
-        type=str,
-        help="Only report on data with this substring in the packet value field",
-    )
-
-    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
         help="Define verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
+    parser.add_argument(
+        "-b",
+        "--bin-size",
+        type=int,
+        default=1,
+        help="Bin results into this many seconds",
+    )
+
     dissector_add_parseargs(parser)
+    limitor_add_parseargs(parser)
 
     parser.add_argument("input_file", type=str, help="PCAP file to graph", nargs="+")
 
@@ -81,6 +75,7 @@ class PcapGraph:
         pcap_files: str,
         output_file: str,
         maximum_count: int = None,
+        minimum_count: int = None,
         bin_size: int = None,
         match_key: str = None,
         match_value: str = None,
@@ -90,6 +85,7 @@ class PcapGraph:
         self.pcap_files = pcap_files
         self.output_file = output_file
         self.maximum_count = maximum_count
+        self.minimum_count = minimum_count
         self.bin_size = bin_size
         self.subsections = None
         self.pkt_filter = None
@@ -122,26 +118,25 @@ class PcapGraph:
         time_keys = list(counters.keys())
         if time_keys[0] == 0:  # likely always
             time_keys.pop(0)
-        start_time = time_keys[0]
-        end_time = time_keys[-1]
+        time_keys[0]
+        time_keys[-1]
 
         results = {"time": [], "count": [], "index": []}
 
         # TODO: this could likely be made much more efficient and needs hole-filling
-        for timestamp in range(start_time, end_time + 1, self.bin_size):
-            if timestamp not in counters:
-                continue
-            for key in counters[timestamp]:
-                if self.match_key and self.match_key not in key:
-                    continue
-                for subkey in counters[timestamp][key]:
-                    subkey_s = str(subkey)
-                    if self.match_value and self.match_value not in subkey_s:
-                        continue
-                    index = key + "=" + subkey_s
-                    results["count"].append(counters[timestamp][key][subkey])
-                    results["index"].append(index)
-                    results["time"].append(timestamp)
+        info(f"match value: {self.match_value}")
+        for (timestamp, key, subkey, value) in PCAPDissector.find_data(
+            counters,
+            timestamps=time_keys,
+            match_string=self.match_key,
+            match_value=self.match_value,
+            minimum_count=self.minimum_count,
+            make_printable=True,
+        ):
+            index = key + "=" + subkey
+            results["count"].append(int(value))
+            results["index"].append(index)
+            results["time"].append(timestamp)
 
         return results
 
@@ -201,8 +196,9 @@ def main():
         args.input_file,
         args.output_file,
         maximum_count=args.packet_count,
+        minimum_count=args.minimum_count,
         bin_size=args.bin_size,
-        match_key=args.match_key,
+        match_key=args.match_string,
         match_value=args.match_value,
         cache_pcap_results=args.cache_pcap_results,
         dissector_level=args.dissection_level,
