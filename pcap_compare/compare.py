@@ -272,14 +272,8 @@ def main():
         dissection_level=args.dissection_level,
     )
 
-    # TODO: throw an error when both pcaps and load files are specified
-
-    if args.load_report:
-        # load a previous saved dump
-        pc.load_report(args.load_report)
-    else:
-        # actually compare the pcaps
-        pc.compare()
+    # compare the pcaps
+    pc.compare()
 
     # print the results
     pc.print()
