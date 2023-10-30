@@ -3,7 +3,7 @@
 import os
 import pickle
 from enum import Enum
-from logging import warning, info, error
+from logging import warning, info, error, debug
 from collections import Counter, defaultdict
 from scapy.all import sniff
 from typing import Any, List
@@ -112,12 +112,19 @@ class PCAPDissector:
             if cached_contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
                 ok_to_load = False
 
+            # a zero really is a 1 since bin(0) still does int(timestamp)
+            if cached_contents["parameters"]["bin_size"] == 0:
+                cached_contents["parameters"]["bin_size"] = 1
+
             for parameter in self.parameters:
                 if (
                     getattr(self, parameter)
                     and getattr(self, parameter)
                     != cached_contents["parameters"][parameter]
                 ):
+                    debug(
+                        f"parameter {parameter} doesn't match: {getattr(self, parameter)} != {cached_contents['parameters'][parameter]}"
+                    )
                     ok_to_load = False
 
             if ok_to_load:
@@ -125,9 +132,9 @@ class PCAPDissector:
                 self.load_saved_contents(cached_contents)
                 return self.data
 
-            warning(
-                f"Failed to load cached data for {self.pcap_file} due to differences"
-            )
+            error(f"Failed to load cached data for {self.pcap_file} due to differences")
+            error("refusing to continue -- remove the cache to recreate it")
+            exit(1)
 
         if (
             self.dissector_level == PCAPDissectorType.DETAILED
@@ -292,7 +299,17 @@ class PCAPDissector:
         }
 
         for parameter in self.parameters:
+
             versioned_cache["parameters"][parameter] = getattr(self, parameter)
+            # TODO: fix this hack
+
+            # basically, bin_size of 0 is 1...  but it may be faster
+            # to leave it at zero to avoid the bin_size math of 1,
+            # which is actually a math noop that will still consume
+            # cycles.  We save it as 1 though since the math is past
+            # us and a 1 value is more informative to the user.
+            if parameter == "bin_size" and self.bin_size == 0:
+                versioned_cache["parameters"][parameter] = 1
 
         # save it
         info(f"caching PCAP data to '{where}'")
@@ -479,7 +496,8 @@ def main():
         args.input_file,
         bin_size=0,
         dissector_level=args.dissection_level,
-        maximum_count=1000,
+        maximum_count=args.packet_count,
+        cache_results=args.cache_pcap_results,
     )
     pd.load()
     pd.print(
