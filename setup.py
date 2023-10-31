@@ -18,7 +18,7 @@ setuptools.setup(
             "taffy-compare = traffic_taffy.compare:main",
             "taffy-graph = traffic_taffy.graph:main",
             "taffy-dissect = traffic_taffy.dissector:main",
-            "taffy-dissect = traffic_taffy.dissector:main",
+            "taffy-cache-info = traffic_taffy.cache_info:main",
         ]
     },
     classifiers=[
