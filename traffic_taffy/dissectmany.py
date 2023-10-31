@@ -1,4 +1,4 @@
-from pcap_compare.dissector import PCAPDissector
+from traffic_taffy.dissector import PCAPDissector
 from concurrent.futures import ProcessPoolExecutor
 from logging import info
 

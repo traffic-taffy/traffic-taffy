@@ -5,13 +5,13 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas
 from pandas import DataFrame, to_datetime
-from pcap_compare.dissector import (
+from traffic_taffy.dissector import (
     PCAPDissectorType,
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
 )
-from pcap_compare.dissectmany import PCAPDissectMany, PCAPDissector
+from traffic_taffy.dissectmany import PCAPDissectMany, PCAPDissector
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from logging import debug, info

@@ -113,7 +113,10 @@ class PCAPDissector:
                 ok_to_load = False
 
             # a zero really is a 1 since bin(0) still does int(timestamp)
-            if cached_contents["parameters"]["bin_size"] == 0:
+            if (
+                cached_contents["parameters"]["bin_size"] == 0
+                or cached_contents["parameters"]["bin_size"] is None
+            ):
                 cached_contents["parameters"]["bin_size"] = 1
 
             for parameter in self.parameters:

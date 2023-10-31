@@ -1,4 +1,4 @@
-from pcap_compare.dissectorresults import DissectorResults
+from traffic_taffy.dissectorresults import DissectorResults
 
 
 def test_dissector_results_isa():

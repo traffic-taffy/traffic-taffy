@@ -5,8 +5,8 @@ from logging import info
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
 from rich.console import Console
-from pcap_compare.dissectmany import PCAPDissectMany
-from pcap_compare.dissector import (
+from traffic_taffy.dissectmany import PCAPDissectMany
+from traffic_taffy.dissector import (
     PCAPDissectorType,
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -58,6 +58,7 @@ class PcapCompare:
         report1 = report1[0]
         report2 = report2[0]
 
+        # TODO: missing key in report2 (major items added)
         for key in report1:
             # TODO: deal with missing keys from one set
             report1_total = report1[key].total()

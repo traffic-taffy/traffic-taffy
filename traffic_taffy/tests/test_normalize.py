@@ -1,5 +1,5 @@
 from unittest.mock import Mock
-from pcap_compare.graph import PcapGraph
+from traffic_taffy.graph import PcapGraph
 from collections import Counter, defaultdict
 
 

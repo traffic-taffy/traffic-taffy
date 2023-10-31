@@ -2,7 +2,7 @@ import os
 
 
 def test_dissector_load():
-    from pcap_compare.dissector import PCAPDissector
+    from traffic_taffy.dissector import PCAPDissector
 
     pd = PCAPDissector("bogus")
     assert isinstance(pd, PCAPDissector)
@@ -10,7 +10,7 @@ def test_dissector_load():
 
 
 def test_dissector_simple_callback():
-    from pcap_compare.dissector import PCAPDissector, PCAPDissectorType
+    from traffic_taffy.dissector import PCAPDissector, PCAPDissectorType
 
     pd = PCAPDissector("bogus", dissector_type=PCAPDissectorType.DETAILED, bin_size=2)
 

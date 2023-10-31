@@ -4,20 +4,21 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pcap-compare",
+    name="traffic-taffy",
     version="0.1",
     author="Wes Hardaker",
     author_email="opensource@hardakers.net",
     description="A tool for doing differential analysis of pcap files",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/hardaker/pcap-compare",
+    url="https://github.com/hardaker/traffic-taffy",
     packages=setuptools.find_packages(),
     entry_points={
         "console_scripts": [
-            "pcap-compare = pcap_compare.compare:main",
-            "pcap-graph = pcap_compare.graph:main",
-            "pcap-dissect = pcap_compare.dissector:main",
+            "taffy-compare = traffic_taffy.compare:main",
+            "taffy-graph = traffic_taffy.graph:main",
+            "taffy-dissect = traffic_taffy.dissector:main",
+            "taffy-dissect = traffic_taffy.dissector:main",
         ]
     },
     classifiers=[
