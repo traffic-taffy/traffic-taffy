@@ -462,6 +462,14 @@ def check_dissector_level(level: int):
     return True
 
 
+def pcap_data_merge(d1: dict, d2: dict):
+    "merges counters in deep d2 dict into d1 -- note destructive to d1"
+    for key in d2:
+        for subkey in d2[key]:
+            d1[key][subkey] += d2[key][subkey]
+    return d1
+
+
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     import logging
