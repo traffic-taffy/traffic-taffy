@@ -19,6 +19,7 @@ class PCAPDissectorType(Enum):
 
 class PCAPDissector:
     "loads a pcap file and counts the contents in both time and depth"
+
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
     DISECTION_VERSION: int = 3
@@ -80,7 +81,6 @@ class PCAPDissector:
                 for subkey, count in sorted(
                     data[timestamp][key].items(), key=lambda x: x[1], reverse=True
                 ):
-
                     if minimum_count and abs(count) < minimum_count:
                         continue
 
@@ -302,7 +302,6 @@ class PCAPDissector:
         }
 
         for parameter in self.parameters:
-
             versioned_cache["parameters"][parameter] = getattr(self, parameter)
             # TODO: fix this hack
 
@@ -362,7 +361,7 @@ class PCAPDissector:
         match_value: str | None = None,
         minimum_count: int | None = None,
     ) -> None:
-        for (timestamp, key, subkey, value) in self.find_data(
+        for timestamp, key, subkey, value in self.find_data(
             self._data,
             timestamps=timestamps,
             match_string=match_string,
@@ -467,6 +466,7 @@ def pcap_data_merge(d1: dict, d2: dict):
     for key in d2:
         for subkey in d2[key]:
             d1[key][subkey] += d2[key][subkey]
+    print("here")
     return d1
 
 
