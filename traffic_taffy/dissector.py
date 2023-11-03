@@ -466,7 +466,6 @@ def pcap_data_merge(d1: dict, d2: dict):
     for key in d2:
         for subkey in d2[key]:
             d1[key][subkey] += d2[key][subkey]
-    print("here")
     return d1
 
 
