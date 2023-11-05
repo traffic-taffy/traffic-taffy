@@ -14,10 +14,10 @@ repos:
   -   id: end-of-file-fixer
   -   id: check-yaml
   -   id: check-added-large-files
-- repo: https://github.com/psf/black
-  rev: 22.3.0
-  hooks:
-  -   id: black
+# - repo: https://github.com/psf/black
+#   rev: 22.3.0
+#   hooks:
+#   -   id: black
 - repo: local
   hooks: []
     # - id: pytest
@@ -32,3 +32,9 @@ repos:
   hooks:
     - id: ruff
       args: [--fix, --exit-non-zero-on-fix]
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.1.3
+  hooks:
+    - id: ruff-format
+      # args: [--check]
