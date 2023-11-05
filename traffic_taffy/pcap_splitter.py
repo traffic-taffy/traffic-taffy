@@ -3,7 +3,10 @@
 import io
 from typing import List
 import dpkt
+import time
 from rich import print
+from concurrent.futures import ProcessPoolExecutor
+from dissector import PCAPDissector, pcap_data_merge
 
 
 class PCAPSplitter:
@@ -29,6 +32,7 @@ class PCAPSplitter:
         self.dpkt_data = None
         self.our_data = None
         self.results: List[io.BytesIO] = []
+        self.process_pool = ProcessPoolExecutor()
 
     def split(self):
         "Does the actual reading and splitting"
@@ -48,6 +52,17 @@ class PCAPSplitter:
         # TODO: need to process the remaining bytes
         self.save_packets()
 
+        import time
+
+        time.sleep(1)
+        for p in self.results:
+            print(f"Running: {p.running()}")
+
+        for p in self.results:
+            print(f"now waiting: {p.result()}")
+
+        self.process_pool.shutdown(wait=True, cancel_futures=False)
+
         print(f"total packets read: {self.packets_read}")
         return self.results
 
@@ -60,7 +75,16 @@ class PCAPSplitter:
         self.buffer += self.our_data.read(bytes_to_read)
 
         print(f"buffer size = {len(self.buffer)}")
-        self.results.append(io.BytesIO(self.buffer))
+
+        if self.callback:
+            self.results.append(
+                self.process_pool.submit(self.callback, io.BytesIO(self.buffer))
+            )
+        #            self.results[-1].result(timeout=0.001)  # force a start
+        # print(f"running: {self.results[-1].running()}")
+        # print(f"done: {self.results[-1].done()}")
+        else:
+            self.results.append(io.BytesIO(self.buffer))
 
         # if we've collected data, call the callback
         # TODO: multi-processer needed here
@@ -70,23 +94,68 @@ class PCAPSplitter:
         self.packets_read += 1
 
         if self.packets_read % self.split_size == 0:
-            print(f"here: {self.packets_read}")
             self.save_packets()
 
 
+def buffer_callback(pcap_io_buffer):
+    pd = PCAPDissector(
+        pcap_io_buffer,
+        bin_size=0,
+        dissector_level=10,
+        cache_results=False,
+    )
+    pd.load()
+    # pd.print(
+    #     timestamps=[0],
+    #     minimum_count=2,
+    # )
+    return pd.data
+
+
 def main():
-    ps = PCAPSplitter("test.pcap", split_size=10, maximum_count=200)
-    buffers = ps.split()
-    print(buffers)
+    splitter_start_time = time.time()
 
-    def test_dpkt_callback(timestamp, packet):
-        print(f"{timestamp} {len(packet)}")
+    ps = PCAPSplitter(
+        "test.pcap", split_size=10, maximum_count=200, callback=buffer_callback
+    )
+    results = ps.split()
+    print(results)
 
-    for n, buffer in enumerate(buffers):
-        print(f"---- {n}")
-        pcap = dpkt.pcap.Reader(buffer)
-        e = pcap.dispatch(0, test_dpkt_callback)
-        print(f"   = {e}")
+    data = results.pop(0).result()
+    for result in results:
+        data = pcap_data_merge(data, result.result())
+    splitter_end_time = time.time()
+
+    # create a bogus dissector
+    pd = PCAPDissector(
+        None,
+        bin_size=0,
+        dissector_level=10,
+        cache_results=False,
+    )
+    pd.data = data
+    pd.print(
+        timestamps=[0],
+        minimum_count=10,
+    )
+    pd.save("test.pcap.pkl")
+
+    # now compare it with a straight read to ensure the data results are the same
+    normal_start_time = time.time()
+    pd = PCAPDissector(
+        "test.pcap",
+        bin_size=0,
+        dissector_level=10,
+        cache_results=False,
+    )
+    pd.load()
+    data2 = pd.data
+    normal_end_time = time.time()
+
+    assert data == data2
+    print("got past assert -- all is well")
+    print(f"time for splitter: {splitter_end_time - splitter_start_time}")
+    print(f"time for normal:   {normal_end_time - normal_start_time}")
 
 
 if __name__ == "__main__":
