@@ -397,22 +397,6 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     parser.add_argument(
-        "-s",
-        "--save-report",
-        default=None,
-        type=str,
-        help="Where to save a report file for quicker future loading",
-    )
-
-    parser.add_argument(
-        "-l",
-        "--load-report",
-        default=None,
-        type=str,
-        help="Load a report from a pickle file rather than use pcaps",
-    )
-
-    parser.add_argument(
         "-C",
         "--cache-pcap-results",
         action="store_true",
