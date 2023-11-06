@@ -3,10 +3,8 @@
 import io
 from typing import List
 import dpkt
-import time
 from rich import print
 from concurrent.futures import ProcessPoolExecutor
-from dissector import PCAPDissector, pcap_data_merge
 
 
 class PCAPSplitter:
@@ -52,15 +50,6 @@ class PCAPSplitter:
         # TODO: need to process the remaining bytes
         self.save_packets()
 
-        import time
-
-        time.sleep(1)
-        for p in self.results:
-            print(f"Running: {p.running()}")
-
-        for p in self.results:
-            print(f"now waiting: {p.result()}")
-
         self.process_pool.shutdown(wait=True, cancel_futures=False)
 
         print(f"total packets read: {self.packets_read}")
@@ -95,68 +84,3 @@ class PCAPSplitter:
 
         if self.packets_read % self.split_size == 0:
             self.save_packets()
-
-
-def buffer_callback(pcap_io_buffer):
-    pd = PCAPDissector(
-        pcap_io_buffer,
-        bin_size=0,
-        dissector_level=10,
-        cache_results=False,
-    )
-    pd.load()
-    # pd.print(
-    #     timestamps=[0],
-    #     minimum_count=2,
-    # )
-    return pd.data
-
-
-def main():
-    splitter_start_time = time.time()
-
-    ps = PCAPSplitter(
-        "test.pcap", split_size=10, maximum_count=200, callback=buffer_callback
-    )
-    results = ps.split()
-    print(results)
-
-    data = results.pop(0).result()
-    for result in results:
-        data = pcap_data_merge(data, result.result())
-    splitter_end_time = time.time()
-
-    # create a bogus dissector
-    pd = PCAPDissector(
-        None,
-        bin_size=0,
-        dissector_level=10,
-        cache_results=False,
-    )
-    pd.data = data
-    pd.print(
-        timestamps=[0],
-        minimum_count=10,
-    )
-    pd.save("test.pcap.pkl")
-
-    # now compare it with a straight read to ensure the data results are the same
-    normal_start_time = time.time()
-    pd = PCAPDissector(
-        "test.pcap",
-        bin_size=0,
-        dissector_level=10,
-        cache_results=False,
-    )
-    pd.load()
-    data2 = pd.data
-    normal_end_time = time.time()
-
-    assert data == data2
-    print("got past assert -- all is well")
-    print(f"time for splitter: {splitter_end_time - splitter_start_time}")
-    print(f"time for normal:   {normal_end_time - normal_start_time}")
-
-
-if __name__ == "__main__":
-    main()
