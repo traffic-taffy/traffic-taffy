@@ -213,7 +213,11 @@ class PCAPDissector:
 
     def load_via_dpkt(self) -> dict:
         self.data = {0: defaultdict(Counter)}
-        pcap = dpkt.pcap.Reader(open(self.pcap_file, "rb"))
+        if isinstance(self.pcap_file, str):
+            pcap = dpkt.pcap.Reader(open(self.pcap_file, "rb"))
+        else:
+            # it's an open handle already
+            pcap = dpkt.pcap.Reader(self.pcap_file)
         if self.pcap_filter:
             pcap.setfilter(self.pcap_filter)
         pcap.dispatch(self.maximum_count, self.dpkt_callback)
