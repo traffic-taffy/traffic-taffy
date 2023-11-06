@@ -103,8 +103,12 @@ class PCAPDissector:
             self.data[self.timestamp][key][value] += count
 
     def load(self) -> dict:
-        cached_file = self.pcap_file + ".pkl"
-        if self.cache_results and os.path.exists(cached_file):
+        if (
+            self.pcap_file
+            and self.cache_results
+            and os.path.exists(self.pcap_file + ".pkl")
+        ):
+            cached_file = self.pcap_file + ".pkl"
             cached_contents = self.load_saved(cached_file, dont_overwrite=True)
 
             ok_to_load = True
@@ -465,6 +469,8 @@ def pcap_data_merge(d1: dict, d2: dict):
     "merges counters in deep d2 dict into d1 -- note destructive to d1"
     for key in d2:
         for subkey in d2[key]:
+            if key not in d1:
+                d1[key] = defaultdict(Counter)
             d1[key][subkey] += d2[key][subkey]
     return d1
 
