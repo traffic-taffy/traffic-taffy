@@ -4,7 +4,7 @@ import io
 from typing import List
 import dpkt
 from rich import print
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, Future
 
 
 class PCAPSplitter:
@@ -32,7 +32,7 @@ class PCAPSplitter:
         self.results: List[io.BytesIO] = []
         self.process_pool = ProcessPoolExecutor()
 
-    def split(self):
+    def split(self) -> List[io.BytesIO] | List[Future]:
         "Does the actual reading and splitting"
         # open one for the dpkt reader and one for us independently
         self.our_data = open(self.pcap_file, "rb")
