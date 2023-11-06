@@ -3,7 +3,7 @@ import time
 from traffic_taffy.pcap_splitter import PCAPSplitter
 from traffic_taffy.dissector import PCAPDissector, pcap_data_merge
 
-test_pcap = "test.pcap"
+test_pcap = "test.sm.pcap"
 test_pkl = "/tmp/test.pcap.pkl"
 
 
@@ -18,9 +18,14 @@ def buffer_callback(pcap_io_buffer):
     return pd.data
 
 
-if not os.path.exists(test_pcap):
-    print(f"this test requires a {test_pcap} file to read and parse")
-else:
+def test_pcap_splitter():
+    if not os.path.exists(test_pcap):
+        print(f"this test requires a {test_pcap} file to read and parse")
+
+    # clean up previous runs
+    if os.path.exists(test_pkl):
+        os.unlink(test_pkl)
+
     splitter_start_time = time.time()
 
     split_size = 200000
