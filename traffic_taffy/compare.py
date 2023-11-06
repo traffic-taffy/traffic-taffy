@@ -34,7 +34,6 @@ class PcapCompare:
         cache_results: bool = False,
         dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
     ) -> None:
-
         self.pcaps = pcaps
         self.deep = deep
         self.maximum_count = maximum_count
@@ -278,11 +277,6 @@ def main():
 
     # print the results
     pc.print()
-
-    # maybe save them
-    # TODO: loading and saving both makes more sense, throw error
-    if args.save_report:
-        pc.save_report(args.save_report)
 
 
 if __name__ == "__main__":
