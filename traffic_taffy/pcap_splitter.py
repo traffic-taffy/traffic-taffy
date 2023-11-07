@@ -19,6 +19,7 @@ class PCAPSplitter:
         split_size: int = 0,
         maximum_count: int = 0,
         pcap_filter: str | None = None,
+        maximum_cores: int | None = None,
     ) -> List[io.BytesIO]:
         self.pcap_file: str = pcap_file
         self.callback = callback
@@ -39,6 +40,8 @@ class PCAPSplitter:
 
         if not self.split_size:
             cores = multiprocessing.cpu_count()
+            if maximum_cores and cores > maximum_cores:
+                cores = maximum_cores
 
             if self.maximum_count:
                 # not ideal math, but better than nothing
