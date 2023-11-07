@@ -49,6 +49,8 @@ class PCAPSplitter:
                 file_size = stats.st_size
                 self.split_size = int(file_size / 1200 / cores)
 
+            # even 1000 is kinda silly to split, but is better than nothing
+            self.split_size = min(self.split_size, 1000)
             debug(f"setting PCAPSplitter split size to {self.split_size} for {cores}")
 
     def split(self) -> List[io.BytesIO] | List[Future]:
