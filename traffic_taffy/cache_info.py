@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument(
         "cache_file",
         type=str,
-        help="The cache file to load and display information about",
+        help="The cache file (or pcap file) to load and display information about",
     )
 
     args = parser.parse_args()

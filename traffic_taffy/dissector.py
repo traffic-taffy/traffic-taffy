@@ -48,6 +48,8 @@ class PCAPDissector:
             "maximum_count",
         ]
 
+        self.settable_from_cache = ["bin_size", "dissector_level", "maximum_count"]
+
         # TODO: convert to a factory
         self.data = {0: defaultdict(Counter)}
 
@@ -102,46 +104,68 @@ class PCAPDissector:
                 self.data[self.timestamp] = defaultdict(Counter)
             self.data[self.timestamp][key][value] += count
 
-    def load(self) -> dict:
+    def load_from_cache(self) -> dict | None:
+        if not self.pcap_file or not isinstance(self.pcap_file, str):
+            return None
+        if not (self.cache_results and os.path.exists(self.pcap_file + ".pkl")):
+            return None
+
+        cached_file = self.pcap_file + ".pkl"
+        cached_contents = self.load_saved(cached_file, dont_overwrite=True)
+
+        ok_to_load = True
+
+        if cached_contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
+            ok_to_load = False
+
+        # a zero really is a 1 since bin(0) still does int(timestamp)
         if (
-            self.pcap_file
-            and self.cache_results
-            and os.path.exists(self.pcap_file + ".pkl")
+            cached_contents["parameters"]["bin_size"] == 0
+            or cached_contents["parameters"]["bin_size"] is None
         ):
-            cached_file = self.pcap_file + ".pkl"
-            cached_contents = self.load_saved(cached_file, dont_overwrite=True)
+            cached_contents["parameters"]["bin_size"] = 1
 
-            ok_to_load = True
+        for parameter in self.parameters:
+            specified = getattr(self, parameter)
+            cached = cached_contents["parameters"][parameter]
 
-            if cached_contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
+            if not specified and parameter in self.settable_from_cache:
+                # inherit from the cache
+                setattr(self, parameter, cached)
+                continue
+
+            if specified and specified != cached:
+                # special checks for certain types of parameters:
+                if parameter == "dissector_level" and specified > cached:
+                    # loading a more detailed cache is ok
+                    continue
+
+                if parameter == "pcap_file" and os.path.basename(
+                    specified
+                ) == os.path.basename(cached):
+                    # as long as the basename is ok, we'll assume it's a different path
+                    # TODO: only store basename?
+                    continue
+
+                debug(
+                    f"parameter {parameter} doesn't match: {getattr(self, parameter)} != {cached_contents['parameters'][parameter]}"
+                )
                 ok_to_load = False
 
-            # a zero really is a 1 since bin(0) still does int(timestamp)
-            if (
-                cached_contents["parameters"]["bin_size"] == 0
-                or cached_contents["parameters"]["bin_size"] is None
-            ):
-                cached_contents["parameters"]["bin_size"] = 1
+        if ok_to_load:
+            info(f"loading cached pcap contents from {cached_file}")
+            self.load_saved_contents(cached_contents)
+            return self.data
 
-            for parameter in self.parameters:
-                if (
-                    getattr(self, parameter)
-                    and getattr(self, parameter)
-                    != cached_contents["parameters"][parameter]
-                ):
-                    debug(
-                        f"parameter {parameter} doesn't match: {getattr(self, parameter)} != {cached_contents['parameters'][parameter]}"
-                    )
-                    ok_to_load = False
+        error(f"Failed to load cached data for {self.pcap_file} due to differences")
+        error("refusing to continue -- remove the cache to recreate it")
+        raise ValueError("Broken cache")
 
-            if ok_to_load:
-                info(f"loading cached pcap contents from {cached_file}")
-                self.load_saved_contents(cached_contents)
-                return self.data
-
-            error(f"Failed to load cached data for {self.pcap_file} due to differences")
-            error("refusing to continue -- remove the cache to recreate it")
-            exit(1)
+    def load(self) -> dict:
+        "Loads data from a pcap file or its cached results"
+        cached_data = self.load_from_cache()
+        if cached_data:
+            return cached_data
 
         if (
             self.dissector_level == PCAPDissectorType.DETAILED
@@ -222,8 +246,7 @@ class PCAPDissector:
             pcap.setfilter(self.pcap_filter)
         pcap.dispatch(self.maximum_count, self.dpkt_callback)
 
-        if self.cache_results:
-            self.save(self.pcap_file + ".pkl")
+        self.save_to_cache()
         return self.data
 
     def add_scapy_item(self, field_value, prefix: str) -> None:
@@ -294,9 +317,12 @@ class PCAPDissector:
             count=self.maximum_count,
             filter=self.pcap_filter,
         )
-        if self.cache_results:
-            self.save(self.pcap_file + ".pkl")
+        self.save_to_cache()
         return self.data
+
+    def save_to_cache(self):
+        if self.pcap_file and isinstance(self.pcap_file, str) and self.cache_results:
+            self.save(self.pcap_file + ".pkl")
 
     def save(self, where: str) -> None:
         "Saves a generated dissection to a pickle file"

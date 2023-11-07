@@ -1,10 +1,12 @@
 """Loads a PCAP file and counts contents with various levels of storage"""
 
 import io
+import os
+import multiprocessing
 from typing import List
 import dpkt
-from rich import print
 from concurrent.futures import ProcessPoolExecutor, Future
+from logging import debug
 
 
 class PCAPSplitter:
@@ -32,6 +34,23 @@ class PCAPSplitter:
         self.results: List[io.BytesIO] = []
         self.process_pool = ProcessPoolExecutor()
 
+        if not os.path.exists(self.pcap_file):
+            raise ValueError(f"failed to find pcap file '{self.pcap_file}'")
+
+        if not self.split_size:
+            cores = multiprocessing.cpu_count()
+
+            if self.maximum_count:
+                # not ideal math, but better than nothing
+                self.split_size = int(self.maximum_count / cores)
+            else:
+                # even worse math and assumes generally large packets
+                stats = os.stat(self.pcap_file)
+                file_size = stats.st_size
+                self.split_size = int(file_size / 1200 / cores)
+
+            debug(f"setting PCAPSplitter split size to {self.split_size} for {cores}")
+
     def split(self) -> List[io.BytesIO] | List[Future]:
         "Does the actual reading and splitting"
         # open one for the dpkt reader and one for us independently
@@ -52,7 +71,6 @@ class PCAPSplitter:
 
         self.process_pool.shutdown(wait=True, cancel_futures=False)
 
-        print(f"total packets read: {self.packets_read}")
         return self.results
 
     def save_packets(self):
@@ -62,8 +80,6 @@ class PCAPSplitter:
         # read from our files current position to where the dpkt reader is
         bytes_to_read: int = self.dpkt_data.tell() - self.our_data.tell()
         self.buffer += self.our_data.read(bytes_to_read)
-
-        print(f"buffer size = {len(self.buffer)}")
 
         if self.callback:
             self.results.append(

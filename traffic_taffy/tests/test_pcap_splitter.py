@@ -1,9 +1,11 @@
 import os
 import time
+import logging
+from logging import debug
 from traffic_taffy.pcap_splitter import PCAPSplitter
 from traffic_taffy.dissector import PCAPDissector, pcap_data_merge
 
-test_pcap = "test.sm.pcap"
+test_pcap = "test.pcap"
 test_pkl = "/tmp/test.pcap.pkl"
 
 
@@ -19,6 +21,7 @@ def buffer_callback(pcap_io_buffer):
 
 
 def test_pcap_splitter():
+    logging.basicConfig(level="DEBUG", format="%(levelname)-10s:\t%(message)s")
     if not os.path.exists(test_pcap):
         print(f"this test requires a {test_pcap} file to read and parse")
 
@@ -28,7 +31,7 @@ def test_pcap_splitter():
 
     splitter_start_time = time.time()
 
-    split_size = 200000
+    split_size = 0
     maximum_count = 0
 
     ps = PCAPSplitter(
@@ -61,7 +64,7 @@ def test_pcap_splitter():
     assert os.path.exists(test_pkl)
 
     # now compare it with a straight read to ensure the data results are the same
-    print("----- starting singular -----")
+    debug("----- starting singular -----")
     normal_start_time = time.time()
     pd = PCAPDissector(
         test_pcap,
@@ -75,8 +78,12 @@ def test_pcap_splitter():
     normal_end_time = time.time()
 
     assert data == data2
-    print("got past assert -- all is well")
-    print(f"time for splitter: {splitter_end_time - splitter_start_time}")
-    print(f"time for normal:   {normal_end_time - normal_start_time}")
+    debug("got past assert -- all is well")
+    debug(f"time for splitter: {splitter_end_time - splitter_start_time}")
+    debug(f"time for normal:   {normal_end_time - normal_start_time}")
 
     os.unlink(test_pkl)
+
+
+if __name__ == "__main__":
+    test_pcap_splitter()
