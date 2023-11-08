@@ -28,7 +28,7 @@ class PCAPDissectMany:
         pd = PCAPDissector(
             pcap_file,
             *self.args,
-            *self.kwargs,
+            **self.kwargs,
         )
         data = pd.load_from_cache()
         if data:
@@ -48,13 +48,15 @@ class PCAPDissectMany:
         for result in results:
             data = pcap_data_merge(data, result.result())
 
+        PCAPDissector.calculate_metadata(data)
+
         if self.kwargs.get("cache_results"):
             # create a dissector just to save the cache
             # (we don't call load())
             pd = PCAPDissector(
                 pcap_file,
                 *self.args,
-                *self.kwargs,
+                **self.kwargs,
             )
             pd.data = data
             pd.save(pcap_file + ".pkl")

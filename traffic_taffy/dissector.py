@@ -22,7 +22,9 @@ class PCAPDissector:
 
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
-    DISECTION_VERSION: int = 3
+    WIDTH_SUBKEY: str = "__WIDTH__"
+    DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
+    DISSECTION_VERSION: int = 4
 
     def __init__(
         self,
@@ -95,6 +97,19 @@ class PCAPDissector:
 
                     yield (timestamp, key, subkey, count)
 
+    @staticmethod
+    def calculate_metadata(data):
+        "Calculates things like the number of value entries within each key/subkey"
+        # TODO: do we do this with or without key and value matches?
+        for timestamp in data.keys():
+            for key in data[timestamp]:
+                if PCAPDissector.WIDTH_SUBKEY in data[timestamp][key]:
+                    # make sure to avoid counting itself
+                    del data[timestamp][key][PCAPDissector.WIDTH_SUBKEY]
+                data[timestamp][key][PCAPDissector.WIDTH_SUBKEY] = len(
+                    data[timestamp][key]
+                )
+
     def incr(self, key: str, value: Any, count: int = 1):
         # always save a total count at the zero bin
         # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
@@ -115,7 +130,10 @@ class PCAPDissector:
 
         ok_to_load = True
 
-        if cached_contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
+        if cached_contents[self.DISSECTION_KEY] != self.DISSECTION_VERSION:
+            debug(
+                "dissection cache version ({cached_contents[self.DISSECTION_KEY]}) differs from code version {self.DISSECTION_VERSION}"
+            )
             ok_to_load = False
 
         # a zero really is a 1 since bin(0) still does int(timestamp)
@@ -136,7 +154,11 @@ class PCAPDissector:
 
             if specified and specified != cached:
                 # special checks for certain types of parameters:
-                if parameter == "dissector_level" and specified > cached:
+
+                if parameter == "dissector_level":
+                    debug("------------ here 1")
+                if parameter == "dissector_level" and specified <= cached:
+                    debug("here with dissector_level {specified} and {cached}")
                     # loading a more detailed cache is ok
                     continue
 
@@ -148,7 +170,7 @@ class PCAPDissector:
                     continue
 
                 debug(
-                    f"parameter {parameter} doesn't match: {getattr(self, parameter)} != {cached_contents['parameters'][parameter]}"
+                    f"parameter {parameter} doesn't match: specified={specified} != cached={cached}"
                 )
                 ok_to_load = False
 
@@ -159,7 +181,9 @@ class PCAPDissector:
 
         error(f"Failed to load cached data for {self.pcap_file} due to differences")
         error("refusing to continue -- remove the cache to recreate it")
-        raise ValueError("Broken cache")
+        raise ValueError(
+            "INCOMPATIBLE CACHE: remove the cache or don't use it to continue"
+        )
 
     def load(self) -> dict:
         "Loads data from a pcap file or its cached results"
@@ -246,6 +270,7 @@ class PCAPDissector:
             pcap.setfilter(self.pcap_filter)
         pcap.dispatch(self.maximum_count, self.dpkt_callback)
 
+        self.calculate_metadata(self.data)
         self.save_to_cache()
         return self.data
 
@@ -317,6 +342,7 @@ class PCAPDissector:
             count=self.maximum_count,
             filter=self.pcap_filter,
         )
+        self.calculate_metadata(self.data)
         self.save_to_cache()
         return self.data
 
@@ -329,7 +355,7 @@ class PCAPDissector:
 
         # wrap the report in a version header
         versioned_cache = {
-            "PCAP_DISECTION_VERSION": self.DISECTION_VERSION,
+            self.DISSECTION_KEY: self.DISSECTION_VERSION,
             "file": self.pcap_file,
             "parameters": {},
             "dissection": self.data,
@@ -364,12 +390,12 @@ class PCAPDissector:
         contents = pickle.load(open(where, "rb"))
 
         # check that the version header matches something we understand
-        if contents["PCAP_DISECTION_VERSION"] != self.DISECTION_VERSION:
+        if contents["PCAP_DISSECTION_VERSION"] != self.DISSECTION_VERSION:
             raise ValueError(
                 "improper saved dissection version: report version = "
                 + str(contents["PCAP_COMPARE_VERSION"])
                 + ", our version: "
-                + str(self.DISECTION_VERSION)
+                + str(self.DISSECTION_VERSION)
             )
 
         if not dont_overwrite:

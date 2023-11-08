@@ -57,6 +57,13 @@ def parse_args():
         help="Bin results into this many seconds",
     )
 
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        help="Prompt repeatedly for graph data to create",
+    )
+
     dissector_add_parseargs(parser)
     limitor_add_parseargs(parser)
 
@@ -81,6 +88,7 @@ class PcapGraph:
         match_value: str = None,
         cache_pcap_results: bool = False,
         dissector_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
+        interactive: bool = False,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -93,6 +101,7 @@ class PcapGraph:
         self.match_value = match_value
         self.cache_pcap_results = cache_pcap_results
         self.dissector_level = dissector_level
+        self.interactive = interactive
 
     def load_pcaps(self):
         "loads the pcap and counts things into bins"
@@ -124,8 +133,7 @@ class PcapGraph:
         results = {"time": [], "count": [], "index": []}
 
         # TODO: this could likely be made much more efficient and needs hole-filling
-        info(f"match value: {self.match_value}")
-        for (timestamp, key, subkey, value) in PCAPDissector.find_data(
+        for timestamp, key, subkey, value in PCAPDissector.find_data(
             counters,
             timestamps=time_keys,
             match_string=self.match_key,
@@ -152,10 +160,6 @@ class PcapGraph:
         return datasets
 
     def create_graph(self):
-        "Graph the results of the data collection"
-        debug("creating the graph")
-        sns.set_theme()
-
         df = self.merge_datasets()
         debug(df)
 
@@ -180,11 +184,28 @@ class PcapGraph:
         else:
             plt.show()
 
+    def show_graph(self):
+        "Graph the results of the data collection"
+        debug("creating the graph")
+        sns.set_theme()
+
+        first_run = True
+        while first_run or self.interactive:
+            first_run = False
+
+            self.create_graph()
+
+            if self.interactive:
+                self.match_key = input("search key: ")
+                self.match_value = input("value key: ")
+                if not self.match_key and not self.match_value:
+                    self.interactive = False
+
     def graph_it(self):
         debug("--- loading pcaps")
         self.load_pcaps()
         debug("--- creating graph")
-        self.create_graph()
+        self.show_graph()
 
 
 def main():
@@ -202,6 +223,7 @@ def main():
         match_value=args.match_value,
         cache_pcap_results=args.cache_pcap_results,
         dissector_level=args.dissection_level,
+        interactive=args.interactive,
     )
     pc.graph_it()
 
