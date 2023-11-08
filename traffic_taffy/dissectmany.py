@@ -3,6 +3,7 @@ from traffic_taffy.pcap_splitter import PCAPSplitter
 from concurrent.futures import ProcessPoolExecutor
 from logging import info
 import copy
+import multiprocessing
 
 
 class PCAPDissectMany:
@@ -11,6 +12,13 @@ class PCAPDissectMany:
         self.args = args
         self.kwargs = kwargs
         self.futures = {}
+
+        self.maximum_cores = self.kwargs.get("maximum_cores")
+        if not self.maximum_cores:
+            # since we're loading multiple files in parallel, reduce the
+            # maximum number of cores available to the splitter
+            # TODO: this may undercount due to int flooring()
+            self.maximum_cores = int(multiprocessing.cpu_count() / len(self.pcap_files))
 
     def load_pcap_piece(self, pcap_io_buffer):
         kwargs = copy.copy(self.kwargs)
@@ -41,6 +49,7 @@ class PCAPDissectMany:
             split_size=split_size,
             callback=self.load_pcap_piece,
             maximum_count=self.kwargs.get("maximum_count", 0),
+            maximum_cores=self.maximum_cores,
         )
         results = ps.split()
 
