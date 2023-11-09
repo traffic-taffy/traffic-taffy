@@ -45,7 +45,7 @@ def test_pcap_splitter():
     data = results.pop(0).result()
     for result in results:
         data = pcap_data_merge(data, result.result())
-        print("mergeed")
+    PCAPDissector.calculate_metadata(data)
     splitter_end_time = time.time()
 
     # create a bogus dissector
