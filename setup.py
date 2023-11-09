@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="traffic-taffy",
-    version="0.1",
+    version="0.2",
     author="Wes Hardaker",
     author_email="opensource@hardakers.net",
     description="A tool for doing differential analysis of pcap files",
