@@ -46,6 +46,14 @@ class PcapCompare:
         self.cache_results = cache_results
         self.dissection_level = dissection_level
 
+    @property
+    def reports(self):
+        return self._reports
+
+    @reports.setter
+    def reports(self, newvalue):
+        self._reports = newvalue
+
     def compare_results(self, report1: dict, report2: dict) -> dict:
         "compares the results from two reports"
 
