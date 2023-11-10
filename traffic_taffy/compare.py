@@ -54,7 +54,7 @@ class PcapCompare:
     def reports(self, newvalue):
         self._reports = newvalue
 
-    def compare_results(self, report1: dict, report2: dict) -> dict:
+    def compare_results(self, dissection1: dict, dissection2: dict) -> dict:
         "compares the results from two reports"
 
         # TODO: handle recursive depths, where items are subtrees rather than Counters
@@ -62,31 +62,31 @@ class PcapCompare:
         report = {}
 
         # TODO: we're only (currently) doing full pcap compares
-        report1 = report1[0]
-        report2 = report2[0]
+        dissection1 = dissection1[0]
+        dissection2 = dissection2[0]
 
-        # TODO: missing key in report2 (major items added)
-        for key in report1:
+        # TODO: missing key in dissection2 (major items added)
+        for key in dissection1:
             # TODO: deal with missing keys from one set
-            report1_total = report1[key].total()
-            report2_total = report2[key].total()
+            dissection1_total = dissection1[key].total()
+            dissection2_total = dissection2[key].total()
             report[key] = {}
 
-            for subkey in report1[key].keys():
+            for subkey in dissection1[key].keys():
                 delta = 0.0
                 total = 0
-                if subkey in report1[key] and subkey in report2[key]:
+                if subkey in dissection1[key] and subkey in dissection2[key]:
                     delta = (
-                        report2[key][subkey] / report2_total
-                        - report1[key][subkey] / report1_total
+                        dissection2[key][subkey] / dissection2_total
+                        - dissection1[key][subkey] / dissection1_total
                     )
-                    total = report2[key][subkey] + report1[key][subkey]
-                    ref_count = report1[key][subkey]
-                    comp_count = report2[key][subkey]
+                    total = dissection2[key][subkey] + dissection1[key][subkey]
+                    ref_count = dissection1[key][subkey]
+                    comp_count = dissection2[key][subkey]
                 else:
                     delta = -1.0
-                    total = report1[key][subkey]
-                    ref_count = report1[key][subkey]
+                    total = dissection1[key][subkey]
+                    ref_count = dissection1[key][subkey]
                     comp_count = 0
 
                 report[key][subkey] = {
@@ -96,12 +96,12 @@ class PcapCompare:
                     "comp_count": comp_count,
                 }
 
-            for subkey in report2[key].keys():
+            for subkey in dissection2[key].keys():
                 if subkey not in report[key]:
                     delta = 1.0
-                    total = report2[key][subkey]
+                    total = dissection2[key][subkey]
                     ref_count = 0
-                    comp_count = report2[key][subkey]
+                    comp_count = dissection2[key][subkey]
 
                     report[key][subkey] = {
                         "delta": delta,
