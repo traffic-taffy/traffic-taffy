@@ -61,10 +61,6 @@ class PcapCompare:
 
         report = {}
 
-        # TODO: we're only (currently) doing full pcap compares
-        dissection1 = dissection1[0]
-        dissection2 = dissection2[0]
-
         # TODO: missing key in dissection2 (major items added)
         for key in dissection1:
             # TODO: deal with missing keys from one set
@@ -212,8 +208,8 @@ class PcapCompare:
 
         reference = next(results)
         for other in results:
-            # compare the two
-            reports.append(self.compare_results(reference["data"], other["data"]))
+            # compare the two global summaries
+            reports.append(self.compare_results(reference["data"][0], other["data"][0]))
 
         self.reports = reports
 
