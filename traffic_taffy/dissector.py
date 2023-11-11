@@ -110,6 +110,50 @@ class PCAPDissector:
                     data[timestamp][key]
                 )
 
+    @staticmethod
+    def open_maybe_compressed(filename):
+        """Opens a pcap file, potentially decompressing it."""
+
+        magic_dict = {
+            bytes([0x1F, 0x8B, 0x08]): "gz",
+            bytes([0x42, 0x5A, 0x68]): "bz2",
+            bytes([0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00]): "xz",
+        }
+        max_len = max(len(x) for x in magic_dict)
+
+        base_handle = open(filename, "rb")
+        file_start = base_handle.read(max_len)
+        base_handle.close()
+
+        for magic, filetype in magic_dict.items():
+            if file_start.startswith(magic):
+                try:
+                    if filetype == "gz":
+                        import gzip
+
+                        return_handle = gzip.open(filename, "rb")
+                        return return_handle
+                    elif filetype == "bz2":
+                        import bz2
+
+                        return_handle = bz2.open(filename, "rb")
+                        setattr(return_handle, "name", filename)
+                        return return_handle
+                    elif filetype == "xz":
+                        import lzma
+
+                        return_handle = lzma.open(filename, "rb")
+                        return return_handle
+                    else:
+                        raise ValueError("unknown compression error")
+                except Exception:
+                    # likely we failed to find a compression module
+                    debug(f"failed to use {filetype} module to decode the input stream")
+                    raise ValueError("cannot decode file")
+
+        # return a raw file and hope it's not compressed'
+        return open(filename, "rb")
+
     def incr(self, key: str, value: Any, count: int = 1):
         # always save a total count at the zero bin
         # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
@@ -262,7 +306,7 @@ class PCAPDissector:
     def load_via_dpkt(self) -> dict:
         self.data = {0: defaultdict(Counter)}
         if isinstance(self.pcap_file, str):
-            pcap = dpkt.pcap.Reader(open(self.pcap_file, "rb"))
+            PCAPDissector.open_maybe_compressed(self.pcap_file)
         else:
             # it's an open handle already
             pcap = dpkt.pcap.Reader(self.pcap_file)
@@ -335,8 +379,11 @@ class PCAPDissector:
 
     def load_via_scapy(self) -> dict:
         "Loads a pcap file into a nested dictionary of statistical counts"
+        load_this = self.pcap_file
+        if isinstance(self.pcap_file, str):
+            load_this = PCAPDissector.open_maybe_compressed(self.pcap_file)
         sniff(
-            offline=self.pcap_file,
+            offline=load_this,
             prn=self.scapy_callback,
             store=0,
             count=self.maximum_count,

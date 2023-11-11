@@ -3,6 +3,7 @@
 import io
 import os
 import multiprocessing
+from traffic_taffy.dissector import PCAPDissector
 from typing import List
 import dpkt
 from concurrent.futures import ProcessPoolExecutor, Future
@@ -59,8 +60,8 @@ class PCAPSplitter:
     def split(self) -> List[io.BytesIO] | List[Future]:
         "Does the actual reading and splitting"
         # open one for the dpkt reader and one for us independently
-        self.our_data = open(self.pcap_file, "rb")
-        self.dpkt_data = open(self.pcap_file, "rb")
+        self.our_data = PCAPDissector.open_maybe_compressed(self.pcap_file)
+        self.dpkt_data = PCAPDissector.open_maybe_compressed(self.pcap_file)
 
         # read the first 24 bytes which is the pcap header
         self.header = self.our_data.read(24)

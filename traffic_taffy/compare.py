@@ -206,12 +206,36 @@ class PcapCompare:
         )
         results = pdm.load_all()
 
-        reference = next(results)
-        for other in results:
-            # compare the two global summaries
-            reports.append(self.compare_results(reference["data"][0], other["data"][0]))
+        if len(self.pcaps > 1):
+            # multiple file comparison
+            reference = next(results)
+            for other in results:
+                # compare the two global summaries
+                reports.append(
+                    {
+                        "report": self.compare_results(
+                            reference["data"][0], other["data"][0]
+                        ),
+                        "title": f"{reference['file']} vs {other['file']}",
+                    }
+                )
 
-        self.reports = reports
+            self.reports = reports
+        else:
+            # deal with timestamps within a single file
+            timestamps = list(reports["data"].keys())
+            for timestamp in range(
+                2, len(timestamps)
+            ):  # second real non-zero timestamp to last
+                report = self.compare_results(
+                    reports["data"][timestamp - 1], reports["data"][timestamp]
+                )
+                reports.append(
+                    {
+                        "report": report,
+                        "titel": f"time {timestamp-1} vs time {timestamp}",
+                    }
+                )
 
 
 def parse_args():
