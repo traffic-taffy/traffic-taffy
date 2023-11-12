@@ -1,7 +1,7 @@
 """Takes a set of pcap files to compare and creates a report"""
 
 import logging
-from logging import info
+from logging import info, debug
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
 from rich.console import Console
@@ -33,6 +33,7 @@ class PcapCompare:
         only_negative: bool = False,
         cache_results: bool = False,
         dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
+        between_times: List[int] | None = None,
     ) -> None:
         self.pcaps = pcaps
         self.deep = deep
@@ -45,6 +46,7 @@ class PcapCompare:
         self.only_negative = only_negative
         self.cache_results = cache_results
         self.dissection_level = dissection_level
+        self.between_times = between_times
 
     @property
     def reports(self):
@@ -227,21 +229,42 @@ class PcapCompare:
             results = list(results)
             reference = results[0]
             timestamps = list(reference["data"].keys())
+            debug(
+                f"found {len(timestamps)} timestamps from {timestamps[2]} to {timestamps[-1]}"
+            )
             for timestamp in range(
                 2, len(timestamps)
             ):  # second real non-zero timestamp to last
                 time_left = timestamps[timestamp - 1]
                 time_right = timestamps[timestamp]
 
+                # see if we were asked to only use particular time ranges
+                if self.between_times and (
+                    time_left < self.between_times[0]
+                    or time_right > self.between_times[1]
+                ):
+                    # debug(f"skipping timestamps {time_left} and {time_right}")
+                    continue
+
+                debug(f"comparing timestamps {time_left} and {time_right}")
+
                 report = self.compare_results(
                     reference["data"][time_left], reference["data"][time_right]
                 )
-                reports.append(
-                    {
-                        "report": report,
-                        "title": f"time {time_left} vs time {time_right}",
-                    }
-                )
+
+                title = f"time {time_left} vs time {time_right}"
+                print(f"************ {title}")
+                self.print_report(report)
+
+                continue
+
+                # takes way too much memory to do it "right"
+                # reports.append(
+                #     {
+                #         "report": report,
+                #         "title": f"time {time_left} vs time {time_right}",
+                #     }
+                # )
 
         self.reports = reports
 
@@ -270,6 +293,14 @@ def parse_args():
 
     limiting_parser.add_argument(
         "-N", "--only-negative", action="store_true", help="Only show negative entries"
+    )
+
+    limiting_parser.add_argument(
+        "-T",
+        "--between-times",
+        nargs=2,
+        type=int,
+        help="For single files, only display results between these timestamps",
     )
 
     dissector_add_parseargs(parser)
@@ -306,6 +337,7 @@ def main():
         only_negative=args.only_negative,
         cache_results=args.cache_pcap_results,
         dissection_level=args.dissection_level,
+        between_times=args.between_times,
     )
 
     # compare the pcaps

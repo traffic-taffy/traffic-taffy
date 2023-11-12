@@ -202,7 +202,7 @@ class PCAPDissector:
                 if parameter == "dissector_level":
                     debug("------------ here 1")
                 if parameter == "dissector_level" and specified <= cached:
-                    debug("here with dissector_level {specified} and {cached}")
+                    debug(f"here with dissector_level {specified} and {cached}")
                     # loading a more detailed cache is ok
                     continue
 
