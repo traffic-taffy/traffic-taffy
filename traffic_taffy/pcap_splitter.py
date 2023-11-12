@@ -7,7 +7,7 @@ from traffic_taffy.dissector import PCAPDissector
 from typing import List
 import dpkt
 from concurrent.futures import ProcessPoolExecutor, Future
-from logging import debug
+from logging import debug, info
 
 
 class PCAPSplitter:
@@ -27,6 +27,7 @@ class PCAPSplitter:
         self.split_size: int = split_size
         self.maximum_count: int = maximum_count
         self.pcap_filter: str | None = pcap_filter
+        self.maximum_cores = maximum_cores
 
         self.header: bytes = None
         self.buffer: bytes = None
@@ -39,29 +40,46 @@ class PCAPSplitter:
         if not os.path.exists(self.pcap_file):
             raise ValueError(f"failed to find pcap file '{self.pcap_file}'")
 
-        if not self.split_size:
-            cores = multiprocessing.cpu_count()
-            if maximum_cores and cores > maximum_cores:
-                cores = maximum_cores
+    def set_split_size(self):
+        "Attempt to calculate a reasonable split size"
+        if self.split_size:
+            info(f"split size already set to {self.split_size}")
+            return self.split_size
 
-            if self.maximum_count:
-                # not ideal math, but better than nothing
-                self.split_size = int(self.maximum_count / cores)
+        cores = multiprocessing.cpu_count()
+        if self.maximum_cores and cores > self.maximum_cores:
+            cores = self.maximum_cores
+
+        if self.maximum_count and self.maximum_count > 0:
+            # not ideal math, but better than nothing
+            self.split_size = int(self.maximum_count / cores)
+        else:
+            if isinstance(self.our_data, io.BufferedReader):
+                # raw uncompressed file
+                divide_size = 1200
             else:
-                # even worse math and assumes generally large packets
-                stats = os.stat(self.pcap_file)
-                file_size = stats.st_size
-                self.split_size = int(file_size / 1200 / cores)
+                # likely a compressed file
+                divide_size = 5000
 
-            # even 1000 is kinda silly to split, but is better than nothing
-            self.split_size = min(self.split_size, 1000)
-            debug(f"setting PCAPSplitter split size to {self.split_size} for {cores}")
+            # even worse math and assumes generally large packets
+            stats = os.stat(self.pcap_file)
+            file_size = stats.st_size
+            self.split_size = int(file_size / divide_size / cores)
+            debug(
+                f"split info: {file_size=}, {divide_size=}, {cores=}, {self.split_size=}"
+            )
+
+        # even 1000 is kinda silly to split, but is better than nothing
+        self.split_size = max(self.split_size, 1000)
+        debug(f"setting PCAPSplitter split size to {self.split_size} for {cores} cores")
 
     def split(self) -> List[io.BytesIO] | List[Future]:
         "Does the actual reading and splitting"
         # open one for the dpkt reader and one for us independently
         self.our_data = PCAPDissector.open_maybe_compressed(self.pcap_file)
         self.dpkt_data = PCAPDissector.open_maybe_compressed(self.pcap_file)
+
+        self.set_split_size()
 
         # read the first 24 bytes which is the pcap header
         self.header = self.our_data.read(24)

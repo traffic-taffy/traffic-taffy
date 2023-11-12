@@ -306,7 +306,7 @@ class PCAPDissector:
     def load_via_dpkt(self) -> dict:
         self.data = {0: defaultdict(Counter)}
         if isinstance(self.pcap_file, str):
-            PCAPDissector.open_maybe_compressed(self.pcap_file)
+            pcap = dpkt.pcap.Reader(PCAPDissector.open_maybe_compressed(self.pcap_file))
         else:
             # it's an open handle already
             pcap = dpkt.pcap.Reader(self.pcap_file)

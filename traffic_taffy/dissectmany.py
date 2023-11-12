@@ -32,7 +32,7 @@ class PCAPDissectMany:
         pd.load()
         return pd.data
 
-    def load_pcap(self, pcap_file, split_size=100000, maximum_count=0):
+    def load_pcap(self, pcap_file, split_size=None, maximum_count=0):
         pd = PCAPDissector(
             pcap_file,
             *self.args,

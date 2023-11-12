@@ -56,7 +56,7 @@ class PcapCompare:
     def reports(self, newvalue):
         self._reports = newvalue
 
-    def compare_results(self, dissection1: dict, dissection2: dict) -> dict:
+    def compare_dissections(self, dissection1: dict, dissection2: dict) -> dict:
         "compares the results from two reports"
 
         # TODO: handle recursive depths, where items are subtrees rather than Counters
@@ -217,7 +217,7 @@ class PcapCompare:
                 # compare the two global summaries
                 reports.append(
                     {
-                        "report": self.compare_results(
+                        "report": self.compare_dissections(
                             reference["data"][0], other["data"][0]
                         ),
                         "title": f"{reference['file']} vs {other['file']}",
@@ -248,7 +248,7 @@ class PcapCompare:
 
                 debug(f"comparing timestamps {time_left} and {time_right}")
 
-                report = self.compare_results(
+                report = self.compare_dissections(
                     reference["data"][time_left], reference["data"][time_right]
                 )
 
