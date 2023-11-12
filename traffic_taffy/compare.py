@@ -191,13 +191,7 @@ class PcapCompare:
             print(f"************ {title}")
             self.print_report(report["report"])
 
-    def compare(self) -> None:
-        "Compares each pcap against the original source"
-
-        reports = []
-
-        # TODO: use parallel processes to load multiple at a time
-
+    def load_pcaps(self) -> None:
         # load the first as a reference pcap
         info(f"reading pcap files using level={self.dissection_level}")
         pdm = PCAPDissectMany(
@@ -209,7 +203,16 @@ class PcapCompare:
             dissector_level=self.dissection_level,
         )
         results = pdm.load_all()
+        return results
 
+    def compare(self) -> None:
+        "Compares each pcap against the original source"
+
+        results = self.load_pcaps()
+        self.compare_all(results)
+
+    def compare_all(self, results):
+        reports = []
         if len(self.pcaps) > 1:
             # multiple file comparison
             reference = next(results)
