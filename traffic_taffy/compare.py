@@ -140,6 +140,7 @@ class PcapCompare:
 
     def print_report(self, report: dict) -> None:
         "prints a report to the console"
+
         console = Console()
         for key in sorted(report):
             reported: bool = False
@@ -184,8 +185,9 @@ class PcapCompare:
     def print(self) -> None:
         "outputs the results"
         for n, report in enumerate(self.reports):
-            print(f"************ report #{n}")
-            self.print_report(report)
+            title = report.get("title", f"report #{n}")
+            print(f"************ {title}")
+            self.print_report(report["report"])
 
     def compare(self) -> None:
         "Compares each pcap against the original source"
@@ -206,7 +208,7 @@ class PcapCompare:
         )
         results = pdm.load_all()
 
-        if len(self.pcaps > 1):
+        if len(self.pcaps) > 1:
             # multiple file comparison
             reference = next(results)
             for other in results:
@@ -220,22 +222,28 @@ class PcapCompare:
                     }
                 )
 
-            self.reports = reports
         else:
             # deal with timestamps within a single file
-            timestamps = list(reports["data"].keys())
+            results = list(results)
+            reference = results[0]
+            timestamps = list(reference["data"].keys())
             for timestamp in range(
                 2, len(timestamps)
             ):  # second real non-zero timestamp to last
+                time_left = timestamps[timestamp - 1]
+                time_right = timestamps[timestamp]
+
                 report = self.compare_results(
-                    reports["data"][timestamp - 1], reports["data"][timestamp]
+                    reference["data"][time_left], reference["data"][time_right]
                 )
                 reports.append(
                     {
                         "report": report,
-                        "titel": f"time {timestamp-1} vs time {timestamp}",
+                        "title": f"time {time_left} vs time {time_right}",
                     }
                 )
+
+        self.reports = reports
 
 
 def parse_args():
