@@ -1,2 +1,5 @@
 scapy
+dpkt
 rich
+seaborn
+pandas
