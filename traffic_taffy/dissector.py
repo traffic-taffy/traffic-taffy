@@ -250,7 +250,7 @@ class PCAPDissector:
             self.timestamp = self.timestamp - self.timestamp % self.bin_size
         self.incr(self.TOTAL_COUNT, self.TOTAL_SUBKEY)
 
-        if self.dissector_level == PCAPDissectorType.THROUGH_IP.value:
+        if self.dissector_level >= PCAPDissectorType.THROUGH_IP.value:
             eth = dpkt.ethernet.Ethernet(packet)
             # these names are designed to match scapy names
             self.incr("Ethernet.dst", eth.dst)
@@ -500,6 +500,14 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     parser.add_argument(
+        "-b",
+        "--bin-size",
+        type=int,
+        default=3600,
+        help="Bin results into this many seconds",
+    )
+
+    parser.add_argument(
         "-C",
         "--cache-pcap-results",
         action="store_true",
@@ -597,7 +605,7 @@ def main():
 
     pd = PCAPDissector(
         args.input_file,
-        bin_size=0,
+        bin_size=args.bin_size,
         dissector_level=args.dissection_level,
         maximum_count=args.packet_count,
         cache_results=args.cache_pcap_results,

@@ -27,14 +27,6 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-g",
-        "--graph-elements",
-        default=None,
-        type=str,
-        help="Graph these particular elements; the default is packet counts",
-    )
-
-    parser.add_argument(
         "-o",
         "--output-file",
         default=None,
@@ -47,14 +39,6 @@ def parse_args():
         "--ll",
         default="info",
         help="Define verbosity level (debug, info, warning, error, fotal, critical).",
-    )
-
-    parser.add_argument(
-        "-b",
-        "--bin-size",
-        type=int,
-        default=1,
-        help="Bin results into this many seconds",
     )
 
     parser.add_argument(
