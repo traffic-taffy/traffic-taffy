@@ -47,6 +47,12 @@ def main():
     for key in contents["parameters"]:
         print(f"    {key:<16} {contents['parameters'][key]}")
 
+    print("data info:")
+    timestamps = list(contents["dissection"].keys())
+    print(f"    timestamps:      {len(timestamps)}")
+    print(f"    first:           {timestamps[1]}")  # skips 0 = global
+    print(f"    last:            {timestamps[-1]}")
+
 
 if __name__ == "__main__":
     main()
