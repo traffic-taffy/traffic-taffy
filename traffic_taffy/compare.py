@@ -47,6 +47,7 @@ class PcapCompare:
         self.cache_results = cache_results
         self.dissection_level = dissection_level
         self.between_times = between_times
+        self.console = None
 
     @property
     def reports(self):
@@ -140,10 +141,14 @@ class PcapCompare:
 
         return False
 
+    def init_console(self):
+        if not self.console:
+            self.console = Console()
+
     def print_report(self, report: dict) -> None:
         "prints a report to the console"
 
-        console = Console()
+        self.init_console()
         for key in sorted(report):
             reported: bool = False
 
@@ -178,14 +183,33 @@ class PcapCompare:
                 # construct the output line with styling
                 subkey = PCAPDissector.make_printable(subkey)
                 line = f"  {style}{subkey:<50}{endstyle}"
-                line += f"{100*delta:>6.2f} {data['total']:>8} "
+                line += f"{100*delta:>7.2f} {data['total']:>8} "
                 line += f"{data['ref_count']:>8} {data['comp_count']:>8}"
 
                 # print it to the rich console
-                console.print(line)
+                self.console.print(line)
+
+    def print_header(self):
+        # This should match the spacing in print_report()
+        self.init_console()
+
+        style = ""
+        subkey = "Value"
+        endstyle = ""
+        delta = "Delta %"
+        total = "Total"
+        ref_count = "Left"
+        comp_count = "Right"
+
+        line = f"  {style}{subkey:<50}{endstyle}"
+        line += f"{delta:>7} {total:>8} "
+        line += f"{ref_count:>8} {comp_count:>8}"
+
+        self.console.print(line)
 
     def print(self) -> None:
         "outputs the results"
+        self.print_header()
         for n, report in enumerate(self.reports):
             title = report.get("title", f"report #{n}")
             print(f"************ {title}")
@@ -235,6 +259,9 @@ class PcapCompare:
             debug(
                 f"found {len(timestamps)} timestamps from {timestamps[2]} to {timestamps[-1]}"
             )
+
+            self.print_header()
+
             for timestamp in range(
                 2, len(timestamps)
             ):  # second real non-zero timestamp to last
