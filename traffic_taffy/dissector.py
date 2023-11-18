@@ -470,7 +470,7 @@ class PCAPDissector:
             if isinstance(value, bytes):
                 value = "0x" + value.hex()
             else:
-                value = ["unprintable"]
+                value = "[unprintable]"
         return value
 
     def print(
