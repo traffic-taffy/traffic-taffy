@@ -181,7 +181,7 @@ class PcapCompare:
                 endstyle = style.replace("[", "[/")
 
                 # construct the output line with styling
-                subkey = PCAPDissector.make_printable(subkey)
+                subkey = PCAPDissector.make_printable(key, subkey)
                 line = f"  {style}{subkey:<50}{endstyle}"
                 line += f"{100*delta:>7.2f} {data['total']:>8} "
                 line += f"{data['ref_count']:>8} {data['comp_count']:>8}"

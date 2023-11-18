@@ -2,6 +2,7 @@
 
 import os
 import pickle
+import ipaddress
 from enum import Enum
 from logging import warning, info, error, debug
 from collections import Counter, defaultdict
@@ -25,6 +26,12 @@ class PCAPDissector:
     WIDTH_SUBKEY: str = "__WIDTH__"
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
     DISSECTION_VERSION: int = 4
+
+    display_transformers = {
+        "Ethernet.IP.dst": ipaddress.ip_address,
+        "Ethernet.IP.src": ipaddress.ip_address,
+        "Ethernet.IPv6.src": ipaddress.ip_address,
+    }
 
     def __init__(
         self,
@@ -89,8 +96,8 @@ class PCAPDissector:
                         continue
 
                     if make_printable:
-                        subkey = PCAPDissector.make_printable(subkey)
-                        count = PCAPDissector.make_printable(count)
+                        subkey = PCAPDissector.make_printable(key, subkey)
+                        count = PCAPDissector.make_printable(None, count)
 
                     if match_value and match_value not in subkey:
                         continue
@@ -451,9 +458,14 @@ class PCAPDissector:
         return contents
 
     @staticmethod
-    def make_printable(value: Any) -> str:
+    def make_printable(value_type: str, value: Any) -> str:
         try:
-            value = str(value)
+            if value_type in PCAPDissector.display_transformers:
+                value = str(PCAPDissector.display_transformers[value_type](value))
+            elif isinstance(value, bytes):
+                value = "0x" + value.hex()
+            else:
+                value = str(value)
         except Exception:
             if isinstance(value, bytes):
                 value = "0x" + value.hex()
