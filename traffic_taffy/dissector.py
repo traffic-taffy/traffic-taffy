@@ -27,10 +27,22 @@ class PCAPDissector:
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
     DISSECTION_VERSION: int = 4
 
+    def print_mac_address(value):
+        "Converts bytes to ethernet mac style address"
+
+        # TODO: certainly inefficient
+        def two_hex(value):
+            return f"{value:02x}"
+
+        return ":".join(map(two_hex, value))
+
     display_transformers = {
-        "Ethernet.IP.dst": ipaddress.ip_address,
         "Ethernet.IP.src": ipaddress.ip_address,
-        "Ethernet.IPv6.src": ipaddress.ip_address,
+        "Ethernet.IP.dst": ipaddress.ip_address,
+        "Ethernet.IP6.src": ipaddress.ip_address,
+        "Ethernet.IP6.dst": ipaddress.ip_address,
+        "Ethernet.src": print_mac_address,
+        "Ethernet.dst": print_mac_address,
     }
 
     def __init__(
