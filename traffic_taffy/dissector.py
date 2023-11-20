@@ -472,10 +472,11 @@ class PCAPDissector:
     @staticmethod
     def make_printable(value_type: str, value: Any) -> str:
         try:
-            if value_type in PCAPDissector.display_transformers:
-                value = str(PCAPDissector.display_transformers[value_type](value))
-            elif isinstance(value, bytes):
-                value = "0x" + value.hex()
+            if isinstance(value, bytes):
+                if value_type in PCAPDissector.display_transformers:
+                    value = str(PCAPDissector.display_transformers[value_type](value))
+                else:
+                    value = "0x" + value.hex()
             else:
                 value = str(value)
         except Exception:
