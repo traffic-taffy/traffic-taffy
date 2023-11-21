@@ -62,15 +62,12 @@ class PcapCompare:
     def compare_dissections(self, dissection1: dict, dissection2: dict) -> dict:
         "compares the results from two reports"
 
-        # TODO: handle recursive depths, where items are subtrees rather than Counters
-
         report = {}
 
         # TODO: missing key in dissection2 (major items added)
         keys = set(dissection1.keys())
         keys = keys.union(dissection2.keys())
         for key in keys:
-            # TODO: deal with missing keys from one set
             dissection1_total = dissection1[key].total()
             dissection2_total = dissection2[key].total()
             report[key] = {}
