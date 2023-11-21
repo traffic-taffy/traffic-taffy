@@ -67,7 +67,9 @@ class PcapCompare:
         report = {}
 
         # TODO: missing key in dissection2 (major items added)
-        for key in dissection1:
+        keys = set(dissection1.keys())
+        keys = keys.union(dissection2.keys())
+        for key in keys:
             # TODO: deal with missing keys from one set
             dissection1_total = dissection1[key].total()
             dissection2_total = dissection2[key].total()
