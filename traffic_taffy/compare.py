@@ -32,6 +32,7 @@ class PcapCompare:
         only_positive: bool = False,
         only_negative: bool = False,
         cache_results: bool = False,
+        bin_size: int | None = 3600,
         dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
         between_times: List[int] | None = None,
     ) -> None:
@@ -47,6 +48,7 @@ class PcapCompare:
         self.cache_results = cache_results
         self.dissection_level = dissection_level
         self.between_times = between_times
+        self.bin_size = bin_size
         self.console = None
 
     @property
@@ -220,7 +222,7 @@ class PcapCompare:
         info(f"reading pcap files using level={self.dissection_level}")
         pdm = PCAPDissectMany(
             self.pcaps,
-            bin_size=None,
+            bin_size=self.bin_size,
             maximum_count=self.maximum_count,
             pcap_filter=self.pkt_filter,
             cache_results=self.cache_results,
@@ -368,6 +370,7 @@ def main():
         cache_results=args.cache_pcap_results,
         dissection_level=args.dissection_level,
         between_times=args.between_times,
+        bin_size=args.bin_size,
     )
 
     # compare the pcaps
