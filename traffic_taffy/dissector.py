@@ -10,7 +10,7 @@ from scapy.all import sniff
 from typing import Any, List
 import dpkt
 from rich import print
-from pcap_parallel import open_maybe_compressed
+from pcap_parallel import PCAPParallel as pcapp
 
 
 class PCAPDissectorType(Enum):
@@ -282,7 +282,7 @@ class PCAPDissector:
     def load_via_dpkt(self) -> dict:
         self.data = {0: defaultdict(Counter)}
         if isinstance(self.pcap_file, str):
-            pcap = dpkt.pcap.Reader(open_maybe_compressed(self.pcap_file))
+            pcap = dpkt.pcap.Reader(pcapp.open_maybe_compressed(self.pcap_file))
         else:
             # it's an open handle already
             pcap = dpkt.pcap.Reader(self.pcap_file)
@@ -357,7 +357,7 @@ class PCAPDissector:
         "Loads a pcap file into a nested dictionary of statistical counts"
         load_this = self.pcap_file
         if isinstance(self.pcap_file, str):
-            load_this = open_maybe_compressed(self.pcap_file)
+            load_this = pcapp.open_maybe_compressed(self.pcap_file)
         sniff(
             offline=load_this,
             prn=self.scapy_callback,
