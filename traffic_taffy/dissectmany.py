@@ -1,5 +1,5 @@
 from traffic_taffy.dissector import PCAPDissector, pcap_data_merge
-from traffic_taffy.pcap_splitter import PCAPSplitter
+from pcap_parallel import PCAPParallel
 from concurrent.futures import ProcessPoolExecutor
 from logging import info
 import copy
@@ -44,7 +44,7 @@ class PCAPDissectMany:
 
         # TODO: check caching availability here
         info(f"processing {pcap_file}")
-        ps = PCAPSplitter(
+        ps = PCAPParallel(
             pcap_file,
             split_size=split_size,
             callback=self.load_pcap_piece,
