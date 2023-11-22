@@ -34,5 +34,6 @@ setuptools.setup(
         "seaborn",
         "scapy",
         "dpkt",
+        "pcap-parallel",
     ],
 )

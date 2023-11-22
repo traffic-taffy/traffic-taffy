@@ -3,3 +3,4 @@ dpkt
 rich
 seaborn
 pandas
+pcap-parallel
