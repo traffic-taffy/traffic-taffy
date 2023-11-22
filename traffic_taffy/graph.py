@@ -1,17 +1,15 @@
 """Read a PCAP file and graph it or parts of it"""
 
-import os
 import seaborn as sns
 import matplotlib.pyplot as plt
-import pandas
-from pandas import DataFrame, to_datetime
 from traffic_taffy.dissector import (
     PCAPDissectorType,
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
 )
-from traffic_taffy.dissectmany import PCAPDissectMany, PCAPDissector
+from traffic_taffy.dissectmany import PCAPDissectMany
+from traffic_taffy.graphdata import PcapGraphData
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from logging import debug, info
@@ -60,7 +58,7 @@ def parse_args():
     return args
 
 
-class PcapGraph:
+class PcapGraph(PcapGraphData):
     def __init__(
         self,
         pcap_files: str,
@@ -87,6 +85,8 @@ class PcapGraph:
         self.dissector_level = dissector_level
         self.interactive = interactive
 
+        super().__init__()
+
     def load_pcaps(self):
         "loads the pcap and counts things into bins"
         self.data = {}
@@ -105,43 +105,6 @@ class PcapGraph:
         for result in results:
             self.data[result["file"]] = result["data"]
         info("done reading pcap files")
-
-    def normalize_bins(self, counters):
-        results = {}
-        time_keys = list(counters.keys())
-        if time_keys[0] == 0:  # likely always
-            time_keys.pop(0)
-        time_keys[0]
-        time_keys[-1]
-
-        results = {"time": [], "count": [], "index": []}
-
-        # TODO: this could likely be made much more efficient and needs hole-filling
-        for timestamp, key, subkey, value in PCAPDissector.find_data(
-            counters,
-            timestamps=time_keys,
-            match_string=self.match_key,
-            match_value=self.match_value,
-            minimum_count=self.minimum_count,
-            make_printable=True,
-        ):
-            index = key + "=" + subkey
-            results["count"].append(int(value))
-            results["index"].append(index)
-            results["time"].append(timestamp)
-
-        return results
-
-    def merge_datasets(self):
-        datasets = []
-        for dataset in self.data:
-            data = self.normalize_bins(self.data[dataset])
-            data = DataFrame.from_records(data)
-            data["filename"] = os.path.basename(dataset)
-            data["time"] = to_datetime(data["time"], unit="s")
-            datasets.append(data)
-        datasets = pandas.concat(datasets)
-        return datasets
 
     def create_graph(self):
         df = self.merge_datasets()
