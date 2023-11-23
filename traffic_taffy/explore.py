@@ -55,6 +55,9 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def __init__(self, args):
         super().__init__()
 
+        # TODO: allow varying
+        self.minimum_count = 2
+
         self.mainLayout = QVBoxLayout()
         self.setLayout(self.mainLayout)
 
@@ -118,12 +121,12 @@ class TaffyExplorer(QDialog, PcapGraphData):
         for dataset in datasets:
             self.data[dataset["file"]] = dataset["data"]
 
-    def update_traffic_chart(self, mult=1):
-        # self.traffic_graph.clear()
+    def update_chart(
+        self, chart: QChart, match_key: str, match_value: str | None = None
+    ):
+        self.match_key = match_key
+        self.match_value = match_value
 
-        self.match_key = "__TOTAL"
-        self.match_value = None
-        self.minimum_count = 2
         df = self.merge_datasets()
 
         series = QLineSeries()
@@ -134,7 +137,15 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 df["time"][index].to_pydatetime().timestamp(), df["count"][index]
             )
 
-        self.traffic_graph.addSeries(series)
+        chart.addSeries(series)
+
+    def update_detail_chart(
+        self, match_key: str = "__TOTAL__", match_value: str | None = None
+    ):
+        self.update_chart(self.detail_graph, match_key, match_value)
+
+    def update_traffic_chart(self):
+        self.update_chart(self.traffic_graph, "__TOTAL__")
 
     # def show_comparison(self, pcap_one, timestamp_one, pcap_two, timestamp_two):
 
