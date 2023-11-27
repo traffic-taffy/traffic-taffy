@@ -31,6 +31,6 @@ def test_compare_results():
     }
 
     pc = PcapCompare([1, 2])  # bogus files
-    report = pc.compare_results(test_data1, test_data2)
+    report = pc.compare_dissections(test_data1[0], test_data2[0])
 
     assert report == expected
