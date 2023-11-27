@@ -12,7 +12,9 @@ def test_dissector_load():
 def test_dissector_simple_callback():
     from traffic_taffy.dissector import PCAPDissector, PCAPDissectorType
 
-    pd = PCAPDissector("bogus", dissector_level=PCAPDissectorType.DETAILED, bin_size=2)
+    pd = PCAPDissector(
+        "bogus", dissector_level=PCAPDissectorType.COUNT_ONLY, bin_size=2
+    )
 
     pd.dpkt_callback(10, b"")
     assert pd.data == {
