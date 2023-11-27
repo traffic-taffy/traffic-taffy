@@ -53,6 +53,15 @@ from PyQt6.QtWidgets import (
 )
 
 
+class CallWithParameter:
+    def __init__(self, function, parameter):
+        self.parameter = parameter
+        self.function = function
+
+    def __call__(self):
+        self.function(self.parameter)
+
+
 class TaffyExplorer(QDialog, PcapGraphData):
     """Explore PCAP files by comparison slices"""
 
@@ -168,12 +177,17 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def update_detail_chart(
         self, match_key: str = "__TOTAL__", match_value: str | None = None
     ):
+        self.detail_graph.setTitle(match_key)
+        self.detail_graph.removeAllSeries()
         self.update_chart(self.detail_graph, match_key, match_value)
 
     def update_traffic_chart(self):
         self.update_chart(self.traffic_graph, "__TOTAL__")
 
     # def show_comparison(self, pcap_one, timestamp_one, pcap_two, timestamp_two):
+
+    def header_clicked(self, key):
+        self.update_detail_chart(key, None)
 
     def update_report(self):
         # TODO: less duplication with this and compare:print_report()
@@ -195,7 +209,10 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 # add the header
                 if not reported:
                     debug(f"reporting on {key}")
-                    report_label = QLabel(key)
+                    report_label = QPushButton(key)
+                    report_label.clicked.connect(
+                        CallWithParameter(self.header_clicked, key)
+                    )
                     self.comparison_panel.addWidget(report_label, current_grid_row, 0)
                     current_grid_row += 1
                     reported = True
