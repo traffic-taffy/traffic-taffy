@@ -65,6 +65,12 @@ class CallWithParameter:
 class TaffyExplorer(QDialog, PcapGraphData):
     """Explore PCAP files by comparison slices"""
 
+    def testplot(self, area):
+        print(area)
+        # self.traffic_graph.setPlotArea(area)
+        # self.detail_graph.setPlotArea(area)
+        self.traffic_graph.zoomIn(area)
+
     def __init__(self, args):
         super().__init__()
 
@@ -77,7 +83,10 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # create the graph at the top
         self.detail_graph = QChart()
         self.detail_graph_view = QChartView(self.detail_graph)
-        self.detail_graph.setMinimumSize(600, 400)
+        self.detail_graph_view.setRubberBand(QChartView.RubberBand.RectangleRubberBand)
+        self.detail_graph.setMinimumSize(1000, 400)
+        # this is the screen space not the zoom setting
+        # self.detail_graph.plotAreaChanged.connect(self.testplot)
         self.mainLayout.addWidget(self.detail_graph_view)
 
         # create the mini graph next
@@ -85,7 +94,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.traffic_graph.legend().hide()
         self.traffic_graph.setTitle("All Traffic")
         self.traffic_graph_view = QChartView(self.traffic_graph)
-        self.traffic_graph.setMinimumSize(600, 200)
+        self.traffic_graph_view.setRubberBand(QChartView.RubberBand.RectangleRubberBand)
+        self.traffic_graph.setMinimumSize(1000, 200)
         self.mainLayout.addWidget(self.traffic_graph_view)
 
         # create the traffic source menu bar
@@ -101,7 +111,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # the comparison panel contains deltas between them
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidget(self.comparison_panel_w)
-        self.scroll_area.setMinimumSize(600, 200)
+        self.scroll_area.setMinimumSize(1000, 200)
         self.scroll_area.setWidgetResizable(True)
 
         self.mainLayout.addWidget(self.scroll_area)
