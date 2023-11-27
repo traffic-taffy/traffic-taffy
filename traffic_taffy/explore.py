@@ -1,10 +1,12 @@
 import sys
 import logging
+from logging import debug
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
+    PCAPDissector,
 )
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.compare import PcapCompare
@@ -46,6 +48,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QApplication,
     QWidget,
+    QLabel,
+    QScrollArea,
 )
 
 
@@ -79,11 +83,17 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.source_menus_w.setLayout(self.source_menus)
         self.mainLayout.addWidget(self.source_menus_w)
 
-        # the comparison panel contains deltas between them
         self.comparison_panel = QGridLayout()
         self.comparison_panel_w = QWidget()
         self.comparison_panel_w.setLayout(self.comparison_panel)
-        self.mainLayout.addWidget(self.comparison_panel_w)
+
+        # the comparison panel contains deltas between them
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidget(self.comparison_panel_w)
+        self.scroll_area.setMinimumSize(600, 200)
+        self.scroll_area.setWidgetResizable(True)
+
+        self.mainLayout.addWidget(self.scroll_area)
 
         self.quit_button = QPushButton("Quit")
         self.mainLayout.addWidget(self.quit_button)
@@ -94,6 +104,11 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # self.tree.setIndentation(0)
 
         self.args = args
+
+        self.only_positive = args.only_positive
+        self.only_negative = args.only_negative
+        self.print_threshold = args.print_threshold
+        self.print_minimum_count = args.minimum_count
 
     def quit(self):
         exit()
@@ -148,6 +163,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         chart.addSeries(series)
 
+        self.saved_df = df
+
     def update_detail_chart(
         self, match_key: str = "__TOTAL__", match_value: str | None = None
     ):
@@ -157,6 +174,101 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.update_chart(self.traffic_graph, "__TOTAL__")
 
     # def show_comparison(self, pcap_one, timestamp_one, pcap_two, timestamp_two):
+
+    def update_report(self):
+        # TODO: less duplication with this and compare:print_report()
+        "fills in the grid table showing the differences from a saved report"
+
+        current_grid_row = 0
+        for key in self.report:
+            reported: bool = False
+
+            if self.match_key and self.match_key not in key:
+                continue
+
+            for subkey, data in sorted(
+                self.report[key].items(), key=lambda x: x[1]["delta"], reverse=True
+            ):
+                if not self.filter_check(data):
+                    continue
+
+                # add the header
+                if not reported:
+                    debug(f"reporting on {key}")
+                    report_label = QLabel(key)
+                    self.comparison_panel.addWidget(report_label, current_grid_row, 0)
+                    current_grid_row += 1
+                    reported = True
+
+                delta: float = data["delta"]
+
+                # apply some fancy styling
+                style = ""
+                if delta < -0.5:
+                    style = "[bold red]"
+                elif delta < 0.0:
+                    style = "[red]"
+                elif delta > 0.5:
+                    style = "[bold green]"
+                elif delta > 0.0:
+                    style = "[green]"
+                endstyle = style.replace("[", "[/")
+
+                # construct the output line with styling
+                subkey = PCAPDissector.make_printable(key, subkey)
+                line = f"  {style}{subkey:<50}{endstyle}"
+                line += f"{100*delta:>7.2f} {data['total']:>8} "
+                line += f"{data['ref_count']:>8} {data['comp_count']:>8}"
+
+                subkey = PCAPDissector.make_printable(key, subkey)
+                debug(f"  adding {subkey}")
+                self.comparison_panel.addWidget(
+                    QLabel("    " + subkey), current_grid_row, 0
+                )
+                self.comparison_panel.addWidget(
+                    QLabel(f"{100*delta:>7.2f}"), current_grid_row, 1
+                )
+                self.comparison_panel.addWidget(
+                    QLabel(f"{data['total']:>8}"), current_grid_row, 2
+                )
+                self.comparison_panel.addWidget(
+                    QLabel(f"{data['ref_count']:>8}"), current_grid_row, 3
+                )
+                self.comparison_panel.addWidget(
+                    QLabel(f"{data['comp_count']:>8}"), current_grid_row, 4
+                )
+                current_grid_row += 1
+
+    # TODO: move to base class of compare and explore
+    def filter_check(self, data: dict) -> bool:
+        "Returns true if we should include it"
+        delta: float = data["delta"]
+        total: int = data["total"]
+
+        if self.only_positive and delta <= 0:
+            return False
+
+        if self.only_negative and delta >= 0:
+            return False
+
+        if not self.print_threshold and not self.print_minimum_count:
+            # always print
+            return True
+
+        if self.print_threshold and not self.print_minimum_count:
+            # check print_threshold as a fraction
+            if abs(delta) > self.print_threshold:
+                return True
+        elif not self.print_threshold and self.print_minimum_count:
+            # just check print_minimum_count
+            if total > self.print_minimum_count:
+                return True
+        else:
+            # require both
+            if total > self.print_minimum_count and abs(delta) > self.print_threshold:
+                return True
+
+        return False
 
 
 def parse_args():
@@ -222,6 +334,10 @@ def main():
     window = TaffyExplorer(args)
     window.create_comparison()
     window.update_traffic_chart()
+    window.update_detail_chart()
+    window.match_key = None
+    window.match_value = None
+    window.update_report()
     window.show()
     sys.exit(app.exec())
 
