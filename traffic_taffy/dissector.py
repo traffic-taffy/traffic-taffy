@@ -336,11 +336,14 @@ class PCAPDissector:
             return
 
         for field_name in name_list:
-            field_value = getattr(layer, field_name)
-            if hasattr(field_value, "fields"):
-                self.add_scapy_layer(field_value, prefix + field_name + ".")
-            else:
-                self.add_scapy_item(field_value, prefix + field_name)
+            try:
+                field_value = getattr(layer, field_name)
+                if hasattr(field_value, "fields"):
+                    self.add_scapy_layer(field_value, prefix + field_name + ".")
+                else:
+                    self.add_scapy_item(field_value, prefix + field_name)
+            except Exception:
+                warning(f"scapy error at '{prefix}' in field '{field_name}'")
 
     def scapy_callback(self, packet):
         prefix = "."
