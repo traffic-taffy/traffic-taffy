@@ -77,6 +77,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # create the graph at the top
         self.detail_graph = QChart()
         self.detail_graph_view = QChartView(self.detail_graph)
+        self.detail_graph.setMinimumSize(600, 400)
         self.mainLayout.addWidget(self.detail_graph_view)
 
         # create the mini graph next
@@ -84,6 +85,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.traffic_graph.legend().hide()
         self.traffic_graph.setTitle("All Traffic")
         self.traffic_graph_view = QChartView(self.traffic_graph)
+        self.traffic_graph.setMinimumSize(600, 200)
         self.mainLayout.addWidget(self.traffic_graph_view)
 
         # create the traffic source menu bar
@@ -162,15 +164,18 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         df = self.merge_datasets()
 
-        series = QLineSeries()
+        # TODO: there must be a better way! (key is duplicated)
+        for key in df.key.unique():
+            series = QLineSeries()
 
-        # TODO: there must be a better way!
-        for index in df.index:
-            series.append(
-                df["time"][index].to_pydatetime().timestamp(), df["count"][index]
-            )
+            for index in df[df["key"] == key].index:
+                series.append(
+                    df["time"][index].to_pydatetime().timestamp(), df["count"][index]
+                )
 
-        chart.addSeries(series)
+            series.setName(key)
+            series.setOpacity(0.5)
+            chart.addSeries(series)
 
         self.saved_df = df
 
@@ -211,9 +216,11 @@ class TaffyExplorer(QDialog, PcapGraphData):
                     debug(f"reporting on {key}")
                     report_label = QPushButton(key)
                     report_label.clicked.connect(
-                        CallWithParameter(self.header_clicked, key)
+                        CallWithParameter(self.update_detail_chart, key)
                     )
-                    self.comparison_panel.addWidget(report_label, current_grid_row, 0)
+                    self.comparison_panel.addWidget(
+                        report_label, current_grid_row, 0, 1, 5
+                    )
                     current_grid_row += 1
                     reported = True
 

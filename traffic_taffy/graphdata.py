@@ -23,7 +23,7 @@ class PcapGraphData:
         time_keys[0]
         time_keys[-1]
 
-        results = {"time": [], "count": [], "index": []}
+        results = {"time": [], "count": [], "index": [], "key": []}
 
         # TODO: this could likely be made much more efficient and needs hole-filling
         for timestamp, key, subkey, value in PCAPDissector.find_data(
@@ -37,6 +37,7 @@ class PcapGraphData:
             index = key + "=" + subkey
             results["count"].append(int(value))
             results["index"].append(index)
+            results["key"].append(index)
             results["time"].append(timestamp)
 
         return results
@@ -48,6 +49,7 @@ class PcapGraphData:
             data = DataFrame.from_records(data)
             data["filename"] = os.path.basename(dataset)
             data["time"] = to_datetime(data["time"], unit="s")
+            data["key"] = data["index"]
             datasets.append(data)
         datasets = concat(datasets)
         return datasets
