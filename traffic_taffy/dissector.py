@@ -226,7 +226,10 @@ class PCAPDissector:
             self.timestamp = self.timestamp - self.timestamp % self.bin_size
         self.incr(self.TOTAL_COUNT, self.TOTAL_SUBKEY)
 
-        if self.dissector_level.value >= PCAPDissectorType.THROUGH_IP.value:
+        level = self.dissector_level
+        if isinstance(level, PCAPDissectorType):
+            level = level.value
+        if level >= PCAPDissectorType.THROUGH_IP.value:
             eth = dpkt.ethernet.Ethernet(packet)
             # these names are designed to match scapy names
             self.incr("Ethernet.dst", eth.dst)
