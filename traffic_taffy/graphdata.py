@@ -51,5 +51,5 @@ class PcapGraphData:
             data["time"] = to_datetime(data["time"], unit="s")
             data["key"] = data["index"]
             datasets.append(data)
-        datasets = concat(datasets)
+        datasets = concat(datasets, ignore_index=True)
         return datasets
