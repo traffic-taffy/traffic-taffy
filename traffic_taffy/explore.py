@@ -208,7 +208,14 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # TODO: less duplication with this and compare:print_report()
         "fills in the grid table showing the differences from a saved report"
 
-        current_grid_row = 0
+        # add the header in row 0
+        self.comparison_panel.addWidget(QLabel("Value"), 0, 0)
+        self.comparison_panel.addWidget(QLabel("Delta"), 0, 1)
+        self.comparison_panel.addWidget(QLabel("Total"), 0, 2)
+        self.comparison_panel.addWidget(QLabel("Reference\nCount"), 0, 3)
+        self.comparison_panel.addWidget(QLabel("Comparison\nCount"), 0, 4)
+
+        current_grid_row = 1
         for key in self.report:
             reported: bool = False
 
