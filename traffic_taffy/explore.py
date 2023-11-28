@@ -51,6 +51,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
     QScrollArea,
+    QSpinBox,
 )
 
 
@@ -100,18 +101,15 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.mainLayout.addWidget(self.traffic_graph_view)
 
         # create the traffic source menu bar
-        self.source_menus = QHBoxLayout()  # TODO: line graph
+        self.source_menus = QHBoxLayout()
         self.source_menus_w = QWidget()
         self.source_menus_w.setLayout(self.source_menus)
         self.mainLayout.addWidget(self.source_menus_w)
 
-        self.comparison_panel = QGridLayout()
-        self.comparison_panel_w = QWidget()
-        self.comparison_panel_w.setLayout(self.comparison_panel)
+        self.comparison_panel_w = None  # place holder for update_report()
 
         # the comparison panel contains deltas between them
         self.scroll_area = QScrollArea()
-        self.scroll_area.setWidget(self.comparison_panel_w)
         self.scroll_area.setMinimumSize(1000, 200)
         self.scroll_area.setWidgetResizable(True)
 
@@ -205,12 +203,59 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def header_clicked(self, key):
         self.update_detail_chart(key, None)
 
+    def min_count_changed(self, value):
+        self.minimum_count = value
+        self.update_report()
+        debug(f"changed minimum count to {self.minimum_count}")
+
+    # def clearGridLayout(layout, deleteWidgets: bool = True):
+
+    #     for widget in layout.something():
+    #         layout.removeWidget(widget)
+    #         widget.deletLater()
+
+    # while (QLayoutItem* item = layout->takeAt(0))
+
+    #     if (deleteWidgets)
+    #     {
+    #         if (QWidget* widget = item->widget())
+    #             widget->deleteLater();
+    #     }
+    #     if (QLayout* childLayout = item->layout())
+    #         clearLayout(childLayout, deleteWidgets);
+    #     delete item;
+    # }
+
+    def add_control_widgets(self):
+        self.source_menus.addWidget(QLabel("Minimum count:"))
+        self.minimum_count_w = QSpinBox()
+        self.minimum_count_w.setMinimum(0)
+        self.minimum_count_w.setValue(int(self.minimum_count))
+        self.minimum_count_w.setSingleStep(5)
+
+        self.minimum_count_w.valueChanged.connect(self.min_count_changed)
+        self.source_menus.addWidget(self.minimum_count_w)
+
     def update_report(self):
         # TODO: less duplication with this and compare:print_report()
         "fills in the grid table showing the differences from a saved report"
 
-        # add the header in row 0
+        old_widget = self.comparison_panel_w
 
+        # add a new one
+        self.comparison_panel = QGridLayout()
+        self.comparison_panel_w = QWidget()
+        self.comparison_panel_w.setLayout(self.comparison_panel)
+        self.scroll_area.setWidget(self.comparison_panel_w)
+
+        del old_widget
+
+        # we need to store the key/match values to reset
+        (tmp_key, tmp_value) = (self.match_key, self.match_value)
+        self.match_key = None
+        self.match_value = None
+
+        # add the header in row 0
         headers = ["Value", "Delta", "Total", "Reference Count", "Comparison Count"]
         for n, header in enumerate(headers):
             header = header.replace(" ", "**\n\n**")
@@ -288,6 +333,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, 4)
                 current_grid_row += 1
+
+        (self.match_key, self.match_value) = (tmp_key, tmp_value)
 
     # TODO: move to base class of compare and explore
     def filter_check(self, data: dict) -> bool:
@@ -383,10 +430,9 @@ def main():
     app = QApplication(sys.argv)
     window = TaffyExplorer(args)
     window.create_comparison()
+    window.add_control_widgets()
     window.update_traffic_chart()
     window.update_detail_chart()
-    window.match_key = None
-    window.match_value = None
     window.update_report()
     window.show()
     sys.exit(app.exec())
