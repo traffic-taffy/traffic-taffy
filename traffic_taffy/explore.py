@@ -297,21 +297,15 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 # apply some fancy styling
                 style = ""
                 if delta < -0.5:
-                    style = "[bold red]"
+                    style = "color: red"  # TODO bold
                 elif delta < 0.0:
-                    style = "[red]"
+                    style = "color: red"
                 elif delta > 0.5:
-                    style = "[bold green]"
+                    style = "color: lightgreen"  # TODO bold
                 elif delta > 0.0:
-                    style = "[green]"
-                endstyle = style.replace("[", "[/")
+                    style = "color: lightgreen"
 
                 # construct the output line with styling
-                subkey = PCAPDissector.make_printable(key, subkey)
-                line = f"  {style}{subkey:<50}{endstyle}"
-                line += f"{100*delta:>7.2f} {data['total']:>8} "
-                line += f"{data['ref_count']:>8} {data['comp_count']:>8}"
-
                 subkey = PCAPDissector.make_printable(key, subkey)
                 debug(f"  adding {subkey}")
 
@@ -320,6 +314,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 subkey_button.clicked.connect(
                     CallWithParameter(self.update_detail_chart, key, subkey)
                 )
+                subkey_button.setStyleSheet(style)
                 self.comparison_panel.addWidget(subkey_button, current_grid_row, 0)
 
                 label = QLabel(f"{100*delta:>7.2f}")
