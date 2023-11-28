@@ -211,10 +211,12 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         # add the header in row 0
 
-        headers = ["Value", "Delta", "Total", "Reference\nCount", "Comparison\nCount"]
+        headers = ["Value", "Delta", "Total", "Reference Count", "Comparison Count"]
         for n, header in enumerate(headers):
-            label = QLabel(header)
-            label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            header = header.replace(" ", "**\n\n**")
+            label = QLabel("**" + header + "**")
+            label.setAlignment(Qt.AlignmentFlag.AlignRight)
+            label.setTextFormat(Qt.TextFormat.MarkdownText)
             self.comparison_panel.addWidget(label, 0, n)
 
         current_grid_row = 1
@@ -273,18 +275,18 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 )
                 self.comparison_panel.addWidget(subkey_button, current_grid_row, 0)
 
-                self.comparison_panel.addWidget(
-                    QLabel(f"{100*delta:>7.2f}"), current_grid_row, 1
-                )
-                self.comparison_panel.addWidget(
-                    QLabel(f"{data['total']:>8}"), current_grid_row, 2
-                )
-                self.comparison_panel.addWidget(
-                    QLabel(f"{data['ref_count']:>8}"), current_grid_row, 3
-                )
-                self.comparison_panel.addWidget(
-                    QLabel(f"{data['comp_count']:>8}"), current_grid_row, 4
-                )
+                label = QLabel(f"{100*delta:>7.2f}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, 1)
+                label = QLabel(f"{data['total']:>8}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, 2)
+                label = QLabel(f"{data['ref_count']:>8}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, 3)
+                label = QLabel(f"{data['comp_count']:>8}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, 4)
                 current_grid_row += 1
 
     # TODO: move to base class of compare and explore
