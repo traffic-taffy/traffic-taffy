@@ -26,7 +26,7 @@ class PcapCompare:
         maximum_count: int | None = None,
         deep: bool = True,
         print_threshold: float = 0.0,
-        print_minimum_count: int | None = None,
+        minimum_count: int | None = None,
         print_match_string: str | None = None,
         pkt_filter: str | None = None,
         only_positive: bool = False,
@@ -40,7 +40,7 @@ class PcapCompare:
         self.deep = deep
         self.maximum_count = maximum_count
         self.print_threshold = print_threshold
-        self.print_minimum_count = print_minimum_count
+        self.minimum_count = minimum_count
         self.print_match_string = print_match_string
         self.pkt_filter = pkt_filter
         self.only_positive = only_positive
@@ -123,21 +123,21 @@ class PcapCompare:
         if self.only_negative and delta >= 0:
             return False
 
-        if not self.print_threshold and not self.print_minimum_count:
+        if not self.print_threshold and not self.minimum_count:
             # always print
             return True
 
-        if self.print_threshold and not self.print_minimum_count:
+        if self.print_threshold and not self.minimum_count:
             # check print_threshold as a fraction
             if abs(delta) > self.print_threshold:
                 return True
-        elif not self.print_threshold and self.print_minimum_count:
-            # just check print_minimum_count
-            if total > self.print_minimum_count:
+        elif not self.print_threshold and self.minimum_count:
+            # just check minimum_count
+            if total > self.minimum_count:
                 return True
         else:
             # require both
-            if total > self.print_minimum_count and abs(delta) > self.print_threshold:
+            if total > self.minimum_count and abs(delta) > self.print_threshold:
                 return True
 
         return False
@@ -362,7 +362,7 @@ def main():
         args.pcap_files,
         maximum_count=args.packet_count,
         print_threshold=float(args.print_threshold) / 100.0,
-        print_minimum_count=args.minimum_count,
+        minimum_count=args.minimum_count,
         print_match_string=args.match_string,
         only_positive=args.only_positive,
         only_negative=args.only_negative,

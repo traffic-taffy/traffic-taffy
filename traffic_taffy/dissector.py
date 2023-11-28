@@ -97,15 +97,39 @@ class PCAPDissector:
     ):
         if not timestamps:
             timestamps = data.keys()
+
+        # find timestamps/key values with at least one item above count
+        # TODO: we should really use pandas for this
+        usable = defaultdict(set)
+        for timestamp in timestamps:
+            for key in data[timestamp]:
+                # if they requested a match string
+                if match_string and match_string not in key:
+                    continue
+
+                # ensure at least one of the count valuse for the
+                # stream gets above minimum_count
+                for subkey, count in data[timestamp][key].items():
+                    if (
+                        not minimum_count
+                        or minimum_count
+                        and abs(count) > minimum_count
+                    ):
+                        usable[key].add(subkey)
+                        break
+
+        # TODO: move the timestamp inside the other fors for faster
+        # processing of skipped key/subkeys
         for timestamp in timestamps:
             for key in sorted(data[timestamp]):
-                if match_string and match_string not in key:
+                if key not in usable:
                     continue
 
                 for subkey, count in sorted(
                     data[timestamp][key].items(), key=lambda x: x[1], reverse=True
                 ):
-                    if minimum_count and abs(count) < minimum_count:
+                    # check that this subkey can be usable at all
+                    if subkey not in usable[key]:
                         continue
 
                     if make_printable:

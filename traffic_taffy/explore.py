@@ -129,7 +129,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.only_positive = args.only_positive
         self.only_negative = args.only_negative
         self.print_threshold = args.print_threshold
-        self.print_minimum_count = args.minimum_count
+        self.minimum_count = args.minimum_count
 
     def quit(self):
         exit()
@@ -139,7 +139,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             self.args.pcap_files,
             maximum_count=self.args.packet_count,
             print_threshold=float(self.args.print_threshold) / 100.0,
-            print_minimum_count=self.args.minimum_count,
+            minimum_count=self.args.minimum_count,
             print_match_string=self.args.match_string,
             only_positive=self.args.only_positive,
             only_negative=self.args.only_negative,
@@ -285,21 +285,21 @@ class TaffyExplorer(QDialog, PcapGraphData):
         if self.only_negative and delta >= 0:
             return False
 
-        if not self.print_threshold and not self.print_minimum_count:
+        if not self.print_threshold and not self.minimum_count:
             # always print
             return True
 
-        if self.print_threshold and not self.print_minimum_count:
+        if self.print_threshold and not self.minimum_count:
             # check print_threshold as a fraction
             if abs(delta) > self.print_threshold:
                 return True
-        elif not self.print_threshold and self.print_minimum_count:
-            # just check print_minimum_count
-            if total > self.print_minimum_count:
+        elif not self.print_threshold and self.minimum_count:
+            # just check minimum_count
+            if total > self.minimum_count:
                 return True
         else:
             # require both
-            if total > self.print_minimum_count and abs(delta) > self.print_threshold:
+            if total > self.minimum_count and abs(delta) > self.print_threshold:
                 return True
 
         return False
