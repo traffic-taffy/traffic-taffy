@@ -54,12 +54,12 @@ from PyQt6.QtWidgets import (
 
 
 class CallWithParameter:
-    def __init__(self, function, parameter):
-        self.parameter = parameter
+    def __init__(self, function, *args):
+        self.parameters = args
         self.function = function
 
     def __call__(self):
-        self.function(self.parameter)
+        self.function(*self.parameters)
 
 
 class TaffyExplorer(QDialog, PcapGraphData):
