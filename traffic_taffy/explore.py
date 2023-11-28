@@ -224,12 +224,12 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 # add the header
                 if not reported:
                     debug(f"reporting on {key}")
-                    report_label = QPushButton(key)
-                    report_label.clicked.connect(
+                    report_button = QPushButton(key)
+                    report_button.clicked.connect(
                         CallWithParameter(self.update_detail_chart, key)
                     )
                     self.comparison_panel.addWidget(
-                        report_label, current_grid_row, 0, 1, 5
+                        report_button, current_grid_row, 0, 1, 5
                     )
                     current_grid_row += 1
                     reported = True
@@ -256,9 +256,13 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
                 subkey = PCAPDissector.make_printable(key, subkey)
                 debug(f"  adding {subkey}")
-                self.comparison_panel.addWidget(
-                    QLabel("    " + subkey), current_grid_row, 0
+
+                subkey_button = QPushButton("    " + subkey)
+                subkey_button.clicked.connect(
+                    CallWithParameter(self.update_detail_chart, key, subkey)
                 )
+                self.comparison_panel.addWidget(subkey_button, current_grid_row, 0)
+
                 self.comparison_panel.addWidget(
                     QLabel(f"{100*delta:>7.2f}"), current_grid_row, 1
                 )
