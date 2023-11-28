@@ -231,6 +231,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.source_menus.addWidget(QLabel("Minimum count:"))
         self.minimum_count_w = QSpinBox()
         self.minimum_count_w.setMinimum(0)
+        self.minimum_count_w.setMaximum(1000000)  # TODO: inf
         self.minimum_count_w.setValue(int(self.minimum_count))
         self.minimum_count_w.setSingleStep(5)
 
