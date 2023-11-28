@@ -11,6 +11,7 @@ from traffic_taffy.dissector import (
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.compare import PcapCompare
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView
+from PyQt6.QtCore import Qt
 
 # https://stackoverflow.com/questions/32476006/how-to-make-an-expandable-collapsable-section-widget-in-qt
 
@@ -209,11 +210,12 @@ class TaffyExplorer(QDialog, PcapGraphData):
         "fills in the grid table showing the differences from a saved report"
 
         # add the header in row 0
-        self.comparison_panel.addWidget(QLabel("Value"), 0, 0)
-        self.comparison_panel.addWidget(QLabel("Delta"), 0, 1)
-        self.comparison_panel.addWidget(QLabel("Total"), 0, 2)
-        self.comparison_panel.addWidget(QLabel("Reference\nCount"), 0, 3)
-        self.comparison_panel.addWidget(QLabel("Comparison\nCount"), 0, 4)
+
+        headers = ["Value", "Delta", "Total", "Reference\nCount", "Comparison\nCount"]
+        for n, header in enumerate(headers):
+            label = QLabel(header)
+            label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            self.comparison_panel.addWidget(label, 0, n)
 
         current_grid_row = 1
         for key in self.report:
@@ -265,6 +267,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 debug(f"  adding {subkey}")
 
                 subkey_button = QPushButton("    " + subkey)
+                # subkey_button.setAlignment(Qt.AlignmentFlag.AlignLeft)
                 subkey_button.clicked.connect(
                     CallWithParameter(self.update_detail_chart, key, subkey)
                 )
