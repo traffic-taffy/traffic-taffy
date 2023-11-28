@@ -206,6 +206,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def min_count_changed(self, value):
         self.minimum_count = value
         self.update_report()
+        self.update_detail_chart(self.match_key, self.match_value)
         debug(f"changed minimum count to {self.minimum_count}")
 
     # def clearGridLayout(layout, deleteWidgets: bool = True):
