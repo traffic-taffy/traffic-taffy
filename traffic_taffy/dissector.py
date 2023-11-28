@@ -471,6 +471,8 @@ class PCAPDissector:
                 value = "0x" + value.hex()
             else:
                 value = "[unprintable]"
+        if len(value) > 40:
+            value = value[0:40] + "..."  # truncate to reasonable
         return value
 
     def print(
