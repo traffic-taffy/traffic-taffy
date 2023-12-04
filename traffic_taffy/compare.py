@@ -59,55 +59,55 @@ class PcapCompare:
     def reports(self, newvalue):
         self._reports = newvalue
 
-    def compare_dissections(self, dissection1: dict, dissection2: dict) -> dict:
+    def compare_dissections(self, left_side: dict, right_side: dict) -> dict:
         "compares the results from two reports"
 
         report = {}
 
-        # TODO: missing key in dissection2 (major items added)
-        keys = set(dissection1.keys())
-        keys = keys.union(dissection2.keys())
+        # TODO: missing key in right_side (major items added)
+        keys = set(left_side.keys())
+        keys = keys.union(right_side.keys())
         for key in keys:
-            dissection1_total = dissection1[key].total()
-            dissection2_total = dissection2[key].total()
+            left_side_total = left_side[key].total()
+            right_side_total = right_side[key].total()
             report[key] = {}
 
-            for subkey in dissection1[key].keys():
+            for subkey in left_side[key].keys():
                 delta = 0.0
                 total = 0
-                if subkey in dissection1[key] and subkey in dissection2[key]:
+                if subkey in left_side[key] and subkey in right_side[key]:
                     delta = (
-                        dissection2[key][subkey] / dissection2_total
-                        - dissection1[key][subkey] / dissection1_total
+                        right_side[key][subkey] / right_side_total
+                        - left_side[key][subkey] / left_side_total
                     )
-                    total = dissection2[key][subkey] + dissection1[key][subkey]
-                    ref_count = dissection1[key][subkey]
-                    comp_count = dissection2[key][subkey]
+                    total = right_side[key][subkey] + left_side[key][subkey]
+                    left_count = left_side[key][subkey]
+                    right_count = right_side[key][subkey]
                 else:
                     delta = -1.0
-                    total = dissection1[key][subkey]
-                    ref_count = dissection1[key][subkey]
-                    comp_count = 0
+                    total = left_side[key][subkey]
+                    left_count = left_side[key][subkey]
+                    right_count = 0
 
                 report[key][subkey] = {
                     "delta": delta,
                     "total": total,
-                    "ref_count": ref_count,
-                    "comp_count": comp_count,
+                    "left_count": left_count,
+                    "right_count": right_count,
                 }
 
-            for subkey in dissection2[key].keys():
+            for subkey in right_side[key].keys():
                 if subkey not in report[key]:
                     delta = 1.0
-                    total = dissection2[key][subkey]
-                    ref_count = 0
-                    comp_count = dissection2[key][subkey]
+                    total = right_side[key][subkey]
+                    left_count = 0
+                    right_count = right_side[key][subkey]
 
                     report[key][subkey] = {
                         "delta": delta,
                         "total": total,
-                        "ref_count": ref_count,
-                        "comp_count": comp_count,
+                        "left_count": left_count,
+                        "right_count": right_count,
                     }
 
         return report
@@ -185,7 +185,7 @@ class PcapCompare:
                 subkey = PCAPDissector.make_printable(key, subkey)
                 line = f"  {style}{subkey:<50}{endstyle}"
                 line += f"{100*delta:>7.2f} {data['total']:>8} "
-                line += f"{data['ref_count']:>8} {data['comp_count']:>8}"
+                line += f"{data['left_count']:>8} {data['right_count']:>8}"
 
                 # print it to the rich console
                 self.console.print(line)
@@ -199,12 +199,12 @@ class PcapCompare:
         endstyle = ""
         delta = "Delta %"
         total = "Total"
-        ref_count = "Left"
-        comp_count = "Right"
+        left_count = "Left"
+        right_count = "Right"
 
         line = f"  {style}{subkey:<50}{endstyle}"
         line += f"{delta:>7} {total:>8} "
-        line += f"{ref_count:>8} {comp_count:>8}"
+        line += f"{left_count:>8} {right_count:>8}"
 
         self.console.print(line)
 

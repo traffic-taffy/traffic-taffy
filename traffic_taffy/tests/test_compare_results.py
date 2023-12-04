@@ -12,20 +12,20 @@ def test_compare_results():
             "a": {
                 "delta": 15.0 / 30.0 - 5.0 / 15.0,
                 "total": 20,
-                "ref_count": 5,
-                "comp_count": 15,
+                "left_count": 5,
+                "right_count": 15,
             },
             "b": {
                 "delta": -1.0,
                 "total": 10,  # only in 1
-                "ref_count": 10,
-                "comp_count": 0,
+                "left_count": 10,
+                "right_count": 0,
             },
             "c": {
                 "delta": 1.0,
                 "total": 15,  # only in 2
-                "ref_count": 0,
-                "comp_count": 15,
+                "left_count": 0,
+                "right_count": 15,
             },
         }
     }

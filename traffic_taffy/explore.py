@@ -258,7 +258,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.match_value = None
 
         # add the header in row 0
-        headers = ["Value", "Delta", "Total", "Reference Count", "Comparison Count"]
+        headers = ["Value", "Delta", "Total", "Left Count", "Right Count"]
         for n, header in enumerate(headers):
             header = header.replace(" ", "**\n\n**")
             label = QLabel("**" + header + "**")
@@ -323,10 +323,10 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 label = QLabel(f"{data['total']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, 2)
-                label = QLabel(f"{data['ref_count']:>8}")
+                label = QLabel(f"{data['left_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, 3)
-                label = QLabel(f"{data['comp_count']:>8}")
+                label = QLabel(f"{data['right_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, 4)
                 current_grid_row += 1
