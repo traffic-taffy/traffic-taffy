@@ -517,7 +517,6 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         "-b",
         "--bin-size",
         type=int,
-        default=3600,
         help="Bin results into this many seconds",
     )
 
