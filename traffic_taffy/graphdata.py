@@ -20,8 +20,6 @@ class PcapGraphData:
         time_keys = list(counters.keys())
         if time_keys[0] == 0:  # likely always
             time_keys.pop(0)
-        time_keys[0]
-        time_keys[-1]
 
         results = {"time": [], "count": [], "index": [], "key": []}
 
