@@ -32,7 +32,7 @@ class PcapCompare:
         only_positive: bool = False,
         only_negative: bool = False,
         cache_results: bool = False,
-        bin_size: int | None = 3600,
+        bin_size: int | None = None,
         dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
         between_times: List[int] | None = None,
     ) -> None:
@@ -184,7 +184,7 @@ class PcapCompare:
                 # construct the output line with styling
                 subkey = PCAPDissector.make_printable(key, subkey)
                 line = f"  {style}{subkey:<50}{endstyle}"
-                line += f"{100*delta:>7.2f} {data['total']:>8} "
+                line += f"{100*delta:>7.2f} "
                 line += f"{data['left_count']:>8} {data['right_count']:>8}"
 
                 # print it to the rich console
@@ -198,12 +198,11 @@ class PcapCompare:
         subkey = "Value"
         endstyle = ""
         delta = "Delta %"
-        total = "Total"
         left_count = "Left"
         right_count = "Right"
 
         line = f"  {style}{subkey:<50}{endstyle}"
-        line += f"{delta:>7} {total:>8} "
+        line += f"{delta:>7} "
         line += f"{left_count:>8} {right_count:>8}"
 
         self.console.print(line)
