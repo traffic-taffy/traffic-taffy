@@ -1,10 +1,19 @@
-from unittest.mock import Mock
-from traffic_taffy.graph import PcapGraph
+from traffic_taffy.graph import PcapGraphData
 from collections import Counter, defaultdict
 
 
+class ParentFaker(PcapGraphData):
+    def __init__(self):
+        self.match_key = None
+        self.match_value = None
+        self.minimum_count = 0
+        self.bin_size = 1
+
+        super().__init__()
+
+
 def test_pcap_normalize():
-    pg = PcapGraph(Mock(), Mock(), bin_size=1)
+    pg = ParentFaker()
     data = {}
 
     # build a dictionary with [n][a][b] = 1 for every 2 spots
@@ -37,7 +46,7 @@ def test_pcap_normalize():
 
 
 def test_pcap_normalize_with_gaps():
-    pg = PcapGraph(Mock(), Mock(), bin_size=7)
+    pg = ParentFaker()
     data = defaultdict(Counter)
     for i in range(14, 100, 7):
         data[i] = defaultdict(Counter)
