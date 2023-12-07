@@ -54,6 +54,7 @@ class PCAPDissector:
         dissector_level: PCAPDissectorType = PCAPDissectorType.DETAILED,
         pcap_filter: str | None = None,
         cache_results: bool = False,
+        cache_suffix: str = "pkl",
     ):
         self.pcap_file = pcap_file
         self.bin_size = bin_size
@@ -61,6 +62,9 @@ class PCAPDissector:
         self.pcap_filter = pcap_filter
         self.maximum_count = maximum_count
         self.cache_results = cache_results
+        if cache_suffix[0] != ".":
+            cache_suffix = "." + cache_suffix
+        self.cache_suffix = cache_suffix
 
         self.parameters = [
             "pcap_file",
@@ -166,10 +170,12 @@ class PCAPDissector:
     def load_from_cache(self) -> dict | None:
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
-        if not (self.cache_results and os.path.exists(self.pcap_file + ".pkl")):
+        if not (
+            self.cache_results and os.path.exists(self.pcap_file + self.cache_suffix)
+        ):
             return None
 
-        cached_file = self.pcap_file + ".pkl"
+        cached_file = self.pcap_file + self.cache_suffix
         cached_contents = self.load_saved(cached_file, dont_overwrite=True)
 
         ok_to_load = True
@@ -401,7 +407,7 @@ class PCAPDissector:
 
     def save_to_cache(self):
         if self.pcap_file and isinstance(self.pcap_file, str) and self.cache_results:
-            self.save(self.pcap_file + ".pkl")
+            self.save(self.pcap_file + self.cache_suffix)
 
     def save(self, where: str) -> None:
         "Saves a generated dissection to a pickle file"
@@ -524,7 +530,15 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         "-C",
         "--cache-pcap-results",
         action="store_true",
-        help="Cache and use PCAP results into/from a .pkl file",
+        help="Cache and use PCAP results into/from a cache file file",
+    )
+
+    parser.add_argument(
+        "-CS",
+        "--cache-file-suffix",
+        type=str,
+        default="pkl",
+        help="The suffix file to use when creating cache files",
     )
 
     return parser
