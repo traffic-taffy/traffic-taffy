@@ -54,7 +54,7 @@ class PCAPDissector:
         dissector_level: PCAPDissectorType = PCAPDissectorType.DETAILED,
         pcap_filter: str | None = None,
         cache_results: bool = False,
-        cache_suffix: str = "pkl",
+        cache_file_suffix: str = "pkl",
     ):
         self.pcap_file = pcap_file
         self.bin_size = bin_size
@@ -62,9 +62,9 @@ class PCAPDissector:
         self.pcap_filter = pcap_filter
         self.maximum_count = maximum_count
         self.cache_results = cache_results
-        if cache_suffix[0] != ".":
-            cache_suffix = "." + cache_suffix
-        self.cache_suffix = cache_suffix
+        if cache_file_suffix[0] != ".":
+            cache_file_suffix = "." + cache_file_suffix
+        self.cache_file_suffix = cache_file_suffix
 
         self.parameters = [
             "pcap_file",
@@ -171,11 +171,12 @@ class PCAPDissector:
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
         if not (
-            self.cache_results and os.path.exists(self.pcap_file + self.cache_suffix)
+            self.cache_results
+            and os.path.exists(self.pcap_file + self.cache_file_suffix)
         ):
             return None
 
-        cached_file = self.pcap_file + self.cache_suffix
+        cached_file = self.pcap_file + self.cache_file_suffix
         cached_contents = self.load_saved(cached_file, dont_overwrite=True)
 
         ok_to_load = True
@@ -407,7 +408,7 @@ class PCAPDissector:
 
     def save_to_cache(self):
         if self.pcap_file and isinstance(self.pcap_file, str) and self.cache_results:
-            self.save(self.pcap_file + self.cache_suffix)
+            self.save(self.pcap_file + self.cache_file_suffix)
 
     def save(self, where: str) -> None:
         "Saves a generated dissection to a pickle file"
@@ -534,8 +535,8 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     parser.add_argument(
-        "-CS",
         "--cache-file-suffix",
+        "--cs",
         type=str,
         default="pkl",
         help="The suffix file to use when creating cache files",
@@ -636,6 +637,7 @@ def main():
         dissector_level=args.dissection_level,
         maximum_count=args.packet_count,
         cache_results=args.cache_pcap_results,
+        cache_file_suffix=args.cache_file_suffix,
     )
     pd.load()
     pd.print(

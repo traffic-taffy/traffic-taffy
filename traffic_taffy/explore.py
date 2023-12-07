@@ -143,6 +143,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             only_positive=self.args.only_positive,
             only_negative=self.args.only_negative,
             cache_results=self.args.cache_pcap_results,
+            cache_file_suffix=self.args.cache_file_suffix,
             dissection_level=self.args.dissection_level,
             between_times=self.args.between_times,
             bin_size=self.args.bin_size,

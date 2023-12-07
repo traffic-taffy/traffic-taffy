@@ -68,7 +68,11 @@ class PCAPDissectMany:
                 **self.kwargs,
             )
             pd.data = data
-            pd.save(pcap_file + ".pkl")
+
+            suffix = self.kwargs.get("cache_file_suffix", ".pkl")
+            if suffix[0] != ".":
+                suffix = "." + suffix
+            pd.save(pcap_file + suffix)
 
         return {"file": pcap_file, "data": data}
 

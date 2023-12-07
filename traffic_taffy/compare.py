@@ -32,6 +32,7 @@ class PcapCompare:
         only_positive: bool = False,
         only_negative: bool = False,
         cache_results: bool = False,
+        cache_file_suffix: str = "pkl",
         bin_size: int | None = None,
         dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
         between_times: List[int] | None = None,
@@ -50,6 +51,7 @@ class PcapCompare:
         self.between_times = between_times
         self.bin_size = bin_size
         self.console = None
+        self.cache_file_suffix = cache_file_suffix
 
     @property
     def reports(self):
@@ -224,6 +226,7 @@ class PcapCompare:
             maximum_count=self.maximum_count,
             pcap_filter=self.pkt_filter,
             cache_results=self.cache_results,
+            cache_file_suffix=self.cache_file_suffix,
             dissector_level=self.dissection_level,
         )
         results = pdm.load_all()
@@ -366,6 +369,7 @@ def main():
         only_positive=args.only_positive,
         only_negative=args.only_negative,
         cache_results=args.cache_pcap_results,
+        cache_file_suffix=args.cache_file_suffix,
         dissection_level=args.dissection_level,
         between_times=args.between_times,
         bin_size=args.bin_size,
