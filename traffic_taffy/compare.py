@@ -248,7 +248,7 @@ class PcapCompare:
                 reports.append(
                     {
                         "report": self.compare_dissections(
-                            reference["data"][0], other["data"][0]
+                            reference["dissection"].data[0], other["dissection"].data[0]
                         ),
                         "title": f"{reference['file']} vs {other['file']}",
                     }
@@ -256,9 +256,8 @@ class PcapCompare:
 
         else:
             # deal with timestamps within a single file
-            results = list(results)
-            reference = results[0]
-            timestamps = list(reference["data"].keys())
+            reference = list(results)[0]["dissection"].data
+            timestamps = list(reference.keys())
             debug(
                 f"found {len(timestamps)} timestamps from {timestamps[2]} to {timestamps[-1]}"
             )
@@ -282,7 +281,8 @@ class PcapCompare:
                 debug(f"comparing timestamps {time_left} and {time_right}")
 
                 report = self.compare_dissections(
-                    reference["data"][time_left], reference["data"][time_right]
+                    reference["dissection"][time_left],
+                    reference["dissection"][time_right],
                 )
 
                 title = f"time {time_left} vs time {time_right}"

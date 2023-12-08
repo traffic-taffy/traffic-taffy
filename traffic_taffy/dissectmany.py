@@ -1,4 +1,4 @@
-from traffic_taffy.dissector import PCAPDissector, pcap_data_merge
+from traffic_taffy.dissector import PCAPDissector
 from pcap_parallel import PCAPParallel
 from concurrent.futures import ProcessPoolExecutor
 from logging import info
@@ -30,7 +30,7 @@ class PCAPDissectMany:
             **self.kwargs,
         )
         pd.load()
-        return pd.data
+        return pd.dissection
 
     def load_pcap(self, pcap_file, split_size=None, maximum_count=0):
         pd = PCAPDissector(
@@ -40,7 +40,7 @@ class PCAPDissectMany:
         )
         data = pd.load_from_cache()
         if data:
-            return {"file": pcap_file, "data": data}
+            return {"file": pcap_file, "dissection": data}
 
         # TODO: check caching availability here
         info(f"processing {pcap_file}")
@@ -53,28 +53,23 @@ class PCAPDissectMany:
         )
         results = ps.split()
 
-        data = results.pop(0).result()
+        # the data is coming back in (likely overlapping) chunks, and
+        # we need to merge them together
+        dissection = results.pop(0).result()
         for result in results:
-            data = pcap_data_merge(data, result.result())
+            dissection.merge(result.result())
 
-        PCAPDissector.calculate_metadata(data)
+        dissection.calculate_metadata()
 
         if self.kwargs.get("cache_results"):
             # create a dissector just to save the cache
             # (we don't call load())
-            pd = PCAPDissector(
-                pcap_file,
-                *self.args,
-                **self.kwargs,
+            dissection.pcap_file = pcap_file
+            dissection.save_to_cache(
+                pcap_file + "." + self.kwargs.get("cache_file_suffix", "pkl")
             )
-            pd.data = data
 
-            suffix = self.kwargs.get("cache_file_suffix", ".pkl")
-            if suffix[0] != ".":
-                suffix = "." + suffix
-            pd.save(pcap_file + suffix)
-
-        return {"file": pcap_file, "data": data}
+        return {"file": pcap_file, "dissection": dissection}
 
     def load_all(self):
         with ProcessPoolExecutor() as executor:

@@ -57,6 +57,14 @@ class PCAPDissector:
         if dissector_level == PCAPDissectorType.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
 
+    @property
+    def dissection(self):
+        return self._dissection
+
+    @dissection.setter
+    def dissection(self, new_dissection):
+        self._dissection = new_dissection
+
     @staticmethod
     def find_data(
         data,
@@ -112,12 +120,17 @@ class PCAPDissector:
 
                     yield (timestamp, key, subkey, count)
 
-    def load(self) -> dict:
-        "Loads data from a pcap file or its cached results"
+    def load_from_cache(self):
         if self.cache_results:
             cached_data = self.dissection.load_from_cache()
             if cached_data:
                 return cached_data
+
+    def load(self) -> dict:
+        "Loads data from a pcap file or its cached results"
+        cached_data = self.load_from_cache()
+        if cached_data:
+            return cached_data
 
         if (
             self.dissector_level == PCAPDissectorType.DETAILED
@@ -206,7 +219,7 @@ class PCAPDissector:
         )
         return self.dissection
 
-    def load_via_dpkt(self) -> dict:
+    def load_via_dpkt(self) -> Dissection:
         self.init_dissection()
         if isinstance(self.pcap_file, str):
             pcap = dpkt.pcap.Reader(pcapp.open_maybe_compressed(self.pcap_file))
@@ -284,7 +297,7 @@ class PCAPDissector:
             prefix = f"{prefix}{payload.name}."
             self.add_scapy_layer(payload, prefix[1:])
 
-    def load_via_scapy(self) -> dict:
+    def load_via_scapy(self) -> Dissection:
         "Loads a pcap file into a nested dictionary of statistical counts"
         load_this = self.pcap_file
         if isinstance(self.pcap_file, str):

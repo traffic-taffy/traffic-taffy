@@ -28,6 +28,8 @@ class Dissection:
         bin_size: int = 0,
         dissector_level: PCAPDissectorType = PCAPDissectorType.DETAILED,
         cache_file_suffix: str = "pkl",
+        *args,
+        **kwargs,
     ):
         self.pcap_file = pcap_file
         self.bin_size = bin_size
@@ -63,6 +65,14 @@ class Dissection:
     def data(self, newval):
         self._data = newval
 
+    @property
+    def pcap_file(self):
+        return self._pcap_file
+
+    @pcap_file.setter
+    def pcap_file(self, newval):
+        self._pcap_file = newval
+
     def incr(self, key: str, value: Any, count: int = 1):
         "increase one field within the counter"
         # always save a total count at the zero bin
@@ -73,7 +83,7 @@ class Dissection:
                 self.data[self.timestamp] = defaultdict(Counter)
             self.data[self.timestamp][key][value] += count
 
-    def calculate_metadata(self):
+    def calculate_metadata(self) -> None:
         "Calculates things like the number of value entries within each key/subkey"
         # TODO: do we do this with or without key and value matches?
         for timestamp in self.data.keys():
@@ -84,6 +94,14 @@ class Dissection:
                 self.data[timestamp][key][self.WIDTH_SUBKEY] = len(
                     self.data[timestamp][key]
                 )
+
+    def merge(self, other_dissection) -> None:
+        "merges counters in two dissections into self -- note destructive to self"
+        for key in other_dissection.data:
+            for subkey in other_dissection.data[key]:
+                if key not in self.data:
+                    self.data[key] = defaultdict(Counter)
+                self.data[key][subkey] += other_dissection.data[key][subkey]
 
     @staticmethod
     def subdict_producer():
@@ -151,7 +169,7 @@ class Dissection:
         if ok_to_load:
             info(f"loading cached pcap contents from {cached_file}")
             self.load_saved_contents(cached_contents)
-            return self.data
+            return self
 
         error(f"Failed to load cached data for {self.pcap_file} due to differences")
         error("refusing to continue -- remove the cache to recreate it")
@@ -159,9 +177,11 @@ class Dissection:
             "INCOMPATIBLE CACHE: remove the cache or don't use it to continue"
         )
 
-    def save_to_cache(self):
-        if self.pcap_file and isinstance(self.pcap_file, str):
-            self.save(self.pcap_file + self.cache_file_suffix)
+    def save_to_cache(self, where: str | None = None) -> None:
+        if not where and self.pcap_file and isinstance(self.pcap_file, str):
+            where = self.pcap_file + self.cache_file_suffix
+        if where:
+            self.save(where)
 
     def save(self, where: str) -> None:
         "Saves a generated dissection to a pickle file"
