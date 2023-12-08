@@ -155,13 +155,18 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         self.data = {}
         for dataset in datasets:
-            self.data[dataset["file"]] = dataset["data"]
+            self.data[dataset["file"]] = dataset["dissection"]
 
         if len(datasets) == 1:
-            keys = list(datasets[0]["data"].keys())
-            self.compare_two(datasets[0]["data"][keys[1]], datasets[0]["data"][keys[2]])
+            keys = list(datasets[0]["dissection"].data.keys())
+            self.compare_two(
+                datasets[0]["dissection"].data[keys[1]],
+                datasets[0]["dissection"].data[keys[2]],
+            )
         else:
-            self.compare_two(datasets[0]["data"][0], datasets[1]["data"][0])
+            self.compare_two(
+                datasets[0]["dissection"].data[0], datasets[1]["dissection"].data[0]
+            )
 
     def compare_two(self, reference, other):
         self.report = self.pc.compare_dissections(reference, other)
