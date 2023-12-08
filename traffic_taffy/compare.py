@@ -281,8 +281,8 @@ class PcapCompare:
                 debug(f"comparing timestamps {time_left} and {time_right}")
 
                 report = self.compare_dissections(
-                    reference["dissection"][time_left],
-                    reference["dissection"][time_right],
+                    reference[time_left],
+                    reference[time_right],
                 )
 
                 title = f"time {time_left} vs time {time_right}"
