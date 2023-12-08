@@ -153,9 +153,9 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # and load everything in
         datasets = list(self.pc.load_pcaps())
 
-        self.data = {}
+        self.dissection = {}
         for dataset in datasets:
-            self.data[dataset["file"]] = dataset["dissection"]
+            self.dissection[dataset["file"]] = dataset["dissection"]
 
         if len(datasets) == 1:
             keys = list(datasets[0]["dissection"].data.keys())
@@ -177,6 +177,11 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.match_key = match_key
         self.match_value = match_value
 
+        # for matching on a single value, don't do a minimum count at all
+        tmpv = self.minimum_count
+        if match_value is not None:
+            self.minimum_count = 0
+
         df = self.merge_datasets()
 
         # TODO: there must be a better way! (key is duplicated)
@@ -193,6 +198,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             chart.addSeries(series)
 
         self.saved_df = df
+        self.minimum_count = tmpv
 
     def update_detail_chart(
         self, match_key: str = "__TOTAL__", match_value: str | None = None

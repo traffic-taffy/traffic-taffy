@@ -8,12 +8,12 @@ class PcapGraphData:
         pass
 
     @property
-    def data(self):
-        return self._data
+    def dissections(self):
+        return self._dissections
 
-    @data.setter
-    def data(self, newvalue):
-        self._data = newvalue
+    @dissections.setter
+    def dissection(self, newvalue):
+        self._dissections = newvalue
 
     def normalize_bins(self, counters):
         results = {}
@@ -42,10 +42,10 @@ class PcapGraphData:
 
     def merge_datasets(self):
         datasets = []
-        for dataset in self.data:
-            data = self.normalize_bins(self.data[dataset])
+        for filename, dissection in self.dissections.items():
+            data = self.normalize_bins(dissection.data)
             data = DataFrame.from_records(data)
-            data["filename"] = os.path.basename(dataset)
+            data["filename"] = os.path.basename(filename)
             data["time"] = to_datetime(data["time"], unit="s")
             data["key"] = data["index"]
             datasets.append(data)
