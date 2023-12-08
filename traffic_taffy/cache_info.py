@@ -24,6 +24,7 @@ def parse_args():
     parser.add_argument(
         "cache_file",
         type=str,
+        nargs="+",
         help="The cache file (or pcap file) to load and display information about",
     )
 
@@ -35,23 +36,26 @@ def parse_args():
 
 def main():
     args = parse_args()
-    contents = pickle.load(open(args.cache_file, "rb"))
 
-    # play the major keys
-    for key in contents.keys():
-        if key != "dissection" and key != "parameters":
-            print(f"{key:<20} {contents[key]}")
+    for cache_file in args.cache_file:
+        print(f"===== {cache_file} ======")
+        contents = pickle.load(open(cache_file, "rb"))
 
-    # then the minors
-    print("parameters:")
-    for key in contents["parameters"]:
-        print(f"    {key:<16} {contents['parameters'][key]}")
+        # play the major keys
+        for key in contents.keys():
+            if key != "dissection" and key != "parameters":
+                print(f"{key:<20} {contents[key]}")
 
-    print("data info:")
-    timestamps = list(contents["dissection"].keys())
-    print(f"    timestamps:      {len(timestamps)}")
-    print(f"    first:           {timestamps[1]}")  # skips 0 = global
-    print(f"    last:            {timestamps[-1]}")
+        # then the minors
+        print("parameters:")
+        for key in contents["parameters"]:
+            print(f"    {key:<16} {contents['parameters'][key]}")
+
+        print("data info:")
+        timestamps = list(contents["dissection"].keys())
+        print(f"    timestamps:      {len(timestamps)}")
+        print(f"    first:           {timestamps[1]}")  # skips 0 = global
+        print(f"    last:            {timestamps[-1]}")
 
 
 if __name__ == "__main__":
