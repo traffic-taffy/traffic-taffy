@@ -192,6 +192,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         df = self.merge_datasets()
 
         # TODO: there must be a better way! (key is duplicated)
+        series_set = []
         maxv = -100
         for key in df.key.unique():
             series = QLineSeries()
@@ -206,7 +207,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
             series.setName(key)
             series.setOpacity(0.5)
-            chart.addSeries(series)
+            series_set.append(series)
             # axisx = QDateTimeAxis()
             # chart.setAxisX()
 
@@ -229,6 +230,10 @@ class TaffyExplorer(QDialog, PcapGraphData):
             series.setMarkerSize(20)
             triangle = QImage("images/grey_triangle.png").scaled(10, 10)
             series.setLightMarker(triangle)
+            chart.addSeries(series)
+
+        # we always add the real data last to keep file name coloring consistent
+        for series in series_set:
             chart.addSeries(series)
 
         chart.createDefaultAxes()
