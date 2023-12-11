@@ -12,6 +12,7 @@ from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.compare import PcapCompare
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView
 from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QImage
 
 # https://stackoverflow.com/questions/32476006/how-to-make-an-expandable-collapsable-section-widget-in-qt
 
@@ -191,6 +192,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         df = self.merge_datasets()
 
         # TODO: there must be a better way! (key is duplicated)
+        maxv = -100
         for key in df.key.unique():
             series = QLineSeries()
 
@@ -199,9 +201,37 @@ class TaffyExplorer(QDialog, PcapGraphData):
                     df["time"][index].to_pydatetime().timestamp(), df["count"][index]
                 )
 
+                height = df["count"][index]
+                maxv = max(maxv, height)
+
             series.setName(key)
             series.setOpacity(0.5)
             chart.addSeries(series)
+            # axisx = QDateTimeAxis()
+            # chart.setAxisX()
+
+        df["time"].min().to_pydatetime().timestamp()
+        df["time"].max().to_pydatetime().timestamp()
+
+        # add another series for file ovelays
+        for filename, dissection in self.dissections.items():
+            timestamps = list(dissection.data.keys())
+            first_time = timestamps[1]  # skip the leading 0 timestamp
+            last_time = timestamps[-1]
+
+            # maxv = max(dict(dissection.data.values()))
+
+            series = QLineSeries()
+            series.append(first_time, maxv + 1)
+            series.append(last_time, maxv + 1)
+            series.setName(filename)
+
+            series.setMarkerSize(20)
+            triangle = QImage("images/grey_triangle.png").scaled(10, 10)
+            series.setLightMarker(triangle)
+            chart.addSeries(series)
+
+        chart.createDefaultAxes()
 
         self.saved_df = df
         self.minimum_count = tmpv
