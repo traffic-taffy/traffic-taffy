@@ -11,7 +11,7 @@ from traffic_taffy.dissector import (
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.compare import PcapCompare
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 
 # https://stackoverflow.com/questions/32476006/how-to-make-an-expandable-collapsable-section-widget-in-qt
 
@@ -130,6 +130,12 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.print_threshold = args.print_threshold
         self.minimum_count = args.minimum_count
 
+        # other needed itmes
+        self.min_changed_timer = QTimer(self)
+        self.min_changed_timer.setSingleShot(True)
+        self.min_changed_timer.setInterval(1000)
+        self.min_changed_timer.timeout.connect(self.min_count_changed_actual)
+
     def quit(self):
         exit()
 
@@ -215,10 +221,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def header_clicked(self, key):
         self.update_detail_chart(key, None)
 
-    def min_count_changed(self, value):
-        self.minimum_count = value
+    def min_count_changed_actual(self):
         self.update_report()
         self.update_detail_chart(self.match_key, self.match_value)
+        debug(f"updating table with minimum count of {self.minimum_count}")
+
+    def min_count_changed(self, value):
+        self.minimum_count = value
+        # in case we're running already, stop it first
+        self.min_changed_timer.stop()
+        self.min_changed_timer.start()
         debug(f"changed minimum count to {self.minimum_count}")
 
     # def clearGridLayout(layout, deleteWidgets: bool = True):
@@ -335,11 +347,11 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
                 label = QLabel(f"{data['left_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
-                self.comparison_panel.addWidget(label, current_grid_row, 3)
+                self.comparison_panel.addWidget(label, current_grid_row, 2)
 
                 label = QLabel(f"{data['right_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
-                self.comparison_panel.addWidget(label, current_grid_row, 4)
+                self.comparison_panel.addWidget(label, current_grid_row, 3)
                 current_grid_row += 1
 
         (self.match_key, self.match_value) = (tmp_key, tmp_value)
