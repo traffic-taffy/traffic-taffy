@@ -46,7 +46,7 @@ class PcapGraphData:
             data = self.normalize_bins(dissection.data)
             data = DataFrame.from_records(data)
             data["filename"] = os.path.basename(filename)
-            data["time"] = to_datetime(data["time"], unit="s")
+            data["time"] = to_datetime(data["time"], unit="s", utc=True)
             data["key"] = data["index"]
             datasets.append(data)
         datasets = concat(datasets, ignore_index=True)
