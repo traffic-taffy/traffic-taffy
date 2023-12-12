@@ -4,6 +4,8 @@ from typing import Any
 from logging import debug, info, error
 from enum import Enum
 import pickle
+import ipaddress
+from typing import List
 
 
 class PCAPDissectorType(Enum):
@@ -235,3 +237,96 @@ class Dissection:
             self.load_saved_contents(contents)
 
         return contents
+
+    def find_data(
+        self,
+        timestamps: List[int] | None = None,
+        match_string: str | None = None,
+        match_value: str | None = None,
+        minimum_count: int | None = None,
+        make_printable: bool = False,
+    ):
+        data = self.data
+
+        if not timestamps:
+            timestamps = data.keys()
+
+        # find timestamps/key values with at least one item above count
+        # TODO: we should really use pandas for this
+        usable = defaultdict(set)
+        for timestamp in timestamps:
+            for key in data[timestamp]:
+                # if they requested a match string
+                if match_string and match_string not in key:
+                    continue
+
+                # ensure at least one of the count valuse for the
+                # stream gets above minimum_count
+                for subkey, count in data[timestamp][key].items():
+                    if (
+                        not minimum_count
+                        or minimum_count
+                        and abs(count) > minimum_count
+                    ):
+                        usable[key].add(subkey)
+                        break
+
+        # TODO: move the timestamp inside the other fors for faster
+        # processing of skipped key/subkeys
+        for timestamp in timestamps:
+            for key in sorted(data[timestamp]):
+                if key not in usable:
+                    continue
+
+                for subkey, count in sorted(
+                    data[timestamp][key].items(), key=lambda x: x[1], reverse=True
+                ):
+                    # check that this subkey can be usable at all
+                    if subkey not in usable[key]:
+                        continue
+
+                    if make_printable:
+                        subkey = Dissection.make_printable(key, subkey)
+                        count = Dissection.make_printable(None, count)
+
+                    if match_value and match_value not in subkey:
+                        continue
+
+                    yield (timestamp, key, subkey, count)
+
+    @staticmethod
+    def make_printable(value_type: str, value: Any) -> str:
+        try:
+            if isinstance(value, bytes):
+                if value_type in Dissection.display_transformers:
+                    value = str(Dissection.display_transformers[value_type](value))
+                else:
+                    value = "0x" + value.hex()
+            else:
+                value = str(value)
+        except Exception:
+            if isinstance(value, bytes):
+                value = "0x" + value.hex()
+            else:
+                value = "[unprintable]"
+        if len(value) > 40:
+            value = value[0:40] + "..."  # truncate to reasonable
+        return value
+
+    def print_mac_address(value):
+        "Converts bytes to ethernet mac style address"
+
+        # TODO: certainly inefficient
+        def two_hex(value):
+            return f"{value:02x}"
+
+        return ":".join(map(two_hex, value))
+
+    display_transformers = {
+        "Ethernet.IP.src": ipaddress.ip_address,
+        "Ethernet.IP.dst": ipaddress.ip_address,
+        "Ethernet.IP6.src": ipaddress.ip_address,
+        "Ethernet.IP6.dst": ipaddress.ip_address,
+        "Ethernet.src": print_mac_address,
+        "Ethernet.dst": print_mac_address,
+    }

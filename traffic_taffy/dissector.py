@@ -1,10 +1,9 @@
 """Loads a PCAP file and counts contents with various levels of storage"""
 
-import ipaddress
 from logging import warning, error
 from collections import Counter, defaultdict
 from scapy.all import sniff
-from typing import Any, List
+from typing import List
 import dpkt
 from rich import print
 from pcap_parallel import PCAPParallel as pcapp
@@ -13,24 +12,6 @@ from dissection import Dissection, PCAPDissectorType
 
 class PCAPDissector:
     "loads a pcap file and counts the contents in both time and depth"
-
-    def print_mac_address(value):
-        "Converts bytes to ethernet mac style address"
-
-        # TODO: certainly inefficient
-        def two_hex(value):
-            return f"{value:02x}"
-
-        return ":".join(map(two_hex, value))
-
-    display_transformers = {
-        "Ethernet.IP.src": ipaddress.ip_address,
-        "Ethernet.IP.dst": ipaddress.ip_address,
-        "Ethernet.IP6.src": ipaddress.ip_address,
-        "Ethernet.IP6.dst": ipaddress.ip_address,
-        "Ethernet.src": print_mac_address,
-        "Ethernet.dst": print_mac_address,
-    }
 
     def __init__(
         self,
@@ -64,61 +45,6 @@ class PCAPDissector:
     @dissection.setter
     def dissection(self, new_dissection):
         self._dissection = new_dissection
-
-    @staticmethod
-    def find_data(
-        data,
-        timestamps: List[int] | None = None,
-        match_string: str | None = None,
-        match_value: str | None = None,
-        minimum_count: int | None = None,
-        make_printable: bool = False,
-    ):
-        if not timestamps:
-            timestamps = data.keys()
-
-        # find timestamps/key values with at least one item above count
-        # TODO: we should really use pandas for this
-        usable = defaultdict(set)
-        for timestamp in timestamps:
-            for key in data[timestamp]:
-                # if they requested a match string
-                if match_string and match_string not in key:
-                    continue
-
-                # ensure at least one of the count valuse for the
-                # stream gets above minimum_count
-                for subkey, count in data[timestamp][key].items():
-                    if (
-                        not minimum_count
-                        or minimum_count
-                        and abs(count) > minimum_count
-                    ):
-                        usable[key].add(subkey)
-                        break
-
-        # TODO: move the timestamp inside the other fors for faster
-        # processing of skipped key/subkeys
-        for timestamp in timestamps:
-            for key in sorted(data[timestamp]):
-                if key not in usable:
-                    continue
-
-                for subkey, count in sorted(
-                    data[timestamp][key].items(), key=lambda x: x[1], reverse=True
-                ):
-                    # check that this subkey can be usable at all
-                    if subkey not in usable[key]:
-                        continue
-
-                    if make_printable:
-                        subkey = PCAPDissector.make_printable(key, subkey)
-                        count = PCAPDissector.make_printable(None, count)
-
-                    if match_value and match_value not in subkey:
-                        continue
-
-                    yield (timestamp, key, subkey, count)
 
     def load_from_cache(self):
         if self.cache_results:
@@ -314,25 +240,6 @@ class PCAPDissector:
             self.save_to_cache()
         return self.dissection
 
-    @staticmethod
-    def make_printable(value_type: str, value: Any) -> str:
-        try:
-            if isinstance(value, bytes):
-                if value_type in PCAPDissector.display_transformers:
-                    value = str(PCAPDissector.display_transformers[value_type](value))
-                else:
-                    value = "0x" + value.hex()
-            else:
-                value = str(value)
-        except Exception:
-            if isinstance(value, bytes):
-                value = "0x" + value.hex()
-            else:
-                value = "[unprintable]"
-        if len(value) > 40:
-            value = value[0:40] + "..."  # truncate to reasonable
-        return value
-
     def print(
         self,
         timestamps: List[int] | None = [0],
@@ -340,8 +247,7 @@ class PCAPDissector:
         match_value: str | None = None,
         minimum_count: int | None = None,
     ) -> None:
-        for timestamp, key, subkey, value in self.find_data(
-            self.dissection.data,
+        for timestamp, key, subkey, value in self.dissection.find_data(
             timestamps=timestamps,
             match_string=match_string,
             match_value=match_value,

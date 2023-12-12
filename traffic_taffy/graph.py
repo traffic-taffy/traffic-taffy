@@ -107,7 +107,7 @@ class PcapGraph(PcapGraphData):
         info("done reading pcap files")
 
     def create_graph(self):
-        df = self.merge_datasets()
+        df = self.get_dataframe()
         debug(df)
 
         hue_variable = "index"

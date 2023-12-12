@@ -6,8 +6,8 @@ from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
-    PCAPDissector,
 )
+from traffic_taffy.dissection import Dissection
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.compare import PcapCompare
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView
@@ -160,9 +160,10 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # and load everything in
         datasets = list(self.pc.load_pcaps())
 
-        self.dissection = {}
+        dissections = []
         for dataset in datasets:
-            self.dissection[dataset["file"]] = dataset["dissection"]
+            dissections.append(dataset["dissection"])
+        self.dissections = dissections
 
         if len(datasets) == 1:
             keys = list(datasets[0]["dissection"].data.keys())
@@ -189,7 +190,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         if match_value is not None:
             self.minimum_count = 0
 
-        df = self.merge_datasets()
+        df = self.get_dataframe()
 
         # TODO: there must be a better way! (key is duplicated)
         series_set = []
@@ -215,7 +216,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         df["time"].max().to_pydatetime().timestamp()
 
         # add another series for file ovelays
-        for filename, dissection in self.dissections.items():
+        for dissection in self.dissections:
             timestamps = list(dissection.data.keys())
             first_time = timestamps[1]  # skip the leading 0 timestamp
             last_time = timestamps[-1]
@@ -225,7 +226,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             series = QLineSeries()
             series.append(first_time, maxv + 1)
             series.append(last_time, maxv + 1)
-            series.setName(filename)
+            series.setName(dissection.pcap_file)
 
             series.setMarkerSize(20)
             triangle = QImage("images/grey_triangle.png").scaled(10, 10)
@@ -365,7 +366,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                     style = "color: lightgreen"
 
                 # construct the output line with styling
-                subkey = PCAPDissector.make_printable(key, subkey)
+                subkey = Dissection.make_printable(key, subkey)
                 debug(f"  adding {subkey}")
 
                 subkey_button = QPushButton("    " + subkey)

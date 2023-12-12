@@ -10,9 +10,9 @@ from traffic_taffy.dissector import (
     PCAPDissectorType,
     dissector_add_parseargs,
     limitor_add_parseargs,
-    PCAPDissector,
     check_dissector_level,
 )
+from traffic_taffy.dissection import Dissection
 
 
 class PcapCompare:
@@ -184,7 +184,7 @@ class PcapCompare:
                 endstyle = style.replace("[", "[/")
 
                 # construct the output line with styling
-                subkey = PCAPDissector.make_printable(key, subkey)
+                subkey = Dissection.make_printable(key, subkey)
                 line = f"  {style}{subkey:<50}{endstyle}"
                 line += f"{100*delta:>7.2f} "
                 line += f"{data['left_count']:>8} {data['right_count']:>8}"

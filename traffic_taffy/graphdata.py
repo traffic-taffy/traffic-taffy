@@ -1,10 +1,10 @@
 import os
-from traffic_taffy.dissector import PCAPDissector
 from pandas import DataFrame, to_datetime, concat
 
 
 class PcapGraphData:
     def __init__(self):
+        self.dissections = []
         pass
 
     @property
@@ -12,20 +12,19 @@ class PcapGraphData:
         return self._dissections
 
     @dissections.setter
-    def dissection(self, newvalue):
+    def dissections(self, newvalue):
         self._dissections = newvalue
 
-    def normalize_bins(self, counters):
+    def normalize_bins(self, dissection):
         results = {}
-        time_keys = list(counters.keys())
+        time_keys = list(dissection.data.keys())
         if time_keys[0] == 0:  # likely always
             time_keys.pop(0)
 
         results = {"time": [], "count": [], "index": [], "key": []}
 
         # TODO: this could likely be made much more efficient and needs hole-filling
-        for timestamp, key, subkey, value in PCAPDissector.find_data(
-            counters,
+        for timestamp, key, subkey, value in dissection.find_data(
             timestamps=time_keys,
             match_string=self.match_key,
             match_value=self.match_value,
@@ -40,12 +39,12 @@ class PcapGraphData:
 
         return results
 
-    def merge_datasets(self):
+    def get_dataframe(self):
         datasets = []
-        for filename, dissection in self.dissections.items():
-            data = self.normalize_bins(dissection.data)
+        for dissection in self.dissections:
+            data = self.normalize_bins(dissection)
             data = DataFrame.from_records(data)
-            data["filename"] = os.path.basename(filename)
+            data["filename"] = os.path.basename(dissection.pcap_file)
             data["time"] = to_datetime(data["time"], unit="s", utc=True)
             data["key"] = data["index"]
             datasets.append(data)
