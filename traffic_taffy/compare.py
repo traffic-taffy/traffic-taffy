@@ -4,7 +4,8 @@ import logging
 from logging import info, debug
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
-from rich.console import Console
+
+from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import (
     PCAPDissectorType,
@@ -12,7 +13,6 @@ from traffic_taffy.dissector import (
     limitor_add_parseargs,
     check_dissector_level,
 )
-from traffic_taffy.dissection import Dissection
 
 
 class PcapCompare:
@@ -50,7 +50,6 @@ class PcapCompare:
         self.dissection_level = dissection_level
         self.between_times = between_times
         self.bin_size = bin_size
-        self.console = None
         self.cache_file_suffix = cache_file_suffix
 
     @property
@@ -112,110 +111,7 @@ class PcapCompare:
                         "right_count": right_count,
                     }
 
-        return report
-
-    def filter_check(self, data: dict) -> bool:
-        "Returns true if we should include it"
-        delta: float = data["delta"]
-        total: int = data["total"]
-
-        if self.only_positive and delta <= 0:
-            return False
-
-        if self.only_negative and delta >= 0:
-            return False
-
-        if not self.print_threshold and not self.minimum_count:
-            # always print
-            return True
-
-        if self.print_threshold and not self.minimum_count:
-            # check print_threshold as a fraction
-            if abs(delta) > self.print_threshold:
-                return True
-        elif not self.print_threshold and self.minimum_count:
-            # just check minimum_count
-            if total > self.minimum_count:
-                return True
-        else:
-            # require both
-            if total > self.minimum_count and abs(delta) > self.print_threshold:
-                return True
-
-        return False
-
-    def init_console(self):
-        if not self.console:
-            self.console = Console()
-
-    def print_report(self, report: dict) -> None:
-        "prints a report to the console"
-
-        self.init_console()
-        for key in sorted(report):
-            reported: bool = False
-
-            if self.print_match_string and self.print_match_string not in key:
-                continue
-
-            for subkey, data in sorted(
-                report[key].items(), key=lambda x: x[1]["delta"], reverse=True
-            ):
-                if not self.filter_check(data):
-                    continue
-
-                # print the header
-                if not reported:
-                    print(f"====== {key}")
-                    reported = True
-
-                delta: float = data["delta"]
-
-                # apply some fancy styling
-                style = ""
-                if delta < -0.5:
-                    style = "[bold red]"
-                elif delta < 0.0:
-                    style = "[red]"
-                elif delta > 0.5:
-                    style = "[bold green]"
-                elif delta > 0.0:
-                    style = "[green]"
-                endstyle = style.replace("[", "[/")
-
-                # construct the output line with styling
-                subkey = Dissection.make_printable(key, subkey)
-                line = f"  {style}{subkey:<50}{endstyle}"
-                line += f"{100*delta:>7.2f} "
-                line += f"{data['left_count']:>8} {data['right_count']:>8}"
-
-                # print it to the rich console
-                self.console.print(line)
-
-    def print_header(self):
-        # This should match the spacing in print_report()
-        self.init_console()
-
-        style = ""
-        subkey = "Value"
-        endstyle = ""
-        delta = "Delta %"
-        left_count = "Left"
-        right_count = "Right"
-
-        line = f"  {style}{subkey:<50}{endstyle}"
-        line += f"{delta:>7} "
-        line += f"{left_count:>8} {right_count:>8}"
-
-        self.console.print(line)
-
-    def print(self) -> None:
-        "outputs the results"
-        self.print_header()
-        for n, report in enumerate(self.reports):
-            title = report.get("title", f"report #{n}")
-            print(f"************ {title}")
-            self.print_report(report["report"])
+        return Comparison(report)
 
     def load_pcaps(self) -> None:
         # load the first as a reference pcap
@@ -245,15 +141,13 @@ class PcapCompare:
             reference = next(results)
             for other in results:
                 # compare the two global summaries
-                reports.append(
-                    {
-                        "report": self.compare_dissections(
-                            reference["dissection"].data[0], other["dissection"].data[0]
-                        ),
-                        "title": f"{reference['file']} vs {other['file']}",
-                    }
-                )
 
+                report = self.compare_dissections(
+                    reference["dissection"].data[0], other["dissection"].data[0]
+                )
+                report.title = f"{reference['file']} vs {other['file']}"
+
+                reports.append(report)
         else:
             # deal with timestamps within a single file
             reference = list(results)[0]["dissection"].data
@@ -261,8 +155,6 @@ class PcapCompare:
             debug(
                 f"found {len(timestamps)} timestamps from {timestamps[2]} to {timestamps[-1]}"
             )
-
-            self.print_header()
 
             for timestamp in range(
                 2, len(timestamps)
@@ -284,10 +176,8 @@ class PcapCompare:
                     reference[time_left],
                     reference[time_right],
                 )
-
-                title = f"time {time_left} vs time {time_right}"
-                print(f"************ {title}")
-                self.print_report(report)
+                report.title = f"time {time_left} vs time {time_right}"
+                report.print(report)
 
                 continue
 
@@ -300,6 +190,19 @@ class PcapCompare:
                 # )
 
         self.reports = reports
+
+    def print(self) -> None:
+        "outputs the results"
+        printing_arguments = {
+            "only_positive": self.only_positive,
+            "only_negative": self.only_negative,
+            "print_threshold": self.print_threshold,
+            "minimum_count": self.minimum_count,
+            "match_string": self.print_match_string,
+            # "match_value": self.print_match_value,
+        }
+        for report in self.reports:
+            report.print(printing_arguments)
 
 
 def parse_args():
