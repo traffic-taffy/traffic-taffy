@@ -180,7 +180,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             )
 
     def compare_two(self, reference, other):
-        self.report = self.pc.compare_dissections(reference, other)
+        self.comparison = self.pc.compare_dissections(reference, other)
 
     def update_chart(
         self, chart: QChart, match_key: str, match_value: str | None = None
@@ -353,14 +353,15 @@ class TaffyExplorer(QDialog, PcapGraphData):
             self.comparison_panel.addWidget(label, 0, n)
 
         current_grid_row = 1
-        for key in self.report:
+        contents = self.comparison.contents
+        for key in contents:
             reported: bool = False
 
             if self.match_key and self.match_key not in key:
                 continue
 
             for subkey, data in sorted(
-                self.report[key].items(), key=lambda x: x[1]["delta"], reverse=True
+                contents[key].items(), key=lambda x: x[1]["delta"], reverse=True
             ):
                 if not self.filter_check(data):
                     continue
