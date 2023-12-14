@@ -131,26 +131,24 @@ class PcapCompare:
     def compare(self) -> None:
         "Compares each pcap against the original source"
 
-        results = self.load_pcaps()
-        self.compare_all(results)
+        dissections = self.load_pcaps()
+        self.compare_all(dissections)
 
-    def compare_all(self, results):
+    def compare_all(self, dissections):
         reports = []
         if len(self.pcaps) > 1:
             # multiple file comparison
-            reference = next(results)
-            for other in results:
+            reference = next(dissections)
+            for other in dissections:
                 # compare the two global summaries
 
-                report = self.compare_dissections(
-                    reference["dissection"].data[0], other["dissection"].data[0]
-                )
-                report.title = f"{reference['file']} vs {other['file']}"
+                report = self.compare_dissections(reference.data[0], other.data[0])
+                report.title = f"{reference.pcap_file} vs {other.pcap_file}"
 
                 reports.append(report)
         else:
             # deal with timestamps within a single file
-            reference = list(results)[0]["dissection"].data
+            reference = list(dissections)[0].data
             timestamps = list(reference.keys())
             debug(
                 f"found {len(timestamps)} timestamps from {timestamps[2]} to {timestamps[-1]}"

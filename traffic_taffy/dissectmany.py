@@ -38,9 +38,9 @@ class PCAPDissectMany:
             *self.args,
             **self.kwargs,
         )
-        data = pd.load_from_cache()
-        if data:
-            return {"file": pcap_file, "dissection": data}
+        dissection = pd.load_from_cache()
+        if dissection:
+            return dissection
 
         # TODO: check caching availability here
         info(f"processing {pcap_file}")
@@ -69,9 +69,9 @@ class PCAPDissectMany:
                 pcap_file + "." + self.kwargs.get("cache_file_suffix", "pkl")
             )
 
-        return {"file": pcap_file, "dissection": dissection}
+        return dissection
 
     def load_all(self):
         with ProcessPoolExecutor() as executor:
-            results = executor.map(self.load_pcap, self.pcap_files)
-            return results
+            dissections = executor.map(self.load_pcap, self.pcap_files)
+            return dissections
