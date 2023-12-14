@@ -161,23 +161,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         # create the graph data storage
         # and load everything in
-        datasets = list(self.pc.load_pcaps())
+        self.dissections = list(self.pc.load_pcaps())
 
-        dissections = []
-        for dataset in datasets:
-            dissections.append(dataset["dissection"])
-        self.dissections = dissections
-
-        if len(datasets) == 1:
-            keys = list(datasets[0]["dissection"].data.keys())
+        if len(self.dissections) == 1:
+            keys = list(self.dissections[0].data.keys())
             self.compare_two(
-                datasets[0]["dissection"].data[keys[1]],
-                datasets[0]["dissection"].data[keys[2]],
+                self.dissections[0].data[keys[1]],
+                self.dissections[0].data[keys[2]],
             )
         else:
-            self.compare_two(
-                datasets[0]["dissection"].data[0], datasets[1]["dissection"].data[0]
-            )
+            self.compare_two(self.dissections[0].data[0], self.dissections[1].data[0])
 
     def compare_two(self, reference, other):
         self.comparison = self.pc.compare_dissections(reference, other)
