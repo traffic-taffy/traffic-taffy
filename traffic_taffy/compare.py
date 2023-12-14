@@ -177,7 +177,7 @@ class PcapCompare:
                     reference[time_right],
                 )
                 report.title = f"time {time_left} vs time {time_right}"
-                report.print(report)
+                reports.append(report)
 
                 continue
 
