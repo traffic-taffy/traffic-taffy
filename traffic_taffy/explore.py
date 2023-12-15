@@ -12,7 +12,7 @@ from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.compare import PcapCompare
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QImage
+from PyQt6.QtGui import QImage, QColor
 
 # https://stackoverflow.com/questions/32476006/how-to-make-an-expandable-collapsable-section-widget-in-qt
 
@@ -212,6 +212,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
         df["time"].min().to_pydatetime().timestamp()
         df["time"].max().to_pydatetime().timestamp()
 
+        grey = QColor("grey")
+
         # add another series for file ovelays
         for dissection in self.dissections:
             timestamps = list(dissection.data.keys())
@@ -220,14 +222,28 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
             # maxv = max(dict(dissection.data.values()))
 
+            # tick-height:
+            tick_height = int(0.01 * maxv)
+
+            # time range with up/down markers
             series = QLineSeries()
-            series.append(first_time, maxv + 1)
-            series.append(last_time, maxv + 1)
+            for timestamp in timestamps[1:]:
+                series.append(timestamp, maxv + tick_height)
+                series.append(timestamp, maxv + 1)
+                series.append(timestamp, maxv + tick_height)
             series.setName(dissection.pcap_file)
+            series.setColor(grey)
+            chart.addSeries(series)
+
+            # beginning end markers
+            series = QLineSeries()
+            series.append(first_time, maxv + tick_height)
+            series.append(last_time, maxv + tick_height)
 
             series.setMarkerSize(20)
             triangle = QImage("images/grey_triangle.png").scaled(10, 10)
             series.setLightMarker(triangle)
+            # series.setColor(grey)
             chart.addSeries(series)
 
         # we always add the real data last to keep file name coloring consistent
