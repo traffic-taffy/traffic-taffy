@@ -10,7 +10,7 @@ from traffic_taffy.dissector import (
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.compare import PcapCompare
-from PyQt6.QtCharts import QLineSeries, QChart, QChartView
+from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QDateTimeAxis, QValueAxis
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QImage, QColor
 
@@ -140,6 +140,9 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.min_changed_timer.setInterval(1000)
         self.min_changed_timer.timeout.connect(self.min_graph_count_changed_actual)
 
+        self.axisX = None
+        self.axisY = None
+
     def quit(self):
         exit()
 
@@ -197,7 +200,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
             for index in df[df["key"] == key].index:
                 series.append(
-                    df["time"][index].to_pydatetime().timestamp(), df["count"][index]
+                    df["time"][index].to_pydatetime().timestamp() * 1000,
+                    df["count"][index],
                 )
 
                 height = df["count"][index]
@@ -228,29 +232,61 @@ class TaffyExplorer(QDialog, PcapGraphData):
             # time range with up/down markers
             series = QLineSeries()
             for timestamp in timestamps[1:]:
-                series.append(timestamp, maxv + tick_height)
-                series.append(timestamp, maxv + 1)
-                series.append(timestamp, maxv + tick_height)
+                series.append(timestamp * 1000, maxv + tick_height)
+                series.append(timestamp * 1000, maxv + 1)
+                series.append(timestamp * 1000, maxv + tick_height)
             series.setName(dissection.pcap_file)
             series.setColor(grey)
-            chart.addSeries(series)
+            series_set.append(series)
+            # chart.addSeries(series)
+            # series.attachAxis(axisX)
+            # series.attachAxis(axisY)
 
             # beginning end markers
             series = QLineSeries()
-            series.append(first_time, maxv + tick_height)
-            series.append(last_time, maxv + tick_height)
+            series.append(first_time * 1000, maxv + tick_height)
+            series.append(last_time * 1000, maxv + tick_height)
 
             series.setMarkerSize(20)
             triangle = QImage("images/grey_triangle.png").scaled(10, 10)
             series.setLightMarker(triangle)
             # series.setColor(grey)
-            chart.addSeries(series)
+            series_set.append(series)
+            # chart.addSeries(series)
+            # series.attachAxis(axisX)
+            # series.attachAxis(axisY)
 
         # we always add the real data last to keep file name coloring consistent
+
+        if self.axisX:
+            chart.removeAxis(self.axisX)
+        self.axisX = QDateTimeAxis()
+        self.axisX.setTickCount(10)
+        self.axisX.setFormat("yyyy-MM-dd\nhh:mm")
+        chart.addAxis(self.axisX, Qt.AlignmentFlag.AlignBottom)
+
+        if self.axisY:
+            chart.removeAxis(self.axisY)
+        self.axisY = QValueAxis()
+        self.axisY.setLabelFormat("%i")
+        chart.addAxis(self.axisY, Qt.AlignmentFlag.AlignLeft)
+
+        # if these aren't all added at the very end then the axis are
+        # all incorrectly zoomed.
         for series in series_set:
             chart.addSeries(series)
+            series.attachAxis(self.axisX)
+            series.attachAxis(self.axisY)
 
-        chart.createDefaultAxes()
+        # series = QLineSeries()
+        # series.append(first_time, 0)
+        # series.append(first_time, maxv)
+        # series.attachAxis(axisX)
+        # series.attachAxis(axisY)
+        # chart.addSeries(series)
+
+        # chart.createDefaultAxes()
+        # chart.zoomIn(QRectF(QPointF(first_time/1000.0, maxv), QPointF(last_time/1000.0, 0)))
 
         self.saved_df = df
         self.minimum_count = tmpv
