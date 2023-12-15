@@ -261,8 +261,9 @@ class TaffyExplorer(QDialog, PcapGraphData):
         if self.axisX:
             chart.removeAxis(self.axisX)
         self.axisX = QDateTimeAxis()
-        self.axisX.setTickCount(10)
+        self.axisX.setTickCount(5)
         self.axisX.setFormat("yyyy-MM-dd\nhh:mm")
+        # self.axisX.setLabelsAngle(-45)
         chart.addAxis(self.axisX, Qt.AlignmentFlag.AlignBottom)
 
         if self.axisY:
