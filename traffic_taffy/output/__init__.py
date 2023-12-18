@@ -19,6 +19,43 @@ class Output:
     def output_options(self, new_output_options):
         self._output_options = new_output_options
 
+    def output(self, report=None):
+        if not report:
+            report = self.report
+        contents = report.contents
+
+        first_of_anything: bool = True
+
+        for key in sorted(contents):
+            reported: bool = False
+
+            if (
+                "match_string" in self.output_options
+                and self.output_options["match_string"] not in key
+            ):
+                continue
+
+            # TODO: we don't do match_value here?
+
+            for subkey, data in sorted(
+                contents[key].items(), key=lambda x: x[1]["delta"], reverse=True
+            ):
+                if not self.filter_check(data):
+                    continue
+
+                # print the header
+                if not reported:
+                    if first_of_anything:
+                        self.output_start(report)
+                        first_of_anything = False
+
+                    self.output_new_section(key)
+                    reported = True
+
+                data["delta"]
+
+                self.output_record(key, subkey, data)
+
     def filter_check(self, data: dict) -> bool:
         "Returns true if we should include it"
         delta: float = data["delta"]

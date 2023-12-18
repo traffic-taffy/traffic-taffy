@@ -284,10 +284,10 @@ def main():
 
     # compare the pcaps
     reports = pc.compare()
+    console = Console(None, printing_arguments)
     for report in reports:
         # output results to the console
-        console = Console(report, printing_arguments)
-        console.output()
+        console.output(report)
 
 
 if __name__ == "__main__":
