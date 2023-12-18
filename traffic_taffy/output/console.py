@@ -14,17 +14,6 @@ class Console(Output):
         if not self.console:
             self.console = RichConsole()
 
-    def print(self, report=None, output_options=None):
-        "outputs the results"
-        self.print_header()
-
-        if output_options:
-            self.output_options = output_options
-        if report:
-            self.report = report
-
-        self.output()
-
     def output_start(self, report):
         "Prints the header about columns being displayed"
         # This should match the spacing in print_contents()
