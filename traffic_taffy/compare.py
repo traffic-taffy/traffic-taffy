@@ -7,6 +7,7 @@ from typing import List
 
 from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissectmany import PCAPDissectMany
+from traffic_taffy.output.console import Console
 from traffic_taffy.dissector import (
     PCAPDissectorType,
     dissector_add_parseargs,
@@ -128,13 +129,14 @@ class PcapCompare:
         results = pdm.load_all()
         return results
 
-    def compare(self) -> None:
+    def compare(self) -> List[Comparison]:
         "Compares each pcap against the original source"
 
         dissections = self.load_pcaps()
         self.compare_all(dissections)
+        return self.reports
 
-    def compare_all(self, dissections):
+    def compare_all(self, dissections) -> List[Comparison]:
         reports = []
         if len(self.pcaps) > 1:
             # multiple file comparison
@@ -188,6 +190,7 @@ class PcapCompare:
                 # )
 
         self.reports = reports
+        return reports
 
     def print(self) -> None:
         "outputs the results"
@@ -263,12 +266,6 @@ def main():
     args = parse_args()
     pc = PcapCompare(
         args.pcap_files,
-        maximum_count=args.packet_count,
-        print_threshold=float(args.print_threshold) / 100.0,
-        minimum_count=args.minimum_count,
-        print_match_string=args.match_string,
-        only_positive=args.only_positive,
-        only_negative=args.only_negative,
         cache_results=args.cache_pcap_results,
         cache_file_suffix=args.cache_file_suffix,
         dissection_level=args.dissection_level,
@@ -276,11 +273,21 @@ def main():
         bin_size=args.bin_size,
     )
 
-    # compare the pcaps
-    pc.compare()
+    printing_arguments = {
+        "maximum_count": args.packet_count,
+        "print_threshold": float(args.print_threshold) / 100.0,
+        "minimum_count": args.minimum_count,
+        "print_match_string": args.match_string,
+        "only_positive": args.only_positive,
+        "only_negative": args.only_negative,
+    }
 
-    # print the results
-    pc.print()
+    # compare the pcaps
+    reports = pc.compare()
+    for report in reports:
+        # output results to the console
+        console = Console(report, printing_arguments)
+        console.output()
 
 
 if __name__ == "__main__":
