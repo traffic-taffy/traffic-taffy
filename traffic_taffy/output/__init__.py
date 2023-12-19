@@ -65,7 +65,7 @@ class Output:
         return
 
     def filter_check(self, data: dict) -> bool:
-        "Returns true if we should include it"
+        "Return true if we should include it."
         delta: float = data["delta"]
         total: int = data["total"]
 
