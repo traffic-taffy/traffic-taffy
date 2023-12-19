@@ -27,12 +27,7 @@ class PcapCompare:
         pcap_files: List[str],
         maximum_count: int | None = None,
         deep: bool = True,
-        print_threshold: float = 0.0,
-        minimum_count: int | None = None,
-        print_match_string: str | None = None,
         pkt_filter: str | None = None,
-        only_positive: bool = False,
-        only_negative: bool = False,
         cache_results: bool = False,
         cache_file_suffix: str = "pkl",
         bin_size: int | None = None,
@@ -42,12 +37,7 @@ class PcapCompare:
         self.pcap_files = pcap_files
         self.deep = deep
         self.maximum_count = maximum_count
-        self.print_threshold = print_threshold
-        self.minimum_count = minimum_count
-        self.print_match_string = print_match_string
         self.pkt_filter = pkt_filter
-        self.only_positive = only_positive
-        self.only_negative = only_negative
         self.cache_results = cache_results
         self.dissection_level = dissection_level
         self.between_times = between_times
@@ -200,19 +190,6 @@ class PcapCompare:
 
         self.reports = reports
         return reports
-
-    def print(self) -> None:
-        "outputs the results"
-        printing_arguments = {
-            "only_positive": self.only_positive,
-            "only_negative": self.only_negative,
-            "print_threshold": self.print_threshold,
-            "minimum_count": self.minimum_count,
-            "match_string": self.print_match_string,
-            # "match_value": self.print_match_value,
-        }
-        for report in self.reports:
-            report.print(printing_arguments)
 
 
 def parse_args():
