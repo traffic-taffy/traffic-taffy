@@ -258,15 +258,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    pc = PcapCompare(
-        args.pcap_files,
-        cache_results=args.cache_pcap_results,
-        cache_file_suffix=args.cache_file_suffix,
-        dissection_level=args.dissection_level,
-        between_times=args.between_times,
-        bin_size=args.bin_size,
-    )
 
+    # setup output options
     printing_arguments = {
         "maximum_count": args.packet_count,
         "print_threshold": float(args.print_threshold) / 100.0,
@@ -276,17 +269,48 @@ def main():
         "only_negative": args.only_negative,
     }
 
-    # compare the pcaps
-    reports = pc.compare()
+    # get our files to compare (maybe just one)
+    left = args.pcap_files.pop(0)
+    right = None
+    more_than_one = False
 
-    if args.fsdb:
-        output = Fsdb(None, printing_arguments)
-    else:
-        output = Console(None, printing_arguments)
+    if len(args.pcap_files) > 0:
+        right = args.pcap_files.pop(0)
+        more_than_one = True
 
-    for report in reports:
-        # output results to the console
-        output.output(report)
+    while left:
+        files = [left]
+        if right:
+            files.append(right)
+
+        pc = PcapCompare(
+            files,
+            cache_results=args.cache_pcap_results,
+            cache_file_suffix=args.cache_file_suffix,
+            dissection_level=args.dissection_level,
+            between_times=args.between_times,
+            bin_size=args.bin_size,
+        )
+
+        # compare the pcaps
+        reports = pc.compare()
+
+        if args.fsdb:
+            output = Fsdb(None, printing_arguments)
+        else:
+            output = Console(None, printing_arguments)
+
+        for report in reports:
+            # output results to the console
+            output.output(report)
+
+        left = right
+        right = None
+        if len(args.pcap_files) > 0:
+            right = args.pcap_files.pop(0)
+
+        if left and not right and more_than_one:
+            left = None
 
 
 if __name__ == "__main__":
