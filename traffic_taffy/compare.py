@@ -24,7 +24,7 @@ class PcapCompare:
 
     def __init__(
         self,
-        pcaps: List[str],
+        pcap_files: List[str],
         maximum_count: int | None = None,
         deep: bool = True,
         print_threshold: float = 0.0,
@@ -39,7 +39,7 @@ class PcapCompare:
         dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
         between_times: List[int] | None = None,
     ) -> None:
-        self.pcaps = pcaps
+        self.pcap_files = pcap_files
         self.deep = deep
         self.maximum_count = maximum_count
         self.print_threshold = print_threshold
@@ -53,6 +53,14 @@ class PcapCompare:
         self.between_times = between_times
         self.bin_size = bin_size
         self.cache_file_suffix = cache_file_suffix
+
+    @property
+    def pcap_files(self):
+        return self._pcap_files
+
+    @pcap_files.setter
+    def pcap_files(self, new_pcap_files):
+        self._pcap_files = new_pcap_files
 
     @property
     def reports(self):
@@ -119,7 +127,7 @@ class PcapCompare:
         # load the first as a reference pcap
         info(f"reading pcap files using level={self.dissection_level}")
         pdm = PCAPDissectMany(
-            self.pcaps,
+            self.pcap_files,
             bin_size=self.bin_size,
             maximum_count=self.maximum_count,
             pcap_filter=self.pkt_filter,
@@ -139,7 +147,7 @@ class PcapCompare:
 
     def compare_all(self, dissections) -> List[Comparison]:
         reports = []
-        if len(self.pcaps) > 1:
+        if len(self.pcap_files) > 1:
             # multiple file comparison
             reference = next(dissections)
             for other in dissections:
