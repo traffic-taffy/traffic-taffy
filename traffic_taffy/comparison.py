@@ -1,13 +1,15 @@
+from typing import Dict
+
+
 class Comparison:
     def __init__(self, contents: list, title: str = ""):
         self.contents = contents
-        self.title = title
-        self.console = None
-        self.printing_arguments = {}
+        self.title: str = title
+        self.printing_arguments: Dict[str] = {}
 
     # title
     @property
-    def title(self):
+    def title(self) -> str:
         return self._title
 
     @title.setter
