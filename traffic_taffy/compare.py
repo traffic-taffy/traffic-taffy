@@ -8,6 +8,7 @@ from typing import List
 from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.output.console import Console
+from traffic_taffy.output.fsdb import Fsdb
 from traffic_taffy.dissector import (
     PCAPDissectorType,
     dissector_add_parseargs,
@@ -214,6 +215,14 @@ def parse_args():
         epilog="Exmaple Usage: ",
     )
 
+    output_options = parser.add_argument_group("Output format")
+    output_options.add_argument(
+        "-f",
+        "--fsdb",
+        action="store_true",
+        help="Print results in an FSDB formatted output",
+    )
+
     limiting_parser = limitor_add_parseargs(parser)
 
     limiting_parser.add_argument(
@@ -284,10 +293,15 @@ def main():
 
     # compare the pcaps
     reports = pc.compare()
-    console = Console(None, printing_arguments)
+
+    if args.fsdb:
+        output = Fsdb(None, printing_arguments)
+    else:
+        output = Console(None, printing_arguments)
+
     for report in reports:
         # output results to the console
-        console.output(report)
+        output.output(report)
 
 
 if __name__ == "__main__":

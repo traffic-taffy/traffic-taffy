@@ -56,6 +56,14 @@ class Output:
 
                 self.output_record(key, subkey, data)
 
+        self.output_close()
+
+    def output_new_section(self, key):
+        return
+
+    def output_close(self):
+        return
+
     def filter_check(self, data: dict) -> bool:
         "Returns true if we should include it"
         delta: float = data["delta"]
