@@ -26,7 +26,7 @@ class PcapGraphData:
         # TODO: this could likely be made much more efficient and needs hole-filling
         for timestamp, key, subkey, value in dissection.find_data(
             timestamps=time_keys,
-            match_string=self.match_key,
+            match_string=self.match_string,
             match_value=self.match_value,
             minimum_count=self.minimum_count,
             make_printable=True,

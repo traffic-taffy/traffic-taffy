@@ -9,7 +9,9 @@ from traffic_taffy.dissector import (
 )
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.graphdata import PcapGraphData
-from traffic_taffy.compare import PcapCompare
+from traffic_taffy.compare import PcapCompare, get_comparison_args
+from traffic_taffy.output.memory import Memory
+
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QDateTimeAxis, QValueAxis
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QImage, QColor
@@ -150,11 +152,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.pc = PcapCompare(
             self.args.pcap_files,
             maximum_count=self.args.packet_count,
-            print_threshold=float(self.args.print_threshold) / 100.0,
-            minimum_count=self.args.minimum_count,
-            print_match_string=self.args.match_string,
-            only_positive=self.args.only_positive,
-            only_negative=self.args.only_negative,
             cache_results=self.args.cache_pcap_results,
             cache_file_suffix=self.args.cache_file_suffix,
             dissection_level=self.args.dissection_level,
@@ -179,9 +176,9 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.comparison = self.pc.compare_dissections(reference, other)
 
     def update_chart(
-        self, chart: QChart, match_key: str, match_value: str | None = None
+        self, chart: QChart, match_string: str, match_value: str | None = None
     ):
-        self.match_key = match_key
+        self.match_string = match_string
         self.match_value = match_value
 
         # for matching on a single value, don't do a minimum count at all
@@ -293,11 +290,11 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.minimum_count = tmpv
 
     def update_detail_chart(
-        self, match_key: str = "__TOTAL__", match_value: str | None = None
+        self, match_string: str = "__TOTAL__", match_value: str | None = None
     ):
-        self.detail_graph.setTitle(match_key)
+        self.detail_graph.setTitle(match_string)
         self.detail_graph.removeAllSeries()
-        self.update_chart(self.detail_graph, match_key, match_value)
+        self.update_chart(self.detail_graph, match_string, match_value)
 
     def update_traffic_chart(self):
         self.update_chart(self.traffic_graph, "__TOTAL__")
@@ -309,7 +306,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
     def min_count_changed_actual(self):
         self.update_report()
-        self.update_detail_chart(self.match_key, self.match_value)
+        self.update_detail_chart(self.match_string, self.match_value)
         debug(f"updating table with minimum count of {self.minimum_count}")
 
     def min_count_changed(self, value):
@@ -321,7 +318,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
     def min_graph_count_changed_actual(self):
         self.update_report()
-        self.update_detail_chart(self.match_key, self.match_value)
+        self.update_detail_chart(self.match_string, self.match_value)
         debug(f"updating graph with minimum count of {self.minimum_graph_count}")
 
     def min_graph_count_changed(self, value):
@@ -385,8 +382,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
         del old_widget
 
         # we need to store the key/match values to reset
-        (tmp_key, tmp_value) = (self.match_key, self.match_value)
-        self.match_key = None
+        (tmp_key, tmp_value) = (self.match_string, self.match_value)
+        self.match_string = None
         self.match_value = None
 
         # add the header in row 0
@@ -399,19 +396,14 @@ class TaffyExplorer(QDialog, PcapGraphData):
             self.comparison_panel.addWidget(label, 0, n)
 
         current_grid_row = 1
-        contents = self.comparison.contents
-        for key in contents:
-            reported: bool = False
 
-            if self.match_key and self.match_key not in key:
-                continue
+        printing_arguments = get_comparison_args(self.args)
+        memory_report = Memory(self.comparison.title, printing_arguments)
+        memory_report.output(self.comparison)
 
-            for subkey, data in sorted(
-                contents[key].items(), key=lambda x: x[1]["delta"], reverse=True
-            ):
-                if not self.filter_check(data):
-                    continue
-
+        for key in memory_report.memory:
+            reported = False
+            for record in memory_report.memory[key]:
                 # add the header
                 if not reported:
                     debug(f"reporting on {key}")
@@ -425,7 +417,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
                     current_grid_row += 1
                     reported = True
 
-                delta: float = data["delta"]
+                subkey = record["subkey"]
+                delta: float = record["delta"]
 
                 # apply some fancy styling
                 style = ""
@@ -454,16 +447,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, 1)
 
-                label = QLabel(f"{data['left_count']:>8}")
+                label = QLabel(f"{record['left_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, 2)
 
-                label = QLabel(f"{data['right_count']:>8}")
+                label = QLabel(f"{record['right_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, 3)
                 current_grid_row += 1
 
-        (self.match_key, self.match_value) = (tmp_key, tmp_value)
+        (self.match_string, self.match_value) = (tmp_key, tmp_value)
 
     # TODO: move to base class of compare and explore
     def filter_check(self, data: dict) -> bool:

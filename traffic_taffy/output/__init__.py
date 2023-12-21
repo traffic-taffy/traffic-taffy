@@ -30,7 +30,7 @@ class Output:
             reported: bool = False
 
             if (
-                "match_string" in self.output_options
+                self.output_options.get("match_string") is not None
                 and self.output_options["match_string"] not in key
             ):
                 continue

@@ -192,6 +192,48 @@ class PcapCompare:
         return reports
 
 
+def compare_add_parseargs(compare_parser, add_subgroup: bool = True):
+    if add_subgroup:
+        compare_parser = compare_parser.add_argument_group("Comparison result options")
+
+    compare_parser.add_argument(
+        "-t",
+        "--print-threshold",
+        default=0.0,
+        type=float,
+        help="Don't print results with abs(percent) less than this threshold",
+    )
+
+    compare_parser.add_argument(
+        "-P", "--only-positive", action="store_true", help="Only show positive entries"
+    )
+
+    compare_parser.add_argument(
+        "-N", "--only-negative", action="store_true", help="Only show negative entries"
+    )
+
+    compare_parser.add_argument(
+        "-T",
+        "--between-times",
+        nargs=2,
+        type=int,
+        help="For single files, only display results between these timestamps",
+    )
+
+    return compare_parser
+
+
+def get_comparison_args(args):
+    return {
+        "maximum_count": args.packet_count,
+        "print_threshold": float(args.print_threshold) / 100.0,
+        "minimum_count": args.minimum_count,
+        "match_string": args.match_string,
+        "only_positive": args.only_positive,
+        "only_negative": args.only_negative,
+    }
+
+
 def parse_args():
     "Parse the command line arguments."
     parser = ArgumentParser(
@@ -208,32 +250,8 @@ def parse_args():
         help="Print results in an FSDB formatted output",
     )
 
-    limiting_parser = limitor_add_parseargs(parser)
-
-    limiting_parser.add_argument(
-        "-t",
-        "--print-threshold",
-        default=0.0,
-        type=float,
-        help="Don't print results with abs(percent) less than this threshold",
-    )
-
-    limiting_parser.add_argument(
-        "-P", "--only-positive", action="store_true", help="Only show positive entries"
-    )
-
-    limiting_parser.add_argument(
-        "-N", "--only-negative", action="store_true", help="Only show negative entries"
-    )
-
-    limiting_parser.add_argument(
-        "-T",
-        "--between-times",
-        nargs=2,
-        type=int,
-        help="For single files, only display results between these timestamps",
-    )
-
+    limitor_parser = limitor_add_parseargs(parser)
+    compare_add_parseargs(limitor_parser, False)
     dissector_add_parseargs(parser)
 
     debugging_group = parser.add_argument_group("Debugging options")
@@ -260,14 +278,7 @@ def main():
     args = parse_args()
 
     # setup output options
-    printing_arguments = {
-        "maximum_count": args.packet_count,
-        "print_threshold": float(args.print_threshold) / 100.0,
-        "minimum_count": args.minimum_count,
-        "print_match_string": args.match_string,
-        "only_positive": args.only_positive,
-        "only_negative": args.only_negative,
-    }
+    printing_arguments = get_comparison_args(args)
 
     # get our files to compare (maybe just one)
     left = args.pcap_files.pop(0)
