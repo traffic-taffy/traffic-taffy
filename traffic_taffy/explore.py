@@ -458,37 +458,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         (self.match_string, self.match_value) = (tmp_key, tmp_value)
 
-    # TODO: move to base class of compare and explore
-    def filter_check(self, data: dict) -> bool:
-        "Returns true if we should include it"
-        delta: float = data["delta"]
-        total: int = data["total"]
-
-        if self.only_positive and delta <= 0:
-            return False
-
-        if self.only_negative and delta >= 0:
-            return False
-
-        if not self.print_threshold and not self.minimum_count:
-            # always print
-            return True
-
-        if self.print_threshold and not self.minimum_count:
-            # check print_threshold as a fraction
-            if abs(delta) > self.print_threshold:
-                return True
-        elif not self.print_threshold and self.minimum_count:
-            # just check minimum_count
-            if total > self.minimum_count:
-                return True
-        else:
-            # require both
-            if total > self.minimum_count and abs(delta) > self.print_threshold:
-                return True
-
-        return False
-
 
 def parse_args():
     "Parse the command line arguments."
