@@ -148,15 +148,24 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def quit(self):
         exit()
 
-    def create_comparison_report(self):
+    def create_initial_comparison_report_arguments(self):
         if len(self.dissections) == 1:
-            keys = list(self.dissections[0].data.keys())
-            self.compare_two(
-                self.dissections[0].data[keys[1]],
-                self.dissections[0].data[keys[2]],
-            )
+            self.dissection1 = self.dissections[0]
+            self.dissection2 = self.dissection1
+
+            keys = list(self.dissection1.data.keys())
+
+            # skipping key 0 which is the full timestamp
+            self.dissection_key1 = keys[1]
+            self.dissection_key2 = keys[2]
+
         else:
-            self.compare_two(self.dissections[0].data[0], self.dissections[1].data[0])
+            self.dissection1 = self.dissections[0]
+            self.dissection2 = self.dissections[1]
+
+            # comparing the full times
+            self.dissection_key1 = 0
+            self.dissection_key2 = 0
 
     def create_comparison(self):
         self.pc = PcapCompare(
@@ -173,10 +182,14 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # and load everything in
         self.dissections = list(self.pc.load_pcaps())
 
-        self.create_comparison_report()
+        self.create_initial_comparison_report_arguments()
+        self.compare_two()
 
-    def compare_two(self, reference, other):
-        self.comparison = self.pc.compare_dissections(reference, other)
+    def compare_two(self):
+        self.comparison = self.pc.compare_dissections(
+            self.dissection1.data[self.dissection_key1],
+            self.dissection2.data[self.dissection_key2],
+        )
 
     def update_chart(
         self, chart: QChart, match_string: str, match_value: str | None = None
