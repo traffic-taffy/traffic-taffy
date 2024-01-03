@@ -272,7 +272,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-n",
         "--packet-count",
-        default=-1,
+        default=0,
         type=int,
         help="Maximum number of packets to analyze",
     )
