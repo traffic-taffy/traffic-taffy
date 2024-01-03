@@ -25,7 +25,7 @@ class PcapCompare:
     def __init__(
         self,
         pcap_files: List[str],
-        maximum_count: int | None = None,
+        maximum_count: int = 0,  # where 0 == all
         deep: bool = True,
         pkt_filter: str | None = None,
         cache_results: bool = False,
@@ -225,7 +225,7 @@ def compare_add_parseargs(compare_parser, add_subgroup: bool = True):
 
 def get_comparison_args(args):
     return {
-        "maximum_count": args.packet_count,
+        "maximum_count": args.packet_count or 0,
         "print_threshold": float(args.print_threshold) / 100.0,
         "minimum_count": args.minimum_count,
         "match_string": args.match_string,
