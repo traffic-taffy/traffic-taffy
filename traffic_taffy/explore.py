@@ -148,6 +148,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def quit(self):
         exit()
 
+    def create_comparison_report(self):
+        if len(self.dissections) == 1:
+            keys = list(self.dissections[0].data.keys())
+            self.compare_two(
+                self.dissections[0].data[keys[1]],
+                self.dissections[0].data[keys[2]],
+            )
+        else:
+            self.compare_two(self.dissections[0].data[0], self.dissections[1].data[0])
+
     def create_comparison(self):
         self.pc = PcapCompare(
             self.args.pcap_files,
@@ -163,14 +173,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         # and load everything in
         self.dissections = list(self.pc.load_pcaps())
 
-        if len(self.dissections) == 1:
-            keys = list(self.dissections[0].data.keys())
-            self.compare_two(
-                self.dissections[0].data[keys[1]],
-                self.dissections[0].data[keys[2]],
-            )
-        else:
-            self.compare_two(self.dissections[0].data[0], self.dissections[1].data[0])
+        self.create_comparison_report()
 
     def compare_two(self, reference, other):
         self.comparison = self.pc.compare_dissections(reference, other)
