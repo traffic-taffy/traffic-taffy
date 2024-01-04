@@ -10,7 +10,11 @@ from traffic_taffy.dissector import (
 )
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.graphdata import PcapGraphData
-from traffic_taffy.compare import PcapCompare, get_comparison_args
+from traffic_taffy.compare import (
+    PcapCompare,
+    get_comparison_args,
+    compare_add_parseargs,
+)
 from traffic_taffy.output.memory import Memory
 
 from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QDateTimeAxis, QValueAxis
@@ -539,31 +543,8 @@ def parse_args():
         epilog="Exmaple Usage: ",
     )
 
-    limiting_parser = limitor_add_parseargs(parser)
-
-    limiting_parser.add_argument(
-        "-t",
-        "--print-threshold",
-        default=0.0,
-        type=float,
-        help="Don't print results with abs(percent) less than this threshold",
-    )
-
-    limiting_parser.add_argument(
-        "-P", "--only-positive", action="store_true", help="Only show positive entries"
-    )
-
-    limiting_parser.add_argument(
-        "-N", "--only-negative", action="store_true", help="Only show negative entries"
-    )
-
-    limiting_parser.add_argument(
-        "-T",
-        "--between-times",
-        nargs=2,
-        type=int,
-        help="For single files, only display results between these timestamps",
-    )
+    limitor_parser = limitor_add_parseargs(parser)
+    compare_add_parseargs(limitor_parser, False)
 
     dissector_add_parseargs(parser)
 
