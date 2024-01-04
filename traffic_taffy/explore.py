@@ -229,6 +229,9 @@ class TaffyExplorer(QDialog, PcapGraphData):
             # axisx = QDateTimeAxis()
             # chart.setAxisX()
 
+        if len(df) == 0:
+            return  # TODO: handle displaying an error
+
         df["time"].min().to_pydatetime().timestamp()
         df["time"].max().to_pydatetime().timestamp()
 
