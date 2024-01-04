@@ -114,6 +114,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.print_threshold = args.print_threshold
         self.minimum_count = args.minimum_count
         self.minimum_graph_count = args.minimum_count
+        self.top_records = args.top_records
 
         # other needed itmes
         self.min_count_changed_timer = QTimer(self)
@@ -127,6 +128,11 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.min_graph_changed_timer.timeout.connect(
             self.min_graph_count_changed_actual
         )
+
+        self.top_records_changed_timer = QTimer(self)
+        self.top_records_changed_timer.setSingleShot(True)
+        self.top_records_changed_timer.setInterval(1000)
+        self.top_records_changed_timer.timeout.connect(self.top_records_changed_actual)
 
         self.axisX = None
         self.axisY = None
@@ -336,6 +342,18 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.min_graph_changed_timer.start()
         debug(f"changed minimum count to {self.minimum_graph_count}")
 
+    def top_records_changed_actual(self):
+        self.printing_arguments["top_records"] = self.top_records
+        self.update_report()
+        self.update_detail_chart(self.match_string, self.match_value)
+        debug(f"updating top report count with {self.top_records}")
+
+    def top_records_changed(self, value):
+        self.top_records = value
+        # in case we're running already, stop it first
+        self.top_records_changed_timer.stop()
+        self.top_records_changed_timer.start()
+
     # def clearGridLayout(layout, deleteWidgets: bool = True):
 
     #     for widget in layout.something():
@@ -411,6 +429,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         self.minimum_count_w.valueChanged.connect(self.min_count_changed)
         self.control_menus.addWidget(self.minimum_count_w)
+
+        self.control_menus.addWidget(QLabel("Report at most:"))
+        self.top_records_w = QSpinBox()
+        self.top_records_w.setMinimum(0)
+        self.top_records_w.setMaximum(1000000)  # TODO: inf
+        self.top_records_w.setValue(int(self.top_records))
+        self.top_records_w.setSingleStep(1)
+
+        self.top_records_w.valueChanged.connect(self.top_records_changed)
+        self.control_menus.addWidget(self.top_records_w)
 
         self.control_menus.addWidget(QLabel("Minimum graph count:"))
         self.minimum_graph_count_w = QSpinBox()
