@@ -43,6 +43,7 @@ class Memory(Output):
                 "subkey": subkey,
                 "left_count": data["left_count"],
                 "right_count": data["right_count"],
-                "delta": data["delta"],
+                "delta_percentage": data["delta_percentage"],
+                "delta_absolute": data["delta_absolute"],
             }
         )

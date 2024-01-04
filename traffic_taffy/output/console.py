@@ -45,26 +45,25 @@ class Console(Output):
     def output_record(self, key, subkey, data) -> None:
         "prints a report to the console"
 
-        percent_delta: float = data["delta"]
-        actual_delta: int = data["right_count"] - data["left_count"]
+        delta_percentage: float = data["delta_percentage"]
 
         # apply some fancy styling
         style = ""
-        if percent_delta < -0.5:
+        if delta_percentage < -0.5:
             style = "[bold red]"
-        elif percent_delta < 0.0:
+        elif delta_percentage < 0.0:
             style = "[red]"
-        elif percent_delta > 0.5:
+        elif delta_percentage > 0.5:
             style = "[bold green]"
-        elif percent_delta > 0.0:
+        elif delta_percentage > 0.0:
             style = "[green]"
         endstyle = style.replace("[", "[/")
 
         # construct the output line with styling
         subkey = Dissection.make_printable(key, subkey)
         line = f"  {style}{subkey:<50}{endstyle}"
-        line += f" {data['left_count']:>8} {data['right_count']:>8} {actual_delta:>8}"
-        line += f" {100*percent_delta:>7.2f}"
+        line += f" {data['left_count']:>8} {data['right_count']:>8} {data['delta_absolute']:>8}"
+        line += f" {100*delta_percentage:>7.2f}"
 
         # print it to the rich console
         self.console.print(line)

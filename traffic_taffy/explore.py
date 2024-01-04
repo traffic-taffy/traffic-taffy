@@ -463,7 +463,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.match_value = None
 
         # add the header in row 0
-        headers = ["Value", "Delta %", "Left Count", "Right Count"]
+        headers = ["Value", "Left Count", "Right Count", "Delta", "Delta %"]
         for n, header in enumerate(headers):
             header = header.replace(" ", "**\n\n**")
             label = QLabel("**" + header + "**")
@@ -488,23 +488,23 @@ class TaffyExplorer(QDialog, PcapGraphData):
                         CallWithParameter(self.update_detail_chart, key)
                     )
                     self.comparison_panel.addWidget(
-                        report_button, current_grid_row, 0, 1, 5
+                        report_button, current_grid_row, 0, 1, 6
                     )
                     current_grid_row += 1
                     reported = True
 
                 subkey = record["subkey"]
-                delta: float = record["delta"]
+                delta_percentage: float = record["delta_percentage"]
 
                 # apply some fancy styling
                 style = ""
-                if delta < -0.5:
+                if delta_percentage < -0.5:
                     style = "color: red"  # TODO bold
-                elif delta < 0.0:
+                elif delta_percentage < 0.0:
                     style = "color: red"
-                elif delta > 0.5:
+                elif delta_percentage > 0.5:
                     style = "color: lightgreen"  # TODO bold
-                elif delta > 0.0:
+                elif delta_percentage > 0.0:
                     style = "color: lightgreen"
 
                 # construct the output line with styling
@@ -519,17 +519,28 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 subkey_button.setStyleSheet(style)
                 self.comparison_panel.addWidget(subkey_button, current_grid_row, 0)
 
-                label = QLabel(f"{100*delta:>7.2f}")
-                label.setAlignment(Qt.AlignmentFlag.AlignRight)
-                self.comparison_panel.addWidget(label, current_grid_row, 1)
+                column = 0
 
+                column += 1
                 label = QLabel(f"{record['left_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
-                self.comparison_panel.addWidget(label, current_grid_row, 2)
+                self.comparison_panel.addWidget(label, current_grid_row, column)
 
+                column += 1
                 label = QLabel(f"{record['right_count']:>8}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
-                self.comparison_panel.addWidget(label, current_grid_row, 3)
+                self.comparison_panel.addWidget(label, current_grid_row, column)
+
+                column += 1
+                label = QLabel(f"{record['delta_absolute']:>8}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, column)
+
+                column += 1
+                label = QLabel(f"{100*delta_percentage:>7.2f}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, column)
+
                 current_grid_row += 1
 
         (self.match_string, self.match_value) = (tmp_key, tmp_value)

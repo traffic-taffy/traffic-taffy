@@ -74,10 +74,10 @@ class PcapCompare:
             report[key] = {}
 
             for subkey in left_side[key].keys():
-                delta = 0.0
+                delta_percentage = 0.0
                 total = 0
                 if subkey in left_side[key] and subkey in right_side[key]:
-                    delta = (
+                    delta_percentage = (
                         right_side[key][subkey] / right_side_total
                         - left_side[key][subkey] / left_side_total
                     )
@@ -85,13 +85,15 @@ class PcapCompare:
                     left_count = left_side[key][subkey]
                     right_count = right_side[key][subkey]
                 else:
-                    delta = -1.0
+                    delta_percentage = -1.0
                     total = -left_side[key][subkey]
                     left_count = left_side[key][subkey]
                     right_count = 0
 
+                delta_absolute = right_count - left_count
                 report[key][subkey] = {
-                    "delta": delta,
+                    "delta_percentage": delta_percentage,
+                    "delta_absolute": delta_absolute,
                     "total": total,
                     "left_count": left_count,
                     "right_count": right_count,
@@ -99,13 +101,14 @@ class PcapCompare:
 
             for subkey in right_side[key].keys():
                 if subkey not in report[key]:
-                    delta = 1.0
+                    delta_percentage = 1.0
                     total = right_side[key][subkey]
                     left_count = 0
                     right_count = right_side[key][subkey]
 
                     report[key][subkey] = {
-                        "delta": delta,
+                        "delta_percentage": delta_percentage,
+                        "delta_absolute": right_count,
                         "total": total,
                         "left_count": left_count,
                         "right_count": right_count,
