@@ -33,8 +33,8 @@ class Console(Output):
         right_count = "Right"
 
         line = f"  {style}{subkey:<50}{endstyle}"
-        line += f"{delta:>7} "
-        line += f"{left_count:>8} {right_count:>8}"
+        line += f" {left_count:>8} {right_count:>8}"
+        line += f" {delta:>7}"
 
         self.console.print(line)
 
@@ -61,8 +61,8 @@ class Console(Output):
         # construct the output line with styling
         subkey = Dissection.make_printable(key, subkey)
         line = f"  {style}{subkey:<50}{endstyle}"
-        line += f"{100*delta:>7.2f} "
-        line += f"{data['left_count']:>8} {data['right_count']:>8}"
+        line += f" {data['left_count']:>8} {data['right_count']:>8}"
+        line += f" {100*delta:>7.2f}"
 
         # print it to the rich console
         self.console.print(line)
