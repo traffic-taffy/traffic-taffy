@@ -368,10 +368,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def set_left_dissection(self, action):
         self.left_w.setText(os.path.basename(action.text()))
         self.dissection1 = self.dissections[action.data()]
+        self.dissection1_key = 0
+        self.compare_two()
+        self.update_report()
 
     def set_right_dissection(self, action):
         self.right_w.setText(os.path.basename(action.text()))
         self.dissection2 = self.dissections[action.data()]
+        self.dissection2_key = 0
+        self.compare_two()
+        self.update_report()
 
     def update_left_right(self):
         self.left_menu = QMenu(os.path.basename(self.dissection1.pcap_file))
