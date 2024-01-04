@@ -21,34 +21,6 @@ from PyQt6.QtCharts import QLineSeries, QChart, QChartView, QDateTimeAxis, QValu
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QImage, QColor
 
-# https://stackoverflow.com/questions/32476006/how-to-make-an-expandable-collapsable-section-widget-in-qt
-
-# class Widget(QWidget):
-#     def __init__(self):
-#         super().__init__()
-#         self.__initUi()
-
-#     def __initUi(self):
-#         addBtn = QPushButton('Add')
-#         addBtn.clicked.connect(self.__add)
-#         self.__foldableListWidget = FoldableListWidget()
-#         lay = QVBoxLayout()
-#         lay.addWidget(addBtn)
-#         lay.addWidget(self.__foldableListWidget)
-#         self.setLayout(lay)
-
-#     def __add(self):
-#         foldedItem = QLabel("folded")
-# #        foldedItem.setPlaceholderText('Input...')
-
-#         sublist = FoldableListWidget()
-#         subitem1 = QLabel("main item")
-#         subitem2 = QLabel("sub item")
-#         sublist.setFoldableListWidgetItem(subitem1, subitem2)
-
-#         self.__foldableListWidget.setFoldableListWidgetItem(foldedItem, sublist)
-
-
 from PyQt6.QtWidgets import (
     QPushButton,
     QDialog,
@@ -112,6 +84,11 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.source_menus_w = QWidget()
         self.source_menus_w.setLayout(self.source_menus)
         self.mainLayout.addWidget(self.source_menus_w)
+
+        self.control_menus = QHBoxLayout()
+        self.control_menus_w = QWidget()
+        self.control_menus_w.setLayout(self.control_menus)
+        self.mainLayout.addWidget(self.control_menus_w)
 
         self.comparison_panel_w = None  # place holder for update_report()
 
@@ -414,6 +391,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.left_w.triggered.connect(self.set_left_dissection)
         self.source_menus.addWidget(self.left_w)
 
+        self.source_menus.addStretch()
+
         self.source_menus.addWidget(QLabel("Right:"))
         self.right_w = QToolButton(
             autoRaise=True, popupMode=QToolButton.ToolButtonPopupMode.InstantPopup
@@ -423,7 +402,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         self.update_left_right()
 
-        self.source_menus.addWidget(QLabel("Minimum report count:"))
+        self.control_menus.addWidget(QLabel("Minimum report count:"))
         self.minimum_count_w = QSpinBox()
         self.minimum_count_w.setMinimum(0)
         self.minimum_count_w.setMaximum(1000000)  # TODO: inf
@@ -431,9 +410,9 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.minimum_count_w.setSingleStep(5)
 
         self.minimum_count_w.valueChanged.connect(self.min_count_changed)
-        self.source_menus.addWidget(self.minimum_count_w)
+        self.control_menus.addWidget(self.minimum_count_w)
 
-        self.source_menus.addWidget(QLabel("Minimum graph count:"))
+        self.control_menus.addWidget(QLabel("Minimum graph count:"))
         self.minimum_graph_count_w = QSpinBox()
         self.minimum_graph_count_w.setMinimum(0)
         self.minimum_graph_count_w.setMaximum(1000000)  # TODO: inf
@@ -441,7 +420,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.minimum_graph_count_w.setSingleStep(5)
 
         self.minimum_graph_count_w.valueChanged.connect(self.min_graph_count_changed)
-        self.source_menus.addWidget(self.minimum_graph_count_w)
+        self.control_menus.addWidget(self.minimum_graph_count_w)
 
     def update_report(self):
         # TODO: less duplication with this and compare:print_report()
