@@ -26,6 +26,8 @@ class Output:
 
         first_of_anything: bool = True
 
+        top_records = self.output_options.get("top_records")
+
         for key in sorted(contents):
             reported: bool = False
 
@@ -37,6 +39,7 @@ class Output:
 
             # TODO: we don't do match_value here?
 
+            record_count = 0
             for subkey, data in sorted(
                 contents[key].items(), key=lambda x: x[1]["delta"], reverse=True
             ):
@@ -52,9 +55,12 @@ class Output:
                     self.output_new_section(key)
                     reported = True
 
-                data["delta"]
-
                 self.output_record(key, subkey, data)
+
+                record_count += 1
+
+                if top_records and record_count >= top_records:
+                    break
 
         self.output_close()
 

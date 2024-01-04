@@ -220,6 +220,14 @@ def compare_add_parseargs(compare_parser, add_subgroup: bool = True):
         help="For single files, only display results between these timestamps",
     )
 
+    compare_parser.add_argument(
+        "-x",
+        "--top-records",
+        default=None,
+        type=int,
+        help="Show the top N records from each section.",
+    )
+
     return compare_parser
 
 
@@ -231,6 +239,7 @@ def get_comparison_args(args):
         "match_string": args.match_string,
         "only_positive": args.only_positive,
         "only_negative": args.only_negative,
+        "top_records": args.top_records,
     }
 
 
