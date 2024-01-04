@@ -86,7 +86,7 @@ class PcapCompare:
                     right_count = right_side[key][subkey]
                 else:
                     delta = -1.0
-                    total = left_side[key][subkey]
+                    total = -left_side[key][subkey]
                     left_count = left_side[key][subkey]
                     right_count = 0
 
