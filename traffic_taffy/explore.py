@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 from logging import debug
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -55,6 +56,8 @@ from PyQt6.QtWidgets import (
     QLabel,
     QScrollArea,
     QSpinBox,
+    QToolButton,
+    QMenu,
 )
 
 
@@ -362,7 +365,46 @@ class TaffyExplorer(QDialog, PcapGraphData):
     #     delete item;
     # }
 
+    def set_left_dissection(self, action):
+        self.left_w.setText(os.path.basename(action.text()))
+        self.dissection1 = self.dissections[action.data()]
+
+    def set_right_dissection(self, action):
+        self.right_w.setText(os.path.basename(action.text()))
+        self.dissection2 = self.dissections[action.data()]
+
+    def update_left_right(self):
+        self.left_menu = QMenu(os.path.basename(self.dissection1.pcap_file))
+        for n, item in enumerate(self.dissections):
+            action = self.left_menu.addAction(item.pcap_file)
+            action.setData(n)
+        self.left_w.setMenu(self.left_menu)
+        self.left_w.setText(os.path.basename(self.dissection1.pcap_file))
+
+        self.right_menu = QMenu(os.path.basename(self.dissection2.pcap_file))
+        for n, item in enumerate(self.dissections):
+            action = self.right_menu.addAction(item.pcap_file)
+            action.setData(n)
+        self.right_w.setMenu(self.right_menu)
+        self.right_w.setText(os.path.basename(self.dissection2.pcap_file))
+
     def add_control_widgets(self):
+        self.source_menus.addWidget(QLabel("Left:"))
+        self.left_w = QToolButton(
+            autoRaise=True, popupMode=QToolButton.ToolButtonPopupMode.InstantPopup
+        )
+        self.left_w.triggered.connect(self.set_left_dissection)
+        self.source_menus.addWidget(self.left_w)
+
+        self.source_menus.addWidget(QLabel("Right:"))
+        self.right_w = QToolButton(
+            autoRaise=True, popupMode=QToolButton.ToolButtonPopupMode.InstantPopup
+        )
+        self.right_w.triggered.connect(self.set_right_dissection)
+        self.source_menus.addWidget(self.right_w)
+
+        self.update_left_right()
+
         self.source_menus.addWidget(QLabel("Minimum report count:"))
         self.minimum_count_w = QSpinBox()
         self.minimum_count_w.setMinimum(0)
