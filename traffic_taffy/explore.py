@@ -1,7 +1,8 @@
 import sys
-import os
+from os.path import basename
 import logging
 from logging import debug
+from datetime import datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -373,33 +374,75 @@ class TaffyExplorer(QDialog, PcapGraphData):
     # }
 
     def set_left_dissection(self, action):
-        self.left_w.setText(os.path.basename(action.text()))
-        self.dissection1 = self.dissections[action.data()]
-        self.dissection1_key = 0
+        self.left_w.setText(basename(action.text()))
+        selection = action.data()
+        if isinstance(selection, tuple):
+            (filenum, timestamp) = selection
+            self.dissection1 = self.dissections[filenum]
+            self.dissection1_key = timestamp
+        else:
+            self.dissection1 = self.dissections[selection]
+            self.dissection1_key = 0
         self.compare_two()
         self.update_report()
 
     def set_right_dissection(self, action):
-        self.right_w.setText(os.path.basename(action.text()))
-        self.dissection2 = self.dissections[action.data()]
-        self.dissection2_key = 0
+        self.right_w.setText(basename(action.text()))
+
+        selection = action.data()
+        if isinstance(selection, tuple):
+            (filenum, timestamp) = selection
+            self.dissection2 = self.dissections[filenum]
+            self.dissection2_key = timestamp
+        else:
+            self.dissection2 = self.dissections[selection]
+            self.dissection2_key = 0
+
         self.compare_two()
         self.update_report()
 
-    def update_left_right(self):
-        self.left_menu = QMenu(os.path.basename(self.dissection1.pcap_file))
+    def update_left_right_sources(self):
+        self.left_menu = QMenu(basename(self.dissection1.pcap_file))
         for n, item in enumerate(self.dissections):
-            action = self.left_menu.addAction(item.pcap_file)
-            action.setData(n)
-        self.left_w.setMenu(self.left_menu)
-        self.left_w.setText(os.path.basename(self.dissection1.pcap_file))
+            # TODO: this should warn or be a configurable limit or something...
+            if len(item.data) < 20:
+                time_menu = self.left_menu.addMenu(item.pcap_file)
+                for timestamp in item.data:
+                    if timestamp == 0:
+                        menu_name = item.pcap_file + " ALL"
+                    else:
+                        menu_name = datetime.utcfromtimestamp(timestamp).strftime(
+                            "%Y-%m-%d %H:%M"
+                        )
+                    submenu_action = time_menu.addAction(menu_name)
+                    submenu_action.setData((n, timestamp))
+            else:
+                action = self.left_menu.addAction(item.pcap_file)
+                action.setData(n)
 
-        self.right_menu = QMenu(os.path.basename(self.dissection2.pcap_file))
+        self.left_w.setMenu(self.left_menu)
+        self.left_w.setText(basename(self.dissection1.pcap_file))
+
+        self.right_menu = QMenu(basename(self.dissection2.pcap_file))
         for n, item in enumerate(self.dissections):
-            action = self.right_menu.addAction(item.pcap_file)
-            action.setData(n)
+            # TODO: this should warn or be a configurable limit or something...
+            if len(item.data) < 20:
+                time_menu = self.right_menu.addMenu(item.pcap_file)
+                for timestamp in item.data:
+                    if timestamp == 0:
+                        menu_name = basename(item.pcap_file) + " ALL"
+                    else:
+                        menu_name = datetime.utcfromtimestamp(timestamp).strftime(
+                            "%Y-%m-%d %H:%M"
+                        )
+                    submenu_action = time_menu.addAction(menu_name)
+                    submenu_action.setData((n, timestamp))
+            else:
+                action = self.right_menu.addAction(item.pcap_file)
+                action.setData(n)
+
         self.right_w.setMenu(self.right_menu)
-        self.right_w.setText(os.path.basename(self.dissection2.pcap_file))
+        self.right_w.setText(basename(self.dissection2.pcap_file))
 
     def add_control_widgets(self):
         self.source_menus.addWidget(QLabel("Left:"))
@@ -418,7 +461,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.right_w.triggered.connect(self.set_right_dissection)
         self.source_menus.addWidget(self.right_w)
 
-        self.update_left_right()
+        self.update_left_right_sources()
 
         self.control_menus.addWidget(QLabel("Minimum report count:"))
         self.minimum_count_w = QSpinBox()
