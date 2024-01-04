@@ -213,19 +213,26 @@ def compare_add_parseargs(compare_parser, add_subgroup: bool = True):
     )
 
     compare_parser.add_argument(
-        "-T",
-        "--between-times",
-        nargs=2,
-        type=int,
-        help="For single files, only display results between these timestamps",
-    )
-
-    compare_parser.add_argument(
         "-x",
         "--top-records",
         default=None,
         type=int,
         help="Show the top N records from each section.",
+    )
+
+    compare_parser.add_argument(
+        "-r",
+        "--reverse_sort",
+        action="store_true",
+        help="Reverse the sort order of reports",
+    )
+
+    compare_parser.add_argument(
+        "-T",
+        "--between-times",
+        nargs=2,
+        type=int,
+        help="For single files, only display results between these timestamps",
     )
 
     return compare_parser
@@ -240,6 +247,7 @@ def get_comparison_args(args):
         "only_positive": args.only_positive,
         "only_negative": args.only_negative,
         "top_records": args.top_records,
+        "reverse_sort": args.reverse_sort,
     }
 
 
