@@ -19,7 +19,7 @@ class Console(Output):
         # This should match the spacing in print_contents()
         self.init_console()
 
-        self.console.print(f"************ {report.title}")
+        self.console.print(f"======== {report.title}")
         if self.have_done_header:
             return
 
@@ -40,7 +40,7 @@ class Console(Output):
         self.console.print(line)
 
     def output_new_section(self, key):
-        print(f"====== {key}")
+        print(f"----- {key}")
 
     def output_record(self, key, subkey, data) -> None:
         "prints a report to the console"
