@@ -135,18 +135,22 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.minimum_graph_count = args.minimum_count
 
         # other needed itmes
-        self.min_changed_timer = QTimer(self)
-        self.min_changed_timer.setSingleShot(True)
-        self.min_changed_timer.setInterval(1000)
-        self.min_changed_timer.timeout.connect(self.min_count_changed_actual)
+        self.min_count_changed_timer = QTimer(self)
+        self.min_count_changed_timer.setSingleShot(True)
+        self.min_count_changed_timer.setInterval(1000)
+        self.min_count_changed_timer.timeout.connect(self.min_count_changed_actual)
 
-        self.min_changed_timer = QTimer(self)
-        self.min_changed_timer.setSingleShot(True)
-        self.min_changed_timer.setInterval(1000)
-        self.min_changed_timer.timeout.connect(self.min_graph_count_changed_actual)
+        self.min_graph_changed_timer = QTimer(self)
+        self.min_graph_changed_timer.setSingleShot(True)
+        self.min_graph_changed_timer.setInterval(1000)
+        self.min_graph_changed_timer.timeout.connect(
+            self.min_graph_count_changed_actual
+        )
 
         self.axisX = None
         self.axisY = None
+
+        self.printing_arguments = get_comparison_args(self.args)
 
     def quit(self):
         exit()
@@ -327,6 +331,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.update_detail_chart(key, None)
 
     def min_count_changed_actual(self):
+        self.printing_arguments["minimum_count"] = self.minimum_count
         self.update_report()
         self.update_detail_chart(self.match_string, self.match_value)
         debug(f"updating table with minimum count of {self.minimum_count}")
@@ -334,8 +339,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def min_count_changed(self, value):
         self.minimum_count = value
         # in case we're running already, stop it first
-        self.min_changed_timer.stop()
-        self.min_changed_timer.start()
+        self.min_count_changed_timer.stop()
+        self.min_count_changed_timer.start()
         debug(f"changed minimum count to {self.minimum_count}")
 
     def min_graph_count_changed_actual(self):
@@ -346,8 +351,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
     def min_graph_count_changed(self, value):
         self.minimum_graph_count = value
         # in case we're running already, stop it first
-        self.min_changed_timer.stop()
-        self.min_changed_timer.start()
+        self.min_graph_changed_timer.stop()
+        self.min_graph_changed_timer.start()
         debug(f"changed minimum count to {self.minimum_graph_count}")
 
     # def clearGridLayout(layout, deleteWidgets: bool = True):
@@ -464,7 +469,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         current_grid_row = 1
 
-        printing_arguments = get_comparison_args(self.args)
+        printing_arguments = self.printing_arguments
         memory_report = Memory(self.comparison.title, printing_arguments)
         memory_report.output(self.comparison)
 
