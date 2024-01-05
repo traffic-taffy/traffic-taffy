@@ -30,5 +30,6 @@ class DissectionEngine:
             pcap_filter=self.pcap_filter,
             maximum_count=self.maximum_count,
             cache_file_suffix=self.cache_file_suffix,
+            ignore_list=self.ignore_list,
         )
         return self.dissection

@@ -42,9 +42,24 @@ class PCAPDissector:
     def dissection(self, new_dissection):
         self._dissection = new_dissection
 
+    def dissection_args(self):
+        return (
+            self.pcap_file,
+            self.dissector_level,
+            self.bin_size,
+            self.maximum_count,
+            self.pcap_filter,
+            self.cache_file_suffix,
+            self.ignore_list,
+        )
+
     def load_from_cache(self):
+        import pdb
+
+        pdb.set_trace()
         if self.cache_results:
-            self.dissection = Dissection("bogus")
+            args = self.dissection_args()
+            self.dissection = Dissection(*args)
             cached_data = self.dissection.load_from_cache()
             if cached_data:
                 return cached_data
@@ -56,15 +71,7 @@ class PCAPDissector:
             return cached_data
 
         engine = None
-        args = (
-            self.pcap_file,
-            self.dissector_level,
-            self.bin_size,
-            self.maximum_count,
-            self.pcap_filter,
-            self.cache_file_suffix,
-            self.ignore_list,
-        )
+        args = self.dissection_args()
         if (
             self.dissector_level == PCAPDissectorLevel.DETAILED
             or self.dissector_level == PCAPDissectorLevel.DETAILED.value
