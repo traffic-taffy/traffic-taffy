@@ -3,7 +3,7 @@ from logging import warning, error
 from collections import Counter, defaultdict
 from typing import List
 from rich import print
-from dissection import PCAPDissectorLevel
+from dissection import PCAPDissectorLevel, Dissection
 
 
 class PCAPDissector:
@@ -42,6 +42,7 @@ class PCAPDissector:
 
     def load_from_cache(self):
         if self.cache_results:
+            self.dissection = Dissection("bogus")
             cached_data = self.dissection.load_from_cache()
             if cached_data:
                 return cached_data
