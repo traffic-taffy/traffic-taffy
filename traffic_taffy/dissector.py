@@ -54,9 +54,6 @@ class PCAPDissector:
         )
 
     def load_from_cache(self):
-        import pdb
-
-        pdb.set_trace()
         if self.cache_results:
             args = self.dissection_args()
             self.dissection = Dissection(*args)
