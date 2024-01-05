@@ -8,7 +8,7 @@ import ipaddress
 from typing import List
 
 
-class PCAPDissectorType(Enum):
+class PCAPDissectorLevel(Enum):
     COUNT_ONLY = 1
     THROUGH_IP = 2
     DETAILED = 10
@@ -28,7 +28,7 @@ class Dissection:
         pcap_filter: str | None = None,
         maximum_count: int = 0,
         bin_size: int = 0,
-        dissector_level: PCAPDissectorType = PCAPDissectorType.DETAILED,
+        dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         cache_file_suffix: str = "pkl",
         *args,
         **kwargs,

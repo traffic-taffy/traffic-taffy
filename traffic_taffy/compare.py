@@ -10,7 +10,7 @@ from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
 from traffic_taffy.dissector import (
-    PCAPDissectorType,
+    PCAPDissectorLevel,
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
@@ -31,7 +31,7 @@ class PcapCompare:
         cache_results: bool = False,
         cache_file_suffix: str = "pkl",
         bin_size: int | None = None,
-        dissection_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
+        dissection_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
         between_times: List[int] | None = None,
     ) -> None:
         self.pcap_files = pcap_files

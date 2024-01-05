@@ -3,7 +3,7 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 from traffic_taffy.dissector import (
-    PCAPDissectorType,
+    PCAPDissectorLevel,
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
@@ -69,7 +69,7 @@ class PcapGraph(PcapGraphData):
         match_string: str = None,
         match_value: str = None,
         cache_pcap_results: bool = False,
-        dissector_level: PCAPDissectorType = PCAPDissectorType.COUNT_ONLY,
+        dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
         interactive: bool = False,
     ):
         self.pcap_files = pcap_files

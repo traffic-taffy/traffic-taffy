@@ -3,10 +3,9 @@ from logging import warning, error
 from collections import Counter, defaultdict
 from scapy.all import sniff
 from typing import List
-import dpkt
 from rich import print
 from pcap_parallel import PCAPParallel as pcapp
-from dissection import Dissection, PCAPDissectorType
+from dissection import Dissection, PCAPDissectorLevel
 
 
 class PCAPDissector:
@@ -17,7 +16,7 @@ class PCAPDissector:
         pcap_file: str,
         bin_size: int = 0,
         maximum_count: int = 0,
-        dissector_level: PCAPDissectorType = PCAPDissectorType.DETAILED,
+        dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         pcap_filter: str | None = None,
         cache_results: bool = False,
         cache_file_suffix: str = "pkl",
@@ -32,9 +31,7 @@ class PCAPDissector:
             cache_file_suffix = "." + cache_file_suffix
         self.cache_file_suffix = cache_file_suffix
 
-        self.init_dissection()
-
-        if dissector_level == PCAPDissectorType.COUNT_ONLY and bin_size == 0:
+        if dissector_level == PCAPDissectorLevel.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
 
     @property
@@ -58,107 +55,24 @@ class PCAPDissector:
             return cached_data
 
         if (
-            self.dissector_level == PCAPDissectorType.DETAILED
-            or self.dissector_level == PCAPDissectorType.DETAILED.value
+            self.dissector_level == PCAPDissectorLevel.DETAILED
+            or self.dissector_level == PCAPDissectorLevel.DETAILED.value
         ):
             return self.load_via_scapy()
         else:
-            return self.load_via_dpkt()
+            from traffic_taffy.dissector_engine.dpkt import DissectionEngineDpkt
 
-    def dpkt_callback(self, timestamp: float, packet: bytes):
-        # if binning is requested, save it in a binned time slot
-        dissection: Dissection = self.dissection
-
-        dissection.timestamp = int(timestamp)
-        if dissection.bin_size:
-            dissection.timestamp = (
-                dissection.timestamp - dissection.timestamp % dissection.bin_size
+            ded = DissectionEngineDpkt(
+                self.pcap_file,
+                self.dissector_level,
+                self.bin_size,
+                self.maximum_count,
+                self.pcap_filter,
             )
-
-        dissection.incr(Dissection.TOTAL_COUNT, dissection.TOTAL_SUBKEY)
-
-        level = self.dissector_level
-        if isinstance(level, PCAPDissectorType):
-            level = level.value
-        if level >= PCAPDissectorType.THROUGH_IP.value:
-            eth = dpkt.ethernet.Ethernet(packet)
-            # these names are designed to match scapy names
-            dissection.incr("Ethernet.dst", eth.dst)
-            dissection.incr("Ethernet.src", eth.src)
-            dissection.incr("Ethernet.type", eth.type)
-
-            if isinstance(eth.data, dpkt.ip.IP):
-                ip = eth.data
-
-                IPVER = "IP"
-                if ip.v == 6:
-                    IPVER = "IPv6"
-
-                # TODO: make sure all these match scapy
-                dissection.incr(f"Ethernet.{IPVER}.dst", ip.dst)
-                dissection.incr(f"Ethernet.{IPVER}.src", ip.src)
-                dissection.incr(f"Ethernet.{IPVER}.df", ip.df)
-                dissection.incr(f"Ethernet.{IPVER}.offset", ip.offset)
-                dissection.incr(f"Ethernet.{IPVER}.tos", ip.tos)
-                dissection.incr(f"Ethernet.{IPVER}.len", ip.len)
-                dissection.incr(f"Ethernet.{IPVER}.id", ip.id)
-                dissection.incr(f"Ethernet.{IPVER}.hl", ip.hl)
-                dissection.incr(f"Ethernet.{IPVER}.rf", ip.rf)
-                dissection.incr(f"Ethernet.{IPVER}.p", ip.p)
-                dissection.incr(f"Ethernet.{IPVER}.chksum", ip.sum)
-                dissection.incr(f"Ethernet.{IPVER}.tos", ip.tos)
-                dissection.incr(f"Ethernet.{IPVER}.version", ip.v)
-                dissection.incr(f"Ethernet.{IPVER}.ttl", ip.ttl)
-
-                if isinstance(ip.data, dpkt.udp.UDP):
-                    udp = ip.data
-                    dissection.incr(f"Ethernet.{IPVER}.UDP.sport", udp.sport)
-                    dissection.incr(f"Ethernet.{IPVER}.UDP.dport", udp.dport)
-                    dissection.incr(f"Ethernet.{IPVER}.UDP.len", udp.ulen)
-                    dissection.incr(f"Ethernet.{IPVER}.UDP.chksum", udp.sum)
-
-                    # TODO: handle DNS and others for level 3
-
-                elif isinstance(ip.data, dpkt.tcp.TCP):
-                    # TODO
-                    tcp = ip.data
-                    dissection.incr(f"Ethernet.{IPVER}.TCP.sport", tcp.sport)
-                    dissection.incr(f"Ethernet.{IPVER}.TCP.dport", tcp.dport)
-                    dissection.incr(f"Ethernet.{IPVER}.TCP.seq", tcp.seq)
-                    dissection.incr(f"Ethernet.{IPVER}.TCP.flags", tcp.flags)
-                    # dissection.incr(f"Ethernet.{IPVER}.TCP.reserved", tcp.reserved)
-                    dissection.incr(f"Ethernet.{IPVER}.TCP.window", tcp.win)
-                    dissection.incr(f"Ethernet.{IPVER}.TCP.chksum", tcp.sum)
-                    dissection.incr(f"Ethernet.{IPVER}.TCP.options", tcp.opts)
-
-                    # TODO: handle DNS and others for level 3
-
-    def init_dissection(self) -> Dissection:
-        self.dissection = Dissection(
-            pcap_file=self.pcap_file,
-            dissector_level=self.dissector_level,
-            bin_size=self.bin_size,
-            pcap_filter=self.pcap_filter,
-            maximum_count=self.maximum_count,
-            cache_file_suffix=self.cache_file_suffix,
-        )
-        return self.dissection
-
-    def load_via_dpkt(self) -> Dissection:
-        self.init_dissection()
-        if isinstance(self.pcap_file, str):
-            pcap = dpkt.pcap.Reader(pcapp.open_maybe_compressed(self.pcap_file))
-        else:
-            # it's an open handle already
-            pcap = dpkt.pcap.Reader(self.pcap_file)
-        if self.pcap_filter:
-            pcap.setfilter(self.pcap_filter)
-        pcap.dispatch(self.maximum_count, self.dpkt_callback)
-
-        self.dissection.calculate_metadata()
-        if self.cache_results:
-            self.dissection.save_to_cache()
-        return self.dissection
+            self.dissection = ded.load()
+            if self.cache_results:
+                self.dissection.save_to_cache()
+            return self.dissection
 
     def add_scapy_item(self, field_value, prefix: str) -> None:
         "Adds an item to the self.dissection regardless of it's various types"
@@ -287,7 +201,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-d",
         "--dissection-level",
-        default=PCAPDissectorType.THROUGH_IP.value,
+        default=PCAPDissectorLevel.THROUGH_IP.value,
         type=int,
         help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
     )
@@ -358,9 +272,9 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
 
 def check_dissector_level(level: int):
     current_dissection_levels = [
-        PCAPDissectorType.COUNT_ONLY.value,
-        PCAPDissectorType.THROUGH_IP.value,
-        PCAPDissectorType.DETAILED.value,
+        PCAPDissectorLevel.COUNT_ONLY.value,
+        PCAPDissectorLevel.THROUGH_IP.value,
+        PCAPDissectorLevel.DETAILED.value,
     ]
     if level not in current_dissection_levels:
         error(f"currently supported dissection levels: {current_dissection_levels}")
