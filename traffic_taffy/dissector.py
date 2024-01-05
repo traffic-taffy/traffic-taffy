@@ -18,6 +18,7 @@ class PCAPDissector:
         pcap_filter: str | None = None,
         cache_results: bool = False,
         cache_file_suffix: str = "pkl",
+        ignore_list: list = [],
     ):
         self.pcap_file = pcap_file
         self.dissector_level = dissector_level
@@ -28,6 +29,7 @@ class PCAPDissector:
         if cache_file_suffix[0] != ".":
             cache_file_suffix = "." + cache_file_suffix
         self.cache_file_suffix = cache_file_suffix
+        self.ignore_list = ignore_list
 
         if dissector_level == PCAPDissectorLevel.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
@@ -60,6 +62,8 @@ class PCAPDissector:
             self.bin_size,
             self.maximum_count,
             self.pcap_filter,
+            self.cache_file_suffix,
+            self.ignore_list,
         )
         if (
             self.dissector_level == PCAPDissectorLevel.DETAILED
@@ -129,6 +133,36 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         default=PCAPDissectorLevel.THROUGH_IP.value,
         type=int,
         help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
+    )
+
+    parser.add_argument(
+        "-I",
+        "--ignore-list",
+        default=",".join(
+            [
+                "Ethernet.IP.TCP.seq",
+                "Ethernet.IP.TCP.ack",
+                "Ethernet.IPv6.TCP.seq",
+                "Ethernet.IPv6.TCP.ack",
+                "Ethernet.IP.UDP.DNS.id",
+                "Ethernet.IP.TCP.DNS.id",
+                "Ethernet.IPv6.UDP.DNS.id",
+                "Ethernet.IPv6.TCP.DNS.id",
+                "Ethernet.IP.id",
+                "Ethernet.IP.chksum",
+                "Ethernet.IP.UDP.chksum",
+                "Ethernet.IP.TCP.chksum",
+                "Ethernet.IPv6.UDP.chksum" "Ethernet.IPv6.fl",
+                "Ethernet.IP.ICMP.chksum",
+                "Ethernet.IP.ICMP.id",
+                "Ethernet.IP.ICMP.seq",
+                "Ethernet.IP.TCP.Padding.load",
+                "Ethernet.IPv6.TCP.chksum",
+                "Ethernet.IPv6.plen",
+            ]
+        ),
+        type=str,
+        help="A comma separated list of (unlikely to be useful) data fields to ignore",
     )
 
     parser.add_argument(
@@ -264,6 +298,7 @@ def main():
         maximum_count=args.packet_count,
         cache_results=args.cache_pcap_results,
         cache_file_suffix=args.cache_file_suffix,
+        ignore_list=args.ignore_list.split(","),
     )
     pd.load()
 

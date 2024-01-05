@@ -12,6 +12,7 @@ class DissectionEngine:
         maximum_count: int = 0,
         pcap_filter: str = "",
         cache_file_suffix: str = "pkl",
+        ignore_list: list = [],
     ):
         self.pcap_file = pcap_file
         self.dissector_level = dissector_level
@@ -19,6 +20,7 @@ class DissectionEngine:
         self.maximum_count = maximum_count
         self.pcap_filter = pcap_filter
         self.cache_file_suffix = cache_file_suffix
+        self.ignore_list = set(ignore_list)
 
     def init_dissection(self) -> Dissection:
         self.dissection = Dissection(

@@ -28,6 +28,7 @@ class DissectionEngineScapy(DissectionEngine):
 
     def add_item(self, field_value, prefix: str) -> None:
         "Adds an item to the self.dissection regardless of it's various types"
+
         if isinstance(field_value, list):
             if len(field_value) > 0:
                 # if it's a list of tuples, count the (eg TCP option) names
@@ -59,6 +60,11 @@ class DissectionEngineScapy(DissectionEngine):
     def add_layer(self, layer, prefix: str | None = "") -> None:
         "Analyzes a layer to add counts to each layer sub-component"
 
+        if prefix + "." in self.ignore_list:
+            import pdb
+
+            pdb.set_trace()
+
         if hasattr(layer, "fields_desc"):
             name_list = [field.name for field in layer.fields_desc]
         elif hasattr(layer, "fields"):
@@ -68,14 +74,20 @@ class DissectionEngineScapy(DissectionEngine):
             return
 
         for field_name in name_list:
+            new_prefix = prefix + field_name
+
+            if new_prefix in self.ignore_list:
+                continue
+
             try:
                 field_value = getattr(layer, field_name)
                 if hasattr(field_value, "fields"):
-                    self.add_layer(field_value, prefix + field_name + ".")
+                    self.add_layer(field_value, new_prefix + ".")
                 else:
-                    self.add_item(field_value, prefix + field_name)
-            except Exception:
+                    self.add_item(field_value, new_prefix)
+            except Exception as e:
                 warning(f"scapy error at '{prefix}' in field '{field_name}'")
+                warning(e)
 
     def callback(self, packet):
         prefix = "."
