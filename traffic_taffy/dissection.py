@@ -269,7 +269,6 @@ class Dissection:
                         and abs(count) > minimum_count
                     ):
                         usable[key].add(subkey)
-                        break
 
         # TODO: move the timestamp inside the other fors for faster
         # processing of skipped key/subkeys
