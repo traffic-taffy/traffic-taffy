@@ -1,5 +1,4 @@
-"""Loads a PCAP file and counts contents with various levels of storage"""
-
+import sys
 from logging import warning, error
 from collections import Counter, defaultdict
 from scapy.all import sniff
@@ -218,7 +217,7 @@ class PCAPDissector:
         if self.bin_size:
             self.timestamp = self.timestamp - self.timestamp % self.bin_size
 
-        self.dissection.incr(self.TOTAL_COUNT, self.TOTAL_SUBKEY)
+        self.dissection.incr(Dissection.TOTAL_COUNT, Dissection.TOTAL_SUBKEY)
         for payload in packet.iterpayloads():
             prefix = f"{prefix}{payload.name}."
             self.add_scapy_layer(payload, prefix[1:])
@@ -237,7 +236,7 @@ class PCAPDissector:
         )
         self.dissection.calculate_metadata()
         if self.cache_results:
-            self.save_to_cache()
+            self.dissection.save_to_cache()
         return self.dissection
 
     def print(
@@ -255,6 +254,30 @@ class PCAPDissector:
             make_printable=True,
         ):
             print(f"{key:<30} {subkey:<30} {value}")
+
+    def print_to_fsdb(
+        self,
+        timestamps: List[int] | None = [0],
+        match_string: str | None = None,
+        match_value: str | None = None,
+        minimum_count: int | None = None,
+    ) -> None:
+        import pyfsdb
+
+        fh = pyfsdb.Fsdb(
+            out_file_handle=sys.stdout,
+            out_column_names=["key", "subkey", "value"],
+            converters={"value": int},
+        )
+        for timestamp, key, subkey, value in self.dissection.find_data(
+            timestamps=timestamps,
+            match_string=match_string,
+            match_value=match_value,
+            minimum_count=minimum_count,
+            make_printable=True,
+        ):
+            fh.append([key, subkey, value])
+        fh.close()
 
 
 def dissector_add_parseargs(parser, add_subgroup: bool = True):
@@ -374,6 +397,13 @@ def main():
             help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
         )
 
+        parser.add_argument(
+            "-f",
+            "--fsdb",
+            action="store_true",
+            help="Print results in an FSDB formatted output",
+        )
+
         dissector_add_parseargs(parser)
         limitor_add_parseargs(parser)
 
@@ -397,12 +427,21 @@ def main():
         cache_file_suffix=args.cache_file_suffix,
     )
     pd.load()
-    pd.print(
-        timestamps=[0],
-        match_string=args.match_string,
-        match_value=args.match_value,
-        minimum_count=args.minimum_count,
-    )
+
+    if args.fsdb:
+        pd.print_to_fsdb(
+            timestamps=[0],
+            match_string=args.match_string,
+            match_value=args.match_value,
+            minimum_count=args.minimum_count,
+        )
+    else:
+        pd.print(
+            timestamps=[0],
+            match_string=args.match_string,
+            match_value=args.match_value,
+            minimum_count=args.minimum_count,
+        )
 
 
 if __name__ == "__main__":
