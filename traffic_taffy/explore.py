@@ -3,6 +3,7 @@ from os.path import basename
 import logging
 from logging import debug
 from datetime import datetime
+import datetime as dt
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -332,7 +333,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
         debug(f"changed minimum count to {self.minimum_count}")
 
     def min_graph_count_changed_actual(self):
-        self.update_report()
         self.update_detail_chart(self.match_string, self.match_value)
         debug(f"updating graph with minimum count of {self.minimum_graph_count}")
 
@@ -411,7 +411,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                     if timestamp == 0:
                         menu_name = item.pcap_file + " ALL"
                     else:
-                        menu_name = datetime.utcfromtimestamp(timestamp).strftime(
+                        menu_name = datetime.fromtimestamp(timestamp, dt.UTC).strftime(
                             "%Y-%m-%d %H:%M"
                         )
                     submenu_action = time_menu.addAction(menu_name)
@@ -432,7 +432,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                     if timestamp == 0:
                         menu_name = basename(item.pcap_file) + " ALL"
                     else:
-                        menu_name = datetime.utcfromtimestamp(timestamp).strftime(
+                        menu_name = datetime.fromtimestamp(timestamp, dt.UTC).strftime(
                             "%Y-%m-%d %H:%M"
                         )
                     submenu_action = time_menu.addAction(menu_name)
