@@ -16,7 +16,7 @@ class PCAPDissectorLevel(Enum):
 
 class Dissection:
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
-    DISSECTION_VERSION: int = 4
+    DISSECTION_VERSION: int = 5
 
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
@@ -30,6 +30,7 @@ class Dissection:
         bin_size: int = 0,
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         cache_file_suffix: str = "pkl",
+        ignore_list: list = [],
         *args,
         **kwargs,
     ):
@@ -41,6 +42,7 @@ class Dissection:
         self.dissector_level = dissector_level
         self.maximum_count = maximum_count
         self.pcap_filter = pcap_filter
+        self.ignore_list = ignore_list
 
         self.parameters = [
             "pcap_file",
@@ -48,6 +50,7 @@ class Dissection:
             "dissector_level",
             "pcap_filter",
             "maximum_count",
+            "ignore_list",
         ]
         self.settable_from_cache = ["bin_size", "dissector_level", "maximum_count"]
 
