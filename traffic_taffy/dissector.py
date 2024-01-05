@@ -45,12 +45,12 @@ class PCAPDissector:
     def dissection_args(self):
         return (
             self.pcap_file,
-            self.dissector_level,
-            self.bin_size,
-            self.maximum_count,
             self.pcap_filter,
+            self.maximum_count,
+            self.bin_size,
+            self.dissector_level,
             self.cache_file_suffix,
-            self.ignore_list,
+            set(self.ignore_list),
         )
 
     def load_from_cache(self):
