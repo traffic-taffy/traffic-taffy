@@ -69,9 +69,15 @@ class PcapCompare:
         keys = set(left_side.keys())
         keys = keys.union(right_side.keys())
         for key in keys:
-            left_side_total = left_side[key].total()
-            right_side_total = right_side[key].total()
             report[key] = {}
+
+            if key not in left_side:
+                left_side[key] = {}
+            left_side_total = sum(left_side[key].values())
+
+            if key not in right_side:
+                right_side[key] = {}
+            right_side_total = sum(right_side[key].values())
 
             for subkey in left_side[key].keys():
                 delta_percentage = 0.0
