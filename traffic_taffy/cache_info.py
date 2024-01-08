@@ -3,7 +3,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from rich import print
 import logging
-import pickle
+import msgpack
 
 
 def parse_args():
@@ -39,7 +39,7 @@ def main():
 
     for cache_file in args.cache_file:
         print(f"===== {cache_file} ======")
-        contents = pickle.load(open(cache_file, "rb"))
+        contents = msgpack.load(open(cache_file, "rb"), strict_map_key=False)
 
         # play the major keys
         for key in contents.keys():

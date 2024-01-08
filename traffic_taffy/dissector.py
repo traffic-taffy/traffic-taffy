@@ -17,7 +17,7 @@ class PCAPDissector:
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         pcap_filter: str | None = None,
         cache_results: bool = False,
-        cache_file_suffix: str = "pkl",
+        cache_file_suffix: str = "taffy",
         ignore_list: list = [],
     ):
         self.pcap_file = pcap_file
@@ -195,7 +195,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         "--cache-file-suffix",
         "--cs",
         type=str,
-        default="pkl",
+        default="taffy",
         help="The suffix file to use when creating cache files",
     )
 

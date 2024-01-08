@@ -29,7 +29,7 @@ class PcapCompare:
         deep: bool = True,
         pkt_filter: str | None = None,
         cache_results: bool = False,
-        cache_file_suffix: str = "pkl",
+        cache_file_suffix: str = "taffy",
         bin_size: int | None = None,
         dissection_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
         between_times: List[int] | None = None,

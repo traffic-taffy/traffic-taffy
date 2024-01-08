@@ -3,7 +3,7 @@ from collections import defaultdict, Counter
 from typing import Any
 from logging import debug, info, error
 from enum import Enum
-import pickle
+import msgpack
 import ipaddress
 from typing import List
 
@@ -16,7 +16,7 @@ class PCAPDissectorLevel(Enum):
 
 class Dissection:
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
-    DISSECTION_VERSION: int = 5
+    DISSECTION_VERSION: int = 6
 
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
@@ -29,7 +29,7 @@ class Dissection:
         maximum_count: int = 0,
         bin_size: int = 0,
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
-        cache_file_suffix: str = "pkl",
+        cache_file_suffix: str = "taffy",
         ignore_list: list = [],
         *args,
         **kwargs,
@@ -189,7 +189,7 @@ class Dissection:
             self.save(where)
 
     def save(self, where: str) -> None:
-        "Saves a generated dissection to a pickle file"
+        "Saves a generated dissection to a msgpack file"
 
         # wrap the report in a version header
         versioned_cache = {
@@ -211,9 +211,14 @@ class Dissection:
             if parameter == "bin_size" and self.bin_size == 0:
                 versioned_cache["parameters"][parameter] = 1
 
+        # msgpack can't store sets
+        versioned_cache["parameters"]["ignore_list"] = list(
+            versioned_cache["parameters"]["ignore_list"]
+        )
+
         # save it
         info(f"caching PCAP data to '{where}'")
-        pickle.dump(dict(versioned_cache), open(where, "wb"))
+        msgpack.dump(versioned_cache, open(where, "wb"))
 
     def load_saved_contents(self, versioned_cache):
         # set the local parameters from the cache
@@ -225,13 +230,18 @@ class Dissection:
 
     def load_saved(self, where: str, dont_overwrite: bool = False) -> dict:
         "Loads a previous saved report from a file instead of re-parsing pcaps"
-        contents = pickle.load(open(where, "rb"))
+        contents = msgpack.load(open(where, "rb"), strict_map_key=False)
+
+        # convert the ignore list to a set (msgpack doesn't do sets)
+        contents["parameters"]["ignore_list"] = set(
+            contents["parameters"]["ignore_list"]
+        )
 
         # check that the version header matches something we understand
-        if contents["PCAP_DISSECTION_VERSION"] != self.DISSECTION_VERSION:
+        if contents[self.DISSECTION_KEY] != self.DISSECTION_VERSION:
             raise ValueError(
                 "improper saved dissection version: report version = "
-                + str(contents["PCAP_DISSECTION_VERSION"])
+                + str(contents[self.DISSECTION_KEY])
                 + ", our version: "
                 + str(self.DISSECTION_VERSION)
             )

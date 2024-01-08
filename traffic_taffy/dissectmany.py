@@ -66,7 +66,7 @@ class PCAPDissectMany:
             # (we don't call load())
             dissection.pcap_file = pcap_file
             dissection.save_to_cache(
-                pcap_file + "." + self.kwargs.get("cache_file_suffix", "pkl")
+                pcap_file + "." + self.kwargs.get("cache_file_suffix", "taffy")
             )
 
         return dissection
