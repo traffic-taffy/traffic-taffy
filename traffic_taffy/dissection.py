@@ -231,7 +231,7 @@ class Dissection:
         if contents["PCAP_DISSECTION_VERSION"] != self.DISSECTION_VERSION:
             raise ValueError(
                 "improper saved dissection version: report version = "
-                + str(contents["PCAP_COMPARE_VERSION"])
+                + str(contents["PCAP_DISSECTION_VERSION"])
                 + ", our version: "
                 + str(self.DISSECTION_VERSION)
             )
