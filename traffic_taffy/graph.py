@@ -100,10 +100,7 @@ class PcapGraph(PcapGraphData):
             pcap_filter=self.pkt_filter,
             cache_results=self.cache_pcap_results,
         )
-        results = pdm.load_all()
-
-        for result in results:
-            self.data[result["file"]] = result["data"]
+        self.dissections = pdm.load_all()
         info("done reading pcap files")
 
     def create_graph(self):
