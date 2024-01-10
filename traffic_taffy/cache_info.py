@@ -54,8 +54,11 @@ def main():
         print("data info:")
         timestamps = list(contents["dissection"].keys())
         print(f"    timestamps:      {len(timestamps)}")
-        print(f"    first:           {timestamps[1]}")  # skips 0 = global
-        print(f"    last:            {timestamps[-1]}")
+        if len(timestamps) > 1:
+            print(f"    first:           {timestamps[1]}")  # skips 0 = global
+            print(f"    last:            {timestamps[-1]}")
+        else:
+            print("                     (only the entire summary timestamp)")
 
 
 if __name__ == "__main__":
