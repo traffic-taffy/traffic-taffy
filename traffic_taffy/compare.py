@@ -188,10 +188,10 @@ class PcapCompare:
                 )
 
                 title_left = datetime.fromtimestamp(time_left, dt.UTC).strftime(
-                    "%Y-%m-%d %H:%M"
+                    "%Y-%m-%d %H:%M:%S"
                 )
                 title_right = datetime.fromtimestamp(time_right, dt.UTC).strftime(
-                    "%Y-%m-%d %H:%M"
+                    "%Y-%m-%d %H:%M:%S"
                 )
 
                 report.title = f"time {title_left} vs time {title_right}"

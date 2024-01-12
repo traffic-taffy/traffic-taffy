@@ -412,7 +412,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                         menu_name = item.pcap_file + " ALL"
                     else:
                         menu_name = datetime.fromtimestamp(timestamp, dt.UTC).strftime(
-                            "%Y-%m-%d %H:%M"
+                            "%Y-%m-%d %H:%M:%S"
                         )
                     submenu_action = time_menu.addAction(menu_name)
                     submenu_action.setData((n, timestamp))
@@ -433,7 +433,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                         menu_name = basename(item.pcap_file) + " ALL"
                     else:
                         menu_name = datetime.fromtimestamp(timestamp, dt.UTC).strftime(
-                            "%Y-%m-%d %H:%M"
+                            "%Y-%m-%d %H:%M:%S"
                         )
                     submenu_action = time_menu.addAction(menu_name)
                     submenu_action.setData((n, timestamp))
