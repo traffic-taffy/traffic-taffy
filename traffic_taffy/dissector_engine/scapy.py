@@ -24,6 +24,7 @@ class DissectionEngineScapy(DissectionEngine):
             filter=self.pcap_filter,
         )
         self.dissection.calculate_metadata()
+        # TODO: for some reason this fails on xz compressed files when processing in parallel
         return self.dissection
 
     def add_item(self, field_value, prefix: str) -> None:
@@ -60,11 +61,6 @@ class DissectionEngineScapy(DissectionEngine):
     def add_layer(self, layer, prefix: str | None = "") -> None:
         "Analyzes a layer to add counts to each layer sub-component"
 
-        if prefix + "." in self.ignore_list:
-            import pdb
-
-            pdb.set_trace()
-
         if hasattr(layer, "fields_desc"):
             name_list = [field.name for field in layer.fields_desc]
         elif hasattr(layer, "fields"):
@@ -95,6 +91,7 @@ class DissectionEngineScapy(DissectionEngine):
         if self.bin_size:
             self.timestamp = self.timestamp - self.timestamp % self.bin_size
 
+        self.dissection.timestamp = int(self.timestamp)
         self.dissection.incr(Dissection.TOTAL_COUNT, Dissection.TOTAL_SUBKEY)
         for payload in packet.iterpayloads():
             prefix = f"{prefix}{payload.name}."

@@ -324,6 +324,7 @@ def main():
             files,
             cache_results=args.cache_pcap_results,
             cache_file_suffix=args.cache_file_suffix,
+            maximum_count=printing_arguments["maximum_count"],
             dissection_level=args.dissection_level,
             between_times=args.between_times,
             bin_size=args.bin_size,
