@@ -4,6 +4,8 @@ import logging
 from logging import info, debug
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from typing import List
+import datetime as dt
+from datetime import datetime
 
 from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissectmany import PCAPDissectMany
@@ -184,7 +186,15 @@ class PcapCompare:
                     reference[time_left],
                     reference[time_right],
                 )
-                report.title = f"time {time_left} vs time {time_right}"
+
+                title_left = datetime.fromtimestamp(time_left, dt.UTC).strftime(
+                    "%Y-%m-%d %H:%M"
+                )
+                title_right = datetime.fromtimestamp(time_right, dt.UTC).strftime(
+                    "%Y-%m-%d %H:%M"
+                )
+
+                report.title = f"time {title_left} vs time {title_right}"
                 reports.append(report)
 
                 continue
