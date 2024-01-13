@@ -34,7 +34,8 @@ class PcapGraphData:
             index = key + "=" + subkey
             results["count"].append(int(value))
             results["index"].append(index)
-            results["key"].append(index)
+            results["key"].append(key)
+            results["subkey"].append(subkey)
             results["time"].append(timestamp)
 
         return results
