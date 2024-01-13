@@ -6,6 +6,7 @@ from enum import Enum
 import msgpack
 import ipaddress
 from typing import List
+from copy import deepcopy
 
 
 class PCAPDissectorLevel(Enum):
@@ -53,6 +54,20 @@ class Dissection:
             "ignore_list",
         ]
         self.settable_from_cache = ["bin_size", "dissector_level", "maximum_count"]
+
+    def clone(self):
+        newd = Dissection(
+            self.pcap_file,
+            self.pcap_filter,
+            self.maximum_count,
+            self.bin_size,
+            self.dissector_level,
+            self.cache_file_suffix,
+            deepcopy(self.ignore_list),
+        )
+        newd.data = deepcopy(self.data)
+        newd.timestamp = self.timestamp
+        return newd
 
     @property
     def timestamp(self):
@@ -102,11 +117,19 @@ class Dissection:
 
     def merge(self, other_dissection) -> None:
         "merges counters in two dissections into self -- note destructive to self"
-        for key in other_dissection.data:
-            for subkey in other_dissection.data[key]:
-                if key not in self.data:
-                    self.data[key] = defaultdict(Counter)
-                self.data[key][subkey] += other_dissection.data[key][subkey]
+        for timestamp in other_dissection.data:
+            for key in other_dissection.data[timestamp]:
+                for subkey in other_dissection.data[timestamp][key]:
+                    # TODO: this is horribly inefficient
+                    if timestamp not in self.data:
+                        self.data[timestamp] = defaultdict(Counter)
+                    elif key not in self.data[timestamp]:
+                        self.data[timestamp][key] = Counter()
+                    elif isinstance(self.data[timestamp][key], dict):
+                        self.data[timestamp][key][subkey] = 0
+                    self.data[timestamp][key][subkey] += other_dissection.data[
+                        timestamp
+                    ][key][subkey]
 
     @staticmethod
     def subdict_producer():

@@ -39,9 +39,17 @@ class PcapGraphData:
 
         return results
 
-    def get_dataframe(self):
+    def get_dataframe(self, merge=False):
         datasets = []
-        for dissection in self.dissections:
+        if merge:
+            dissection = next(self.dissections).clone()
+            for tomerge in self.dissections:
+                dissection.merge(tomerge)
+            dissections = [dissection]
+        else:
+            dissections = self.dissections
+
+        for dissection in dissections:
             data = self.normalize_bins(dissection)
             data = DataFrame.from_records(data)
             data["filename"] = os.path.basename(dissection.pcap_file)

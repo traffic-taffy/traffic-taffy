@@ -104,8 +104,7 @@ class PcapGraph(PcapGraphData):
         info("done reading pcap files")
 
     def create_graph(self):
-        df = self.get_dataframe()
-        debug(df)
+        df = self.get_dataframe(merge=True)
 
         hue_variable = "index"
         if df[hue_variable].nunique() == 1:
