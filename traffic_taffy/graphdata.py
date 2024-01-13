@@ -21,7 +21,7 @@ class PcapGraphData:
         if time_keys[0] == 0:  # likely always
             time_keys.pop(0)
 
-        results = {"time": [], "count": [], "index": [], "key": []}
+        results = {"time": [], "count": [], "index": [], "key": [], "subkey": []}
 
         # TODO: this could likely be made much more efficient and needs hole-filling
         for timestamp, key, subkey, value in dissection.find_data(
