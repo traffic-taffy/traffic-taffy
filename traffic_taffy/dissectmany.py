@@ -32,13 +32,13 @@ class PCAPDissectMany:
         pd.load()
         return pd.dissection
 
-    def load_pcap(self, pcap_file, split_size=None, maximum_count=0):
+    def load_pcap(self, pcap_file, split_size=None, maximum_count: int = 0, force: bool = False):
         pd = PCAPDissector(
             pcap_file,
             *self.args,
             **self.kwargs,
         )
-        dissection = pd.load_from_cache()
+        dissection = pd.load_from_cache(force=force)
         if dissection:
             return dissection
 

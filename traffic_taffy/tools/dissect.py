@@ -49,7 +49,7 @@ def main():
         cache_file_suffix=args.cache_file_suffix,
         ignore_list=args.ignore_list.split(","),
     )
-    pd.load()
+    pd.load(force=args.force)
 
     if args.fsdb:
         pd.print_to_fsdb(

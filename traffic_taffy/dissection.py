@@ -139,7 +139,7 @@ class Dissection:
     # Loading / Saving
     #
 
-    def load_from_cache(self) -> dict | None:
+    def load_from_cache(self, force: bool = False) -> dict | None:
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
         if not os.path.exists(self.pcap_file + self.cache_file_suffix):
@@ -198,6 +198,10 @@ class Dissection:
             info(f"loading cached pcap contents from {cached_file}")
             self.load_saved_contents(cached_contents)
             return self
+
+        if force:
+            info(f"forced continuing without loading the cache")
+            return None
 
         error(f"Failed to load cached data for {self.pcap_file} due to differences")
         error("refusing to continue -- remove the cache to recreate it")

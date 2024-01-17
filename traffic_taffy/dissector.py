@@ -53,17 +53,17 @@ class PCAPDissector:
             set(self.ignore_list),
         )
 
-    def load_from_cache(self):
+    def load_from_cache(self, force: bool = False):
         if self.cache_results:
             args = self.dissection_args()
             self.dissection = Dissection(*args)
-            cached_data = self.dissection.load_from_cache()
+            cached_data = self.dissection.load_from_cache(force=force)
             if cached_data:
                 return cached_data
 
-    def load(self) -> dict:
+    def load(self, force: bool = False) -> dict:
         "Loads data from a pcap file or its cached results"
-        cached_data = self.load_from_cache()
+        cached_data = self.load_from_cache(force=force)
         if cached_data:
             return cached_data
 
@@ -197,6 +197,13 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         type=str,
         default="taffy",
         help="The suffix file to use when creating cache files",
+    )
+
+    parser.add_argument(
+        "--force",
+        type=str,
+        default="taffy",
+        help="Force continuing with an incompatible cache (and rewriting it)",
     )
 
     return parser
