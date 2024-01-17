@@ -17,7 +17,7 @@ setuptools.setup(
         "console_scripts": [
             "taffy-compare = traffic_taffy.compare:main",
             "taffy-graph = traffic_taffy.graph:main",
-            "taffy-dissect = traffic_taffy.dissector:main",
+            "taffy-dissect = traffic_taffy.tools.dissect:main",
             "taffy-cache-info = traffic_taffy.cache_info:main",
         ]
     },
