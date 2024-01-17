@@ -115,7 +115,6 @@ class PcapCompare:
 
     def load_pcaps(self) -> None:
         # load the first as a reference pcap
-        info(f"reading pcap files using level={self.dissection_level}")
         pdm = PCAPDissectMany(
             self.pcap_files,
             bin_size=self.bin_size,
