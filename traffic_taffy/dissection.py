@@ -200,7 +200,7 @@ class Dissection:
             return self
 
         if force:
-            info(f"forced continuing without loading the cache")
+            info("forced continuing without loading the cache")
             return None
 
         error(f"Failed to load cached data for {self.pcap_file} due to differences")
@@ -237,6 +237,13 @@ class Dissection:
             # us and a 1 value is more informative to the user.
             if parameter == "bin_size" and self.bin_size == 0:
                 versioned_cache["parameters"][parameter] = 1
+
+            if parameter == "dissector_level" and isinstance(
+                versioned_cache["parameters"][parameter], PCAPDissectorLevel
+            ):
+                versioned_cache["parameters"][parameter] = versioned_cache[
+                    "parameters"
+                ][parameter].value
 
         # msgpack can't store sets
         versioned_cache["parameters"]["ignore_list"] = list(
