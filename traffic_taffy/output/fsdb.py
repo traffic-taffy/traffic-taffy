@@ -20,8 +20,11 @@ class Fsdb(Output):
             "left",
             "right",
             "delta",
+            "left_fraction",
+            "right_fraction",
+            "delta_fraction",
         ]
-        self.fsdb.converters = [str, str, str, int, int, float]
+        self.fsdb.converters = [str, str, str, int, int, int, float, float, float]
 
     def output_start(self, report):
         "Prints the header about columns being displayed"
@@ -31,8 +34,6 @@ class Fsdb(Output):
     def output_record(self, key, subkey, data) -> None:
         "prints a report to the console"
 
-        delta: float = data["delta"]
-
         subkey = Dissection.make_printable(key, subkey)
         self.fsdb.append(
             [
@@ -41,6 +42,9 @@ class Fsdb(Output):
                 subkey,
                 data["left_count"],
                 data["right_count"],
-                delta,
+                data["delta_absolute"],
+                data["left_percentage"],
+                data["right_percentage"],
+                data["delta_percentage"],
             ]
         )
