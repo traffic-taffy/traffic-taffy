@@ -201,8 +201,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
 
     parser.add_argument(
         "--force",
-        type=str,
-        default="taffy",
+        action="store_true",
         help="Force continuing with an incompatible cache (and rewriting it)",
     )
 
@@ -260,5 +259,3 @@ def pcap_data_merge(d1: dict, d2: dict):
                 d1[key] = defaultdict(Counter)
             d1[key][subkey] += d2[key][subkey]
     return d1
-
-
