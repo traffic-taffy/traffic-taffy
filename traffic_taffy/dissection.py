@@ -17,11 +17,12 @@ class PCAPDissectorLevel(Enum):
 
 class Dissection:
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
-    DISSECTION_VERSION: int = 6
+    DISSECTION_VERSION: int = 7
 
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
     WIDTH_SUBKEY: str = "__WIDTH__"
+    NEW_SUBKEY: str = "__NEW__"
 
     def __init__(
         self,
@@ -114,6 +115,10 @@ class Dissection:
                 self.data[timestamp][key][self.WIDTH_SUBKEY] = len(
                     self.data[timestamp][key]
                 )
+
+                if self.NEW_SUBKEY in self.data[timestamp][key]:
+                    # don't count the NEW subkey either
+                    self.data[timestamp][key] -= 1
 
     def merge(self, other_dissection) -> None:
         "merges counters in two dissections into self -- note destructive to self"

@@ -1,4 +1,4 @@
-from logging import info, debug
+from logging import debug
 from typing import List
 import datetime as dt
 from datetime import datetime
@@ -74,15 +74,16 @@ class PcapCompare:
                 delta_percentage = 0.0
                 total = 0
                 if subkey in left_side[key] and subkey in right_side[key]:
-                    delta_percentage = (
-                        right_side[key][subkey] / right_side_total
-                        - left_side[key][subkey] / left_side_total
-                    )
+                    left_percentage = left_side[key][subkey] / left_side_total
+                    right_percentage = right_side[key][subkey] / right_side_total
+                    delta_percentage = right_percentage - left_percentage
                     total = right_side[key][subkey] + left_side[key][subkey]
                     left_count = left_side[key][subkey]
                     right_count = right_side[key][subkey]
                 else:
                     delta_percentage = -1.0
+                    left_percentage = left_side[key][subkey] / left_side_total
+                    right_percentage = 0.0
                     total = -left_side[key][subkey]
                     left_count = left_side[key][subkey]
                     right_count = 0
@@ -94,6 +95,8 @@ class PcapCompare:
                     "total": total,
                     "left_count": left_count,
                     "right_count": right_count,
+                    "left_percentage": left_percentage,
+                    "right_percentage": right_percentage,
                 }
 
             for subkey in right_side[key].keys():
@@ -102,6 +105,8 @@ class PcapCompare:
                     total = right_side[key][subkey]
                     left_count = 0
                     right_count = right_side[key][subkey]
+                    left_percentage = 0.0
+                    right_percentage = right_side[key][subkey] / right_side_total
 
                     report[key][subkey] = {
                         "delta_percentage": delta_percentage,
@@ -109,6 +114,8 @@ class PcapCompare:
                         "total": total,
                         "left_count": left_count,
                         "right_count": right_count,
+                        "left_percentage": left_percentage,
+                        "right_percentage": right_percentage,
                     }
 
         return Comparison(report)
@@ -256,5 +263,3 @@ def get_comparison_args(args):
         "top_records": args.top_records,
         "reverse_sort": args.reverse_sort,
     }
-
-
