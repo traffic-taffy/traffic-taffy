@@ -1,4 +1,5 @@
 import os
+from traffic_taffy.dissector_engine.dpkt import DissectionEngineDpkt
 
 
 def test_dissector_load():
@@ -16,7 +17,9 @@ def test_dissector_simple_callback():
         "bogus", dissector_level=PCAPDissectorLevel.COUNT_ONLY, bin_size=2
     )
 
-    pd.dpkt_callback(10, b"")
+    dpkt_engine = DissectionEngineDpkt("bogus")
+    dpkt_engine.init_dissection()
+    dpkt_engine.callback(10, b"")
     assert pd.data == {
         0: {pd.TOTAL_COUNT: {pd.TOTAL_SUBKEY: 1}},
         10: {pd.TOTAL_COUNT: {pd.TOTAL_SUBKEY: 1}},
