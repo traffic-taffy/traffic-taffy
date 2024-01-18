@@ -513,7 +513,15 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.match_value = None
 
         # add the header in row 0
-        headers = ["Value", "Left Count", "Right Count", "Delta", "Delta %"]
+        headers = [
+            "Value",
+            "Left Count",
+            "Right Count",
+            "Delta",
+            "Left %",
+            "Right %",
+            "Delta %",
+        ]
         for n, header in enumerate(headers):
             header = header.replace(" ", "**\n\n**")
             label = QLabel("**" + header + "**")
@@ -583,6 +591,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
                 column += 1
                 label = QLabel(f"{record['delta_absolute']:>8}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, column)
+
+                column += 1
+                label = QLabel(f"{record['left_percentage']:>7.2f}")
+                label.setAlignment(Qt.AlignmentFlag.AlignRight)
+                self.comparison_panel.addWidget(label, current_grid_row, column)
+
+                column += 1
+                label = QLabel(f"{record['right_percentage']:>7.2f}")
                 label.setAlignment(Qt.AlignmentFlag.AlignRight)
                 self.comparison_panel.addWidget(label, current_grid_row, column)
 
