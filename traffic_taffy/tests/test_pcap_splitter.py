@@ -3,6 +3,7 @@ import time
 import logging
 from logging import debug
 from traffic_taffy.dissector import PCAPDissector, pcap_data_merge
+from traffic_taffy.dissection import Dissection
 from pcap_parallel import PCAPParallel
 
 test_pkl = "/tmp/test.pcap.pkl"
@@ -16,7 +17,7 @@ def buffer_callback(pcap_io_buffer):
         cache_results=False,
     )
     pd.load()
-    return pd.data
+    return pd.dissection.data
 
 
 def test_pcap_splitter():
@@ -53,7 +54,10 @@ def test_pcap_splitter():
         data = results.pop(0).result()
         for result in results:
             data = pcap_data_merge(data, result.result())
-        PCAPDissector.calculate_metadata(data)
+
+        dissection = Dissection("BOGUS")
+        dissection.data = data
+        dissection.calculate_metadata()
         splitter_end_time = time.time()
 
         # create a bogus dissector
@@ -63,12 +67,8 @@ def test_pcap_splitter():
             dissector_level=10,
             cache_results=False,
         )
-        pd.data = data
-        # pd.print(
-        #     timestamps=[0],
-        #     minimum_count=10,
-        # )
-        pd.save(test_pkl)
+        pd.dissection = dissection
+        dissection.save(test_pkl)
         assert os.path.exists(test_pkl)
 
         # now compare it with a straight read to ensure the data results are the same
@@ -82,7 +82,7 @@ def test_pcap_splitter():
             maximum_count=maximum_count,
         )
         pd.load()
-        data2 = pd.data
+        data2 = pd.dissection.data
         normal_end_time = time.time()
 
         assert data == data2

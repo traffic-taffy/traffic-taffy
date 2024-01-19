@@ -15,10 +15,10 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     entry_points={
         "console_scripts": [
-            "taffy-compare = traffic_taffy.compare:main",
-            "taffy-graph = traffic_taffy.graph:main",
-            "taffy-dissect = traffic_taffy.dissector:main",
-            "taffy-cache-info = traffic_taffy.cache_info:main",
+            "taffy-compare = traffic_taffy.tools.compare:main",
+            "taffy-graph = traffic_taffy.tools.graph:main",
+            "taffy-dissect = traffic_taffy.tools.dissect:main",
+            "taffy-cache-info = traffic_taffy.tools.cache_info:main",
         ]
     },
     classifiers=[

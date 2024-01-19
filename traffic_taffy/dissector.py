@@ -3,7 +3,7 @@ from logging import warning, error
 from collections import Counter, defaultdict
 from typing import List
 from rich import print
-from dissection import PCAPDissectorLevel, Dissection
+from traffic_taffy.dissection import PCAPDissectorLevel, Dissection
 
 
 class PCAPDissector:
@@ -53,17 +53,17 @@ class PCAPDissector:
             set(self.ignore_list),
         )
 
-    def load_from_cache(self):
+    def load_from_cache(self, force: bool = False):
         if self.cache_results:
             args = self.dissection_args()
             self.dissection = Dissection(*args)
-            cached_data = self.dissection.load_from_cache()
+            cached_data = self.dissection.load_from_cache(force=force)
             if cached_data:
                 return cached_data
 
-    def load(self) -> dict:
+    def load(self, force: bool = False) -> dict:
         "Loads data from a pcap file or its cached results"
-        cached_data = self.load_from_cache()
+        cached_data = self.load_from_cache(force=force)
         if cached_data:
             return cached_data
 
@@ -199,6 +199,12 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         help="The suffix file to use when creating cache files",
     )
 
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force continuing with an incompatible cache (and rewriting it)",
+    )
+
     return parser
 
 
@@ -253,74 +259,3 @@ def pcap_data_merge(d1: dict, d2: dict):
                 d1[key] = defaultdict(Counter)
             d1[key][subkey] += d2[key][subkey]
     return d1
-
-
-def main():
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-    import logging
-
-    def parse_args():
-        "Parse the command line arguments."
-        parser = ArgumentParser(
-            formatter_class=ArgumentDefaultsHelpFormatter,
-            description=__doc__,
-            epilog="Exmaple Usage: ",
-        )
-
-        parser.add_argument(
-            "--log-level",
-            "--ll",
-            default="info",
-            help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
-        )
-
-        parser.add_argument(
-            "-f",
-            "--fsdb",
-            action="store_true",
-            help="Print results in an FSDB formatted output",
-        )
-
-        dissector_add_parseargs(parser)
-        limitor_add_parseargs(parser)
-
-        parser.add_argument("input_file", type=str, help="input pcap file")
-
-        args = parser.parse_args()
-        log_level = args.log_level.upper()
-        logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
-        return args
-
-    args = parse_args()
-
-    check_dissector_level(args.dissection_level)
-
-    pd = PCAPDissector(
-        args.input_file,
-        bin_size=args.bin_size,
-        dissector_level=args.dissection_level,
-        maximum_count=args.packet_count,
-        cache_results=args.cache_pcap_results,
-        cache_file_suffix=args.cache_file_suffix,
-        ignore_list=args.ignore_list.split(","),
-    )
-    pd.load()
-
-    if args.fsdb:
-        pd.print_to_fsdb(
-            timestamps=[0],
-            match_string=args.match_string,
-            match_value=args.match_value,
-            minimum_count=args.minimum_count,
-        )
-    else:
-        pd.print(
-            timestamps=[0],
-            match_string=args.match_string,
-            match_value=args.match_value,
-            minimum_count=args.minimum_count,
-        )
-
-
-if __name__ == "__main__":
-    main()

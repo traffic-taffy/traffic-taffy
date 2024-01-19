@@ -17,11 +17,12 @@ class PCAPDissectorLevel(Enum):
 
 class Dissection:
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
-    DISSECTION_VERSION: int = 6
+    DISSECTION_VERSION: int = 7
 
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
     WIDTH_SUBKEY: str = "__WIDTH__"
+    NEW_RIGHT_SUBKEY: str = "__NEW_VALUES__"
 
     def __init__(
         self,
@@ -115,6 +116,10 @@ class Dissection:
                     self.data[timestamp][key]
                 )
 
+                if self.NEW_RIGHT_SUBKEY in self.data[timestamp][key]:
+                    # don't count the NEW subkey either
+                    self.data[timestamp][key] -= 1
+
     def merge(self, other_dissection) -> None:
         "merges counters in two dissections into self -- note destructive to self"
         for timestamp in other_dissection.data:
@@ -139,7 +144,7 @@ class Dissection:
     # Loading / Saving
     #
 
-    def load_from_cache(self) -> dict | None:
+    def load_from_cache(self, force: bool = False) -> dict | None:
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
         if not os.path.exists(self.pcap_file + self.cache_file_suffix):
@@ -199,6 +204,10 @@ class Dissection:
             self.load_saved_contents(cached_contents)
             return self
 
+        if force:
+            info("forced continuing without loading the cache")
+            return None
+
         error(f"Failed to load cached data for {self.pcap_file} due to differences")
         error("refusing to continue -- remove the cache to recreate it")
         raise ValueError(
@@ -233,6 +242,13 @@ class Dissection:
             # us and a 1 value is more informative to the user.
             if parameter == "bin_size" and self.bin_size == 0:
                 versioned_cache["parameters"][parameter] = 1
+
+            if parameter == "dissector_level" and isinstance(
+                versioned_cache["parameters"][parameter], PCAPDissectorLevel
+            ):
+                versioned_cache["parameters"][parameter] = versioned_cache[
+                    "parameters"
+                ][parameter].value
 
         # msgpack can't store sets
         versioned_cache["parameters"]["ignore_list"] = list(

@@ -1,10 +1,11 @@
 from traffic_taffy.graph import PcapGraphData
 from collections import Counter, defaultdict
+from traffic_taffy.dissection import Dissection
 
 
 class ParentFaker(PcapGraphData):
     def __init__(self):
-        self.match_key = None
+        self.match_string = None
         self.match_value = None
         self.minimum_count = 0
         self.bin_size = 1
@@ -29,7 +30,9 @@ def test_pcap_normalize():
             data[i] = defaultdict(Counter)
         data[i]["c"]["d"] += 2
 
-    results = pg.normalize_bins(data)
+    dissection = Dissection(None)
+    dissection.data = data
+    results = pg.normalize_bins(dissection)
 
     # note: we only normalize non 0 indexes (ie, "real" timestamps)
 
@@ -58,7 +61,9 @@ def test_pcap_normalize_with_gaps():
                 data[i] = defaultdict(Counter)
             data[i]["c"]["d"] += 1
 
-    results = pg.normalize_bins(data)
+    dissection = Dissection(None)
+    dissection.data = data
+    results = pg.normalize_bins(dissection)
     # TODO: sort these and ensure they're right (again)
     assert results == {
         "time": [14, 21, 28, 42, 42, 56, 63, 70, 84, 84, 98],

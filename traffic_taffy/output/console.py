@@ -28,14 +28,17 @@ class Console(Output):
         style = ""
         subkey = "Value"
         endstyle = ""
-        actual_delta = "Delta"
-        percent_delta = "Delta-%"
         left_count = "Left"
         right_count = "Right"
+        actual_delta = "Delta"
+
+        left_percent = "Left %"
+        right_percent = "Right %"
+        percent_delta = "Delta-%"
 
         line = f"  {style}{subkey:<50}{endstyle}"
         line += f" {left_count:>8} {right_count:>8} {actual_delta:>8}"
-        line += f" {percent_delta:>7}"
+        line += f" {left_percent:>8} {right_percent:>8}  {percent_delta:>7}"
 
         self.console.print(line)
 
@@ -63,7 +66,7 @@ class Console(Output):
         subkey = Dissection.make_printable(key, subkey)
         line = f"  {style}{subkey:<50}{endstyle}"
         line += f" {data['left_count']:>8} {data['right_count']:>8} {data['delta_absolute']:>8}"
-        line += f" {100*delta_percentage:>7.2f}"
+        line += f" {100*data['left_percentage']:>7.2f} {100*data['right_percentage']:>7.2f}  {100*delta_percentage:>7.2f}"
 
         # print it to the rich console
         self.console.print(line)

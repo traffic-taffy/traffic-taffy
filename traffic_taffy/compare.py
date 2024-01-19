@@ -1,22 +1,12 @@
-"""Takes a set of pcap files to compare and creates a report"""
-
-import logging
-from logging import info, debug
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from logging import debug
 from typing import List
 import datetime as dt
 from datetime import datetime
 
 from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissectmany import PCAPDissectMany
-from traffic_taffy.output.console import Console
-from traffic_taffy.output.fsdb import Fsdb
-from traffic_taffy.dissector import (
-    PCAPDissectorLevel,
-    dissector_add_parseargs,
-    limitor_add_parseargs,
-    check_dissector_level,
-)
+from traffic_taffy.dissector import PCAPDissectorLevel
+from traffic_taffy.dissection import Dissection
 
 
 class PcapCompare:
@@ -35,6 +25,7 @@ class PcapCompare:
         bin_size: int | None = None,
         dissection_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
         between_times: List[int] | None = None,
+        ignore_list: List[str] = [],
     ) -> None:
         self.pcap_files = pcap_files
         self.deep = deep
@@ -45,6 +36,7 @@ class PcapCompare:
         self.between_times = between_times
         self.bin_size = bin_size
         self.cache_file_suffix = cache_file_suffix
+        self.ignore_list = ignore_list
 
     @property
     def pcap_files(self):
@@ -81,22 +73,25 @@ class PcapCompare:
                 right_side[key] = {}
             right_side_total = sum(right_side[key].values())
 
+            new_left_count = 0
             for subkey in left_side[key].keys():
                 delta_percentage = 0.0
                 total = 0
-                if subkey in left_side[key] and subkey in right_side[key]:
-                    delta_percentage = (
-                        right_side[key][subkey] / right_side_total
-                        - left_side[key][subkey] / left_side_total
-                    )
+                if subkey in right_side[key]:
+                    left_percentage = left_side[key][subkey] / left_side_total
+                    right_percentage = right_side[key][subkey] / right_side_total
+                    delta_percentage = right_percentage - left_percentage
                     total = right_side[key][subkey] + left_side[key][subkey]
                     left_count = left_side[key][subkey]
                     right_count = right_side[key][subkey]
                 else:
                     delta_percentage = -1.0
+                    left_percentage = left_side[key][subkey] / left_side_total
+                    right_percentage = 0.0
                     total = -left_side[key][subkey]
                     left_count = left_side[key][subkey]
                     right_count = 0
+                    new_left_count += 1
 
                 delta_absolute = right_count - left_count
                 report[key][subkey] = {
@@ -105,14 +100,20 @@ class PcapCompare:
                     "total": total,
                     "left_count": left_count,
                     "right_count": right_count,
+                    "left_percentage": left_percentage,
+                    "right_percentage": right_percentage,
                 }
 
+            new_right_count = 0
             for subkey in right_side[key].keys():
                 if subkey not in report[key]:
                     delta_percentage = 1.0
                     total = right_side[key][subkey]
                     left_count = 0
                     right_count = right_side[key][subkey]
+                    left_percentage = 0.0
+                    right_percentage = right_side[key][subkey] / right_side_total
+                    new_right_count += 1  # this value wasn't in the left
 
                     report[key][subkey] = {
                         "delta_percentage": delta_percentage,
@@ -120,13 +121,27 @@ class PcapCompare:
                         "total": total,
                         "left_count": left_count,
                         "right_count": right_count,
+                        "left_percentage": left_percentage,
+                        "right_percentage": right_percentage,
                     }
+
+            report[key][Dissection.NEW_RIGHT_SUBKEY] = {
+                "delta_absolute": new_right_count - new_left_count,
+                "total": new_left_count + new_right_count,
+                "left_count": new_left_count,
+                "right_count": new_right_count,
+                "left_percentage": new_left_count / left_side_total,
+                "right_percentage": new_right_count / right_side_total,
+                "delta_percentage": (
+                    new_right_count / right_side_total
+                    - new_left_count / left_side_total
+                ),
+            }
 
         return Comparison(report)
 
     def load_pcaps(self) -> None:
         # load the first as a reference pcap
-        info(f"reading pcap files using level={self.dissection_level}")
         pdm = PCAPDissectMany(
             self.pcap_files,
             bin_size=self.bin_size,
@@ -135,6 +150,7 @@ class PcapCompare:
             cache_results=self.cache_results,
             cache_file_suffix=self.cache_file_suffix,
             dissector_level=self.dissection_level,
+            ignore_list=self.ignore_list,
         )
         results = pdm.load_all()
         return results
@@ -268,98 +284,3 @@ def get_comparison_args(args):
         "top_records": args.top_records,
         "reverse_sort": args.reverse_sort,
     }
-
-
-def parse_args():
-    "Parse the command line arguments."
-    parser = ArgumentParser(
-        formatter_class=ArgumentDefaultsHelpFormatter,
-        description=__doc__,
-        epilog="Exmaple Usage: ",
-    )
-
-    output_options = parser.add_argument_group("Output format")
-    output_options.add_argument(
-        "-f",
-        "--fsdb",
-        action="store_true",
-        help="Print results in an FSDB formatted output",
-    )
-
-    limitor_parser = limitor_add_parseargs(parser)
-    compare_add_parseargs(limitor_parser, False)
-    dissector_add_parseargs(parser)
-
-    debugging_group = parser.add_argument_group("Debugging options")
-
-    debugging_group.add_argument(
-        "--log-level",
-        "--ll",
-        default="info",
-        help="Define the logging verbosity level (debug, info, warning, error, ...).",
-    )
-
-    parser.add_argument("pcap_files", type=str, nargs="*", help="PCAP files to analyze")
-
-    args = parser.parse_args()
-    log_level = args.log_level.upper()
-    logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
-
-    check_dissector_level(args.dissection_level)
-
-    return args
-
-
-def main():
-    args = parse_args()
-
-    # setup output options
-    printing_arguments = get_comparison_args(args)
-
-    # get our files to compare (maybe just one)
-    left = args.pcap_files.pop(0)
-    right = None
-    more_than_one = False
-
-    if len(args.pcap_files) > 0:
-        right = args.pcap_files.pop(0)
-        more_than_one = True
-
-    while left:
-        files = [left]
-        if right:
-            files.append(right)
-
-        pc = PcapCompare(
-            files,
-            cache_results=args.cache_pcap_results,
-            cache_file_suffix=args.cache_file_suffix,
-            maximum_count=printing_arguments["maximum_count"],
-            dissection_level=args.dissection_level,
-            between_times=args.between_times,
-            bin_size=args.bin_size,
-        )
-
-        # compare the pcaps
-        reports = pc.compare()
-
-        if args.fsdb:
-            output = Fsdb(None, printing_arguments)
-        else:
-            output = Console(None, printing_arguments)
-
-        for report in reports:
-            # output results to the console
-            output.output(report)
-
-        left = right
-        right = None
-        if len(args.pcap_files) > 0:
-            right = args.pcap_files.pop(0)
-
-        if left and not right and more_than_one:
-            left = None
-
-
-if __name__ == "__main__":
-    main()
