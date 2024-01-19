@@ -62,7 +62,7 @@ class PcapGraphData:
         if calculate_load_fraction:
             time_groups = datasets.groupby("time")
             datasets["load_fraction"] = (
-                datasets["count"] / time_groups.transform("max")["count"]
+                100 * datasets["count"] / time_groups.transform("max")["count"]
             )
 
         return datasets

@@ -36,6 +36,7 @@ from PyQt6.QtWidgets import (
     QSpinBox,
     QToolButton,
     QMenu,
+    QCheckBox,
 )
 
 
@@ -141,6 +142,8 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         self.printing_arguments = get_comparison_args(self.args)
 
+        self.chart_column = "count"
+
     def quit(self):
         exit()
 
@@ -188,10 +191,17 @@ class TaffyExplorer(QDialog, PcapGraphData):
         )
 
     def update_chart(
-        self, chart: QChart, match_string: str, match_value: str | None = None
+        self,
+        chart: QChart,
+        match_string: str,
+        match_value: str | None = None,
+        chart_column: str = None,
     ):
         self.match_string = match_string
         self.match_value = match_value
+
+        if chart_column is None:
+            chart_column = self.chart_column
 
         # for matching on a single value, don't do a minimum count at all
         tmpv = self.minimum_count
@@ -199,7 +209,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         if match_value is not None:
             self.minimum_count = 0
 
-        df = self.get_dataframe()
+        df = self.get_dataframe(calculate_load_fraction=True)
 
         # TODO: there must be a better way! (key is duplicated)
         series_set = []
@@ -210,7 +220,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             for index in df[df["key"] == key].index:
                 series.append(
                     df["time"][index].to_pydatetime().timestamp() * 1000,
-                    df["count"][index],
+                    df[chart_column][index],
                 )
 
                 height = df["count"][index]
@@ -312,9 +322,16 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.update_chart(self.detail_graph, match_string, match_value)
 
     def update_traffic_chart(self):
-        self.update_chart(self.traffic_graph, "__TOTAL__")
+        self.update_chart(self.traffic_graph, "__TOTAL__", chart_column="count")
 
     # def show_comparison(self, pcap_one, timestamp_one, pcap_two, timestamp_two):
+
+    def graph_type_changed(self, value):
+        if value == 0:
+            self.chart_column = "count"
+        else:
+            self.chart_column = "load_fraction"
+        self.update_detail_chart(self.match_string, self.match_value)
 
     def header_clicked(self, key):
         self.update_detail_chart(key, None)
@@ -477,7 +494,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.top_records_w = QSpinBox()
         self.top_records_w.setMinimum(0)
         self.top_records_w.setMaximum(1000000)  # TODO: inf
-        self.top_records_w.setValue(int(self.top_records))
+        self.top_records_w.setValue(int(self.top_records or 0))
         self.top_records_w.setSingleStep(1)
 
         self.top_records_w.valueChanged.connect(self.top_records_changed)
@@ -492,6 +509,10 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
         self.minimum_graph_count_w.valueChanged.connect(self.min_graph_count_changed)
         self.control_menus.addWidget(self.minimum_graph_count_w)
+
+        self.show_as_percent_w = QCheckBox("Percent")
+        self.control_menus.addWidget(self.show_as_percent_w)
+        self.show_as_percent_w.stateChanged.connect(self.graph_type_changed)
 
     def update_report(self):
         # TODO: less duplication with this and compare:print_report()

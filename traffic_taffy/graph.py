@@ -66,7 +66,7 @@ class PcapGraph(PcapGraphData):
             hue_variable = None
 
         if self.by_percentage:
-            df["load_fraction"] *= 100
+            df["load_fraction"]
             y_column = "load_fraction"
         else:
             y_column = "count"
