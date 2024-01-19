@@ -82,7 +82,7 @@ def main():
             dissection_level=args.dissection_level,
             between_times=args.between_times,
             bin_size=args.bin_size,
-            ignore_list=args.ignore_list.split(","),
+            ignore_list=args.ignore_list,
         )
 
         # compare the pcaps

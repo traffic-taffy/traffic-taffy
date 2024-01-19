@@ -1,6 +1,7 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 from logging import debug, info
+from typing import List
 
 from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.dissectmany import PCAPDissectMany
@@ -20,6 +21,8 @@ class PcapGraph(PcapGraphData):
         cache_pcap_results: bool = False,
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
         interactive: bool = False,
+        ignore_list: List[str] = [],
+        by_percentage: bool = False,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -33,6 +36,8 @@ class PcapGraph(PcapGraphData):
         self.cache_pcap_results = cache_pcap_results
         self.dissector_level = dissector_level
         self.interactive = interactive
+        self.ignore_list = ignore_list
+        self.by_percentage = by_percentage
 
         super().__init__()
 
@@ -48,22 +53,29 @@ class PcapGraph(PcapGraphData):
             dissector_level=self.dissector_level,
             pcap_filter=self.pkt_filter,
             cache_results=self.cache_pcap_results,
+            ignore_list=self.ignore_list,
         )
         self.dissections = pdm.load_all()
         info("done reading pcap files")
 
     def create_graph(self):
-        df = self.get_dataframe(merge=True)
+        df = self.get_dataframe(merge=True, calculate_load_fraction=self.by_percentage)
 
         hue_variable = "index"
         if df[hue_variable].nunique() == 1:
             hue_variable = None
 
+        if self.by_percentage:
+            df["load_fraction"] *= 100
+            y_column = "load_fraction"
+        else:
+            y_column = "count"
+
         ax = sns.relplot(
             data=df,
             kind="line",
             x="time",
-            y="count",
+            y=y_column,
             hue=hue_variable,
             aspect=1.77,
         )
@@ -98,5 +110,3 @@ class PcapGraph(PcapGraphData):
         self.load_pcaps()
         debug("--- creating graph")
         self.show_graph()
-
-

@@ -40,7 +40,7 @@ class PcapGraphData:
 
         return results
 
-    def get_dataframe(self, merge=False):
+    def get_dataframe(self, merge=False, calculate_load_fraction=False):
         datasets = []
         if merge:
             dissection = next(self.dissections).clone()
@@ -58,4 +58,11 @@ class PcapGraphData:
             data["key"] = data["index"]
             datasets.append(data)
         datasets = concat(datasets, ignore_index=True)
+
+        if calculate_load_fraction:
+            time_groups = datasets.groupby("time")
+            datasets["load_fraction"] = (
+                datasets["count"] / time_groups.transform("max")["count"]
+            )
+
         return datasets

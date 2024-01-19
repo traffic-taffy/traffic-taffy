@@ -27,10 +27,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--log-level",
-        "--ll",
-        default="info",
-        help="Define verbosity level (debug, info, warning, error, fotal, critical).",
+        "-p",
+        "--by-percentage",
+        action="store_true",
+        help="Graph by percentage of traffic rather than by value",
     )
 
     parser.add_argument(
@@ -38,6 +38,13 @@ def parse_args():
         "--interactive",
         action="store_true",
         help="Prompt repeatedly for graph data to create",
+    )
+
+    parser.add_argument(
+        "--log-level",
+        "--ll",
+        default="info",
+        help="Define verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
     dissector_add_parseargs(parser)
@@ -68,6 +75,8 @@ def main():
         cache_pcap_results=args.cache_pcap_results,
         dissector_level=args.dissection_level,
         interactive=args.interactive,
+        by_percentage=args.by_percentage,
+        ignore_list=args.ignore_list,
     )
     pc.graph_it()
 

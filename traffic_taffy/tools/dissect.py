@@ -1,4 +1,10 @@
-from traffic_taffy.dissector import PCAPDissector, dissector_add_parseargs, limitor_add_parseargs, check_dissector_level
+from traffic_taffy.dissector import (
+    PCAPDissector,
+    dissector_add_parseargs,
+    limitor_add_parseargs,
+    check_dissector_level,
+)
+
 
 def main():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -47,7 +53,7 @@ def main():
         maximum_count=args.packet_count,
         cache_results=args.cache_pcap_results,
         cache_file_suffix=args.cache_file_suffix,
-        ignore_list=args.ignore_list.split(","),
+        ignore_list=args.ignore_list,
     )
     pd.load(force=args.force)
 
@@ -69,4 +75,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
