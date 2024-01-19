@@ -125,17 +125,18 @@ class PcapCompare:
                         "right_percentage": right_percentage,
                     }
 
+            if right_side_total == 0:
+                right_percent = 100
+            else:
+                right_percent = new_right_count / right_side_total
             report[key][Dissection.NEW_RIGHT_SUBKEY] = {
                 "delta_absolute": new_right_count - new_left_count,
                 "total": new_left_count + new_right_count,
                 "left_count": new_left_count,
                 "right_count": new_right_count,
                 "left_percentage": new_left_count / left_side_total,
-                "right_percentage": new_right_count / right_side_total,
-                "delta_percentage": (
-                    new_right_count / right_side_total
-                    - new_left_count / left_side_total
-                ),
+                "right_percentage": right_percent,
+                "delta_percentage": (right_percent - new_left_count / left_side_total),
             }
 
         return Comparison(report)
