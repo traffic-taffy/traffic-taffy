@@ -216,7 +216,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 height = df["count"][index]
                 maxv = max(maxv, height)
 
-            series.setName(key)
+            series.setName(df["subkey"][index])
             series.setOpacity(0.5)
             series_set.append(series)
             # axisx = QDateTimeAxis()
