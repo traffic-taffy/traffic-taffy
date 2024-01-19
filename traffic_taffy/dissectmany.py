@@ -32,7 +32,9 @@ class PCAPDissectMany:
         pd.load()
         return pd.dissection
 
-    def load_pcap(self, pcap_file, split_size=None, maximum_count: int = 0, force: bool = False):
+    def load_pcap(
+        self, pcap_file, split_size=None, maximum_count: int = 0, force: bool = False
+    ):
         pd = PCAPDissector(
             pcap_file,
             *self.args,
@@ -56,6 +58,7 @@ class PCAPDissectMany:
         # the data is coming back in (likely overlapping) chunks, and
         # we need to merge them together
         dissection = results.pop(0).result()
+        dissection.pcap_file = pcap_file  # splitting has the wrong name
         for result in results:
             dissection.merge(result.result())
 
