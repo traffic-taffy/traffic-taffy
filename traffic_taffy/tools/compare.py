@@ -6,8 +6,13 @@ from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
 
 from traffic_taffy.compare import compare_add_parseargs, get_comparison_args
-from traffic_taffy.dissector import dissector_add_parseargs, limitor_add_parseargs, check_dissector_level
+from traffic_taffy.dissector import (
+    dissector_add_parseargs,
+    limitor_add_parseargs,
+    check_dissector_level,
+)
 from traffic_taffy.compare import PcapCompare
+
 
 def parse_args():
     "Parse the command line arguments."
@@ -77,6 +82,7 @@ def main():
             dissection_level=args.dissection_level,
             between_times=args.between_times,
             bin_size=args.bin_size,
+            ignore_list=args.ignore_list.split(","),
         )
 
         # compare the pcaps

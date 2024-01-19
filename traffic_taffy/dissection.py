@@ -22,7 +22,7 @@ class Dissection:
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
     WIDTH_SUBKEY: str = "__WIDTH__"
-    NEW_SUBKEY: str = "__NEW__"
+    NEW_RIGHT_SUBKEY: str = "__NEW_VALUES__"
 
     def __init__(
         self,
@@ -116,7 +116,7 @@ class Dissection:
                     self.data[timestamp][key]
                 )
 
-                if self.NEW_SUBKEY in self.data[timestamp][key]:
+                if self.NEW_RIGHT_SUBKEY in self.data[timestamp][key]:
                     # don't count the NEW subkey either
                     self.data[timestamp][key] -= 1
 
