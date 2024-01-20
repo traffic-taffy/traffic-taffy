@@ -165,7 +165,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         ],
         nargs="*",
         type=str,
-        help="A comma separated list of (unlikely to be useful) data fields to ignore",
+        help="A list of (unlikely to be useful) packet fields to ignore",
     )
 
     parser.add_argument(
