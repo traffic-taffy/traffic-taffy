@@ -1,8 +1,8 @@
-taffy-graph - UI for exploring and comparing pcap files
-=======================================================
+taffy-explorer - UI for exploring and comparing pcap files
+==========================================================
 
-`taffy-explorer` acts a lot like a combination of taffy-compare_ and
-taffy-graph_ combined in an interactive UI.  It has a detailed graph
+`taffy-explorer` acts a lot like a combination of `taffy-compare` and
+`taffy-graph` combined in an interactive UI.  It has a detailed graph
 at the top, a total traffic graph, a number of changeable UI fields
 equivalent to the common command line arguments (eg, *-c*, *-x*, *-p*,
 etc), and a table of generated differences based on these parameters.

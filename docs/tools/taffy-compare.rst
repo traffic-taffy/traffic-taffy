@@ -1,6 +1,8 @@
 taffy-compare - compare reference and anomaly traffic
 -----------------------------------------------------
 
+.. _taffycompare:
+
 `taffy-compare` takes one or multiple *pcap* files and examines the
 contents for differences.
 
