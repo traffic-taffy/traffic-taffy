@@ -1,5 +1,5 @@
 sphinx
-sphinx-argparse_cli
+sphinx-argparse-cli
 sphinx-argparse
 # myst-parser
 dateparser

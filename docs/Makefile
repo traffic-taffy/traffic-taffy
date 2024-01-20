@@ -10,6 +10,8 @@ BUILDDIR      = _build
 
 SUBMODULES    = $(patsubst %.md,%.rst,$(wildcard tools/*.md))
 
+all: html
+
 # build rest files from markdown
 %.rst: %.md cli.template Makefile
 	pandoc -i $< -o $@ > $@
