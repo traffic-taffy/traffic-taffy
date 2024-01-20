@@ -3,12 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to traffic-taffy's documentation!
-=========================================
+Traffic-taffy: finding tasty bumps in your traffic
+==================================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   gettingstarted
+
+The **traffic-taffy** project aims to help you compare PCAP files that
+contain both normal traffic loads and unusual spikes.
+
 
 
 
