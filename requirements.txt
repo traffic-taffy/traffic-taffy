@@ -5,3 +5,4 @@ seaborn
 pandas
 pcap-parallel
 PyQt6-Charts
+msgpack
