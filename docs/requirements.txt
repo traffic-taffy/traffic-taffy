@@ -1,0 +1,6 @@
+sphinx
+sphinx-argparse_cli
+sphinx-argparse
+# myst-parser
+dateparser
+# matplotlib
