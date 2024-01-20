@@ -4,3 +4,10 @@ sphinx-argparse
 # myst-parser
 dateparser
 # matplotlib
+scapy
+dpkt
+rich
+seaborn
+pandas
+pcap-parallel
+PyQt6-Charts
