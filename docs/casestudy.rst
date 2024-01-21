@@ -22,18 +22,19 @@ to come up with hopefully similar conclusions.  .
 The README file's description of this event is as follows:
 
 
+=========== ============================
 Parameter   Value
 =========== ============================
 Duration    06:45:19 UTC to 06:46:53 UTC
 Sources     Spoofed (Randomized)
 Query name  No fixed query name
 Packet size 554 bytes requests
+=========== ============================
 
 Using this informationn we select the following files from the dataset
 to study from the LAX anycast instance and that directly surround the
-event in question.  Thus, we will use just these files, which we'll
-just call ***FILES** when using all of them in the rest of this
-document.
+event in question.  Thus, we will use just these files when using all
+of them in the rest of this document.
 
 .. [B_Root_Anomaly-20190907] https://comunda.isi.edu/artifact/view/1437
 
