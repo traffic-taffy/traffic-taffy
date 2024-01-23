@@ -30,6 +30,7 @@ class Output:
 
         # intentionally reversed, as it should default to high to low
         sort_order = not self.output_options.get("reverse_sort", False)
+        sort_by = self.output_options.get("sort_by", "delta_percentage")
 
         for key in sorted(contents):
             reported: bool = False
@@ -45,7 +46,7 @@ class Output:
             record_count = 0
             for subkey, data in sorted(
                 contents[key].items(),
-                key=lambda x: x[1]["delta_percentage"],
+                key=lambda x: x[1][sort_by],
                 reverse=sort_order,
             ):
                 if not self.filter_check(data):
