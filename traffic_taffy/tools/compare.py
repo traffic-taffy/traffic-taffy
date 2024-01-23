@@ -83,6 +83,7 @@ def main():
             between_times=args.between_times,
             bin_size=args.bin_size,
             ignore_list=args.ignore_list,
+            pcap_filter=args.filter,
         )
 
         # compare the pcaps

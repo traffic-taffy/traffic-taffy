@@ -54,6 +54,7 @@ def main():
         cache_results=args.cache_pcap_results,
         cache_file_suffix=args.cache_file_suffix,
         ignore_list=args.ignore_list,
+        pcap_filter=args.filter,
     )
     pd.load(force=args.force)
 

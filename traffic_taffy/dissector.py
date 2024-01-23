@@ -191,6 +191,14 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     parser.add_argument(
+        "-F",
+        "--filter",
+        default=None,
+        type=str,
+        help="filter to apply to the pcap file when processing",
+    )
+
+    parser.add_argument(
         "--cache-file-suffix",
         "--cs",
         type=str,

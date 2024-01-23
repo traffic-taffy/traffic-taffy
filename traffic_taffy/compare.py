@@ -19,7 +19,7 @@ class PcapCompare:
         pcap_files: List[str],
         maximum_count: int = 0,  # where 0 == all
         deep: bool = True,
-        pkt_filter: str | None = None,
+        pcap_filter: str | None = None,
         cache_results: bool = False,
         cache_file_suffix: str = "taffy",
         bin_size: int | None = None,
@@ -30,7 +30,7 @@ class PcapCompare:
         self.pcap_files = pcap_files
         self.deep = deep
         self.maximum_count = maximum_count
-        self.pkt_filter = pkt_filter
+        self.pcap_filter = pcap_filter
         self.cache_results = cache_results
         self.dissection_level = dissection_level
         self.between_times = between_times
@@ -153,7 +153,7 @@ class PcapCompare:
             self.pcap_files,
             bin_size=self.bin_size,
             maximum_count=self.maximum_count,
-            pcap_filter=self.pkt_filter,
+            pcap_filter=self.pcap_filter,
             cache_results=self.cache_results,
             cache_file_suffix=self.cache_file_suffix,
             dissector_level=self.dissection_level,
