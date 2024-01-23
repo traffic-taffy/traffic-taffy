@@ -1,3 +1,6 @@
+"""A Dissection class stores the results of a PCAP enumeration."""
+
+from __future__ import annotations
 import os
 from collections import defaultdict, Counter
 from typing import Any
@@ -10,12 +13,16 @@ from copy import deepcopy
 
 
 class PCAPDissectorLevel(Enum):
+    """Enumeration of supported dissection levels."""
+
     COUNT_ONLY = 1
     THROUGH_IP = 2
     DETAILED = 10
 
 
 class Dissection:
+    """Class to store the data from an enumerated pcap."""
+
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
     DISSECTION_VERSION: int = 7
 
@@ -25,7 +32,7 @@ class Dissection:
     NEW_RIGHT_SUBKEY: str = "__NEW_VALUES__"
 
     def __init__(
-        self,
+        self: Dissection,
         pcap_file: str,
         pcap_filter: str | None = None,
         maximum_count: int = 0,
@@ -33,9 +40,10 @@ class Dissection:
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         cache_file_suffix: str = "taffy",
         ignore_list: list = [],
-        *args,
-        **kwargs,
-    ):
+        *args: list,
+        **kwargs: dict,
+    ) -> Dissection:
+        """Create a Dissection instance."""
         self.pcap_file = pcap_file
         self.bin_size = bin_size
         self.cache_file_suffix = cache_file_suffix
@@ -56,7 +64,8 @@ class Dissection:
         ]
         self.settable_from_cache = ["bin_size", "dissector_level", "maximum_count"]
 
-    def clone(self):
+    def clone(self: Dissection) -> Dissection:
+        """Clone a second dissection instance from another."""
         newd = Dissection(
             self.pcap_file,
             self.pcap_filter,
@@ -71,31 +80,33 @@ class Dissection:
         return newd
 
     @property
-    def timestamp(self):
+    def timestamp(self) -> int:
         return self._timestamp
 
     @timestamp.setter
-    def timestamp(self, newval):
+    def timestamp(self: Dissection, newval):
         self._timestamp = newval
 
     @property
-    def data(self):
+    def data(self: Dissection) -> dict:
+        """The raw data in this dissection."""
         return self._data
 
     @data.setter
-    def data(self, newval):
+    def data(self: Dissection, newval):
         self._data = newval
 
     @property
-    def pcap_file(self):
+    def pcap_file(self: Dissection):
+        """The PCAP file name of this dissection"""
         return self._pcap_file
 
     @pcap_file.setter
-    def pcap_file(self, newval):
+    def pcap_file(self: Dissection, newval):
         self._pcap_file = newval
 
-    def incr(self, key: str, value: Any, count: int = 1):
-        "increase one field within the counter"
+    def incr(self: Dissection, key: str, value: Any, count: int = 1):
+        """Increase one field within the counter."""
         # always save a total count at the zero bin
         # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
         self.data[0][key][value] += count
@@ -104,8 +115,8 @@ class Dissection:
                 self.data[self.timestamp] = defaultdict(Counter)
             self.data[self.timestamp][key][value] += count
 
-    def calculate_metadata(self) -> None:
-        "Calculates things like the number of value entries within each key/subkey"
+    def calculate_metadata(self: Dissection) -> None:
+        """Calculate thing like the number of value entries within each key/subkey."""
         # TODO: do we do this with or without key and value matches?
         for timestamp in self.data.keys():
             for key in self.data[timestamp]:
@@ -120,7 +131,7 @@ class Dissection:
                     # don't count the NEW subkey either
                     self.data[timestamp][key] -= 1
 
-    def merge(self, other_dissection) -> None:
+    def merge(self: Dissection, other_dissection) -> None:
         "merges counters in two dissections into self -- note destructive to self"
         for timestamp in other_dissection.data:
             for key in other_dissection.data[timestamp]:
@@ -144,7 +155,7 @@ class Dissection:
     # Loading / Saving
     #
 
-    def load_from_cache(self, force: bool = False) -> dict | None:
+    def load_from_cache(self: Dissection, force: bool = False) -> dict | None:
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
         if not os.path.exists(self.pcap_file + self.cache_file_suffix):
@@ -210,13 +221,13 @@ class Dissection:
             "INCOMPATIBLE CACHE: remove the cache or don't use it to continue"
         )
 
-    def save_to_cache(self, where: str | None = None) -> None:
+    def save_to_cache(self: Dissection, where: str | None = None) -> None:
         if not where and self.pcap_file and isinstance(self.pcap_file, str):
             where = self.pcap_file + self.cache_file_suffix
         if where:
             self.save(where)
 
-    def save(self, where: str) -> None:
+    def save(self: Dissection, where: str) -> None:
         "Saves a generated dissection to a msgpack file"
 
         # wrap the report in a version header
@@ -255,7 +266,7 @@ class Dissection:
         info(f"caching PCAP data to '{where}'")
         msgpack.dump(versioned_cache, open(where, "wb"))
 
-    def load_saved_contents(self, versioned_cache):
+    def load_saved_contents(self: Dissection, versioned_cache):
         # set the local parameters from the cache
         for parameter in self.parameters:
             setattr(self, parameter, versioned_cache["parameters"][parameter])
@@ -263,7 +274,7 @@ class Dissection:
         # load the data
         self.data = versioned_cache["dissection"]
 
-    def load_saved(self, where: str, dont_overwrite: bool = False) -> dict:
+    def load_saved(self: Dissection, where: str, dont_overwrite: bool = False) -> dict:
         "Loads a previous saved report from a file instead of re-parsing pcaps"
         contents = msgpack.load(open(where, "rb"), strict_map_key=False)
 
@@ -287,7 +298,7 @@ class Dissection:
         return contents
 
     def find_data(
-        self,
+        self: Dissection,
         timestamps: List[int] | None = None,
         match_string: str | None = None,
         match_value: str | None = None,
@@ -360,6 +371,7 @@ class Dissection:
             value = value[0:40] + "..."  # truncate to reasonable
         return value
 
+    @staticmethod
     def print_mac_address(value):
         "Converts bytes to ethernet mac style address"
 
