@@ -61,7 +61,7 @@ create this graph.
 
 ::
 
-   taffy-graph -C -b 1 -m __TOTAL__ -o total-traffic.png *.pcap.xz
+   taffy-graph -d 10 -C -b 1 -m __TOTAL__ -o total-traffic.png *.pcap.xz
 
 Which produces the following graph:
 
@@ -75,6 +75,9 @@ We will start by comparing all of the pcap files against each other to
 determine what is different between them.  We use the `taffy-compare`
 utility todo this, selecting some parameters to limit the display to
 just those that are likely big jumps.
+
+Note: now that a 1 second binned, level 10 cache file exists we can
+just use that (-C) and do not have to specify these parameters again.
 
 ::
 
