@@ -23,6 +23,7 @@ class PcapGraph(PcapGraphData):
         interactive: bool = False,
         ignore_list: List[str] = [],
         by_percentage: bool = False,
+        pcap_filter: str | None = None,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -30,7 +31,7 @@ class PcapGraph(PcapGraphData):
         self.minimum_count = minimum_count
         self.bin_size = bin_size
         self.subsections = None
-        self.pkt_filter = None
+        self.pcap_filter = None
         self.match_string = match_string
         self.match_value = match_value
         self.cache_pcap_results = cache_pcap_results
@@ -38,6 +39,7 @@ class PcapGraph(PcapGraphData):
         self.interactive = interactive
         self.ignore_list = ignore_list
         self.by_percentage = by_percentage
+        self.pcap_filter = pcap_filter
 
         super().__init__()
 
@@ -51,7 +53,7 @@ class PcapGraph(PcapGraphData):
             bin_size=self.bin_size,
             maximum_count=self.maximum_count,
             dissector_level=self.dissector_level,
-            pcap_filter=self.pkt_filter,
+            pcap_filter=self.pcap_filter,
             cache_results=self.cache_pcap_results,
             ignore_list=self.ignore_list,
         )
@@ -79,12 +81,12 @@ class PcapGraph(PcapGraphData):
             hue=hue_variable,
             aspect=1.77,
         )
-        ax.set(xlabel="time", ylabel="count")
+        ax.set(xlabel="time", ylabel=y_column)
         plt.xticks(rotation=45)
 
         info(f"saving graph to {self.output_file}")
         if self.output_file:
-            plt.savefig(self.output_file)
+            plt.savefig(self.output_file, dpi=200)
         else:
             plt.show()
 
