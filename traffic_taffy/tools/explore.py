@@ -175,6 +175,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             dissection_level=self.args.dissection_level,
             between_times=self.args.between_times,
             bin_size=self.args.bin_size,
+            pcap_filter=self.args.pcap_filter,
         )
 
         # create the graph data storage
