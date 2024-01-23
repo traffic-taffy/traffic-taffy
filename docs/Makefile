@@ -10,7 +10,11 @@ BUILDDIR      = _build
 
 SUBMODULES    = $(patsubst %.md,%.rst,$(wildcard tools/*.md))
 
-all: html
+all: html copies
+
+.PHONY:
+copies:
+	cp -pr case-study-output _build/html/case-study-output
 
 # build rest files from markdown
 %.rst: %.md cli.template Makefile
