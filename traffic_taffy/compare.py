@@ -1,4 +1,4 @@
-from logging import debug
+from logging import debug, error
 from typing import List
 import datetime as dt
 from datetime import datetime
@@ -185,6 +185,13 @@ class PcapCompare:
             # deal with timestamps within a single file
             reference = list(dissections)[0].data
             timestamps = list(reference.keys())
+            if len(timestamps) <= 2:  # just 0-summary plus a single stamp
+                error(
+                    "the requested pcap data was not long enough to compare against itself"
+                )
+                raise ValueError(
+                    "not enough of a single capture file to time-bin the results"
+                )
             debug(
                 f"found {len(timestamps)} timestamps from {timestamps[2]} to {timestamps[-1]}"
             )
