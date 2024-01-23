@@ -1,13 +1,18 @@
+"""A PCAP Dissector that can a pcap into enumerated pieces."""
+
+from __future__ import annotations
+
 import sys
-from logging import warning, error
 from collections import Counter, defaultdict
-from typing import List
+from logging import error, warning
+
 from rich import print
-from traffic_taffy.dissection import PCAPDissectorLevel, Dissection
+
+from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
 
 
 class PCAPDissector:
-    "loads a pcap file and counts the contents in both time and depth"
+    """loads a pcap file and counts the contents in both time and depth."""
 
     def __init__(
         self,
@@ -18,8 +23,11 @@ class PCAPDissector:
         pcap_filter: str | None = None,
         cache_results: bool = False,
         cache_file_suffix: str = "taffy",
-        ignore_list: list = [],
-    ):
+        ignore_list: list | None = None,
+    ) -> None:
+        """Create a dissector object."""
+        if ignore_list is None:
+            ignore_list = []
         self.pcap_file = pcap_file
         self.dissector_level = dissector_level
         self.pcap_filter = pcap_filter
@@ -35,14 +43,16 @@ class PCAPDissector:
             warning("counting packets only with no binning is unlikely to be helpful")
 
     @property
-    def dissection(self):
+    def dissection(self: PCAPDissector) -> Dissection:
+        """Dissection created by parsing the pcap."""
         return self._dissection
 
     @dissection.setter
-    def dissection(self, new_dissection):
+    def dissection(self: PCAPDissector, new_dissection: Dissection) -> None:
         self._dissection = new_dissection
 
-    def dissection_args(self):
+    def dissection_args(self: PCAPDissector) -> tuple:
+        """Return arguments for creating a Dissection object."""
         return (
             self.pcap_file,
             self.pcap_filter,
@@ -53,16 +63,18 @@ class PCAPDissector:
             set(self.ignore_list),
         )
 
-    def load_from_cache(self, force: bool = False):
+    def load_from_cache(self: PCAPDissector, force: bool = False) -> Dissection:
         if self.cache_results:
             args = self.dissection_args()
             self.dissection = Dissection(*args)
             cached_data = self.dissection.load_from_cache(force=force)
             if cached_data:
                 return cached_data
+            return None
+        return None
 
-    def load(self, force: bool = False) -> dict:
-        "Loads data from a pcap file or its cached results"
+    def load(self: PCAPDissector, force: bool = False) -> dict:
+        """Load data from a pcap file or its cached results."""
         cached_data = self.load_from_cache(force=force)
         if cached_data:
             return cached_data
@@ -87,13 +99,16 @@ class PCAPDissector:
         return self.dissection
 
     def print(
-        self,
-        timestamps: List[int] | None = [0],
+        self: PCAPDissector,
+        timestamps: list[int] | None = None,
         match_string: str | None = None,
         match_value: str | None = None,
         minimum_count: int | None = None,
     ) -> None:
-        for timestamp, key, subkey, value in self.dissection.find_data(
+        """Print the results to the console."""
+        if timestamps is None:
+            timestamps = [0]
+        for _, key, subkey, value in self.dissection.find_data(
             timestamps=timestamps,
             match_string=match_string,
             match_value=match_value,
@@ -103,12 +118,15 @@ class PCAPDissector:
             print(f"{key:<30} {subkey:<30} {value}")
 
     def print_to_fsdb(
-        self,
-        timestamps: List[int] | None = [0],
+        self: PCAPDissector,
+        timestamps: list[int] | None = None,
         match_string: str | None = None,
         match_value: str | None = None,
         minimum_count: int | None = None,
     ) -> None:
+        """Output the results in an FSDB file."""
+        if timestamps is None:
+            timestamps = [0]
         import pyfsdb
 
         fh = pyfsdb.Fsdb(
@@ -116,7 +134,7 @@ class PCAPDissector:
             out_column_names=["key", "subkey", "value"],
             converters={"value": int},
         )
-        for timestamp, key, subkey, value in self.dissection.find_data(
+        for _, key, subkey, value in self.dissection.find_data(
             timestamps=timestamps,
             match_string=match_string,
             match_value=match_value,
@@ -155,7 +173,8 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
             "Ethernet.IP.chksum",
             "Ethernet.IP.UDP.chksum",
             "Ethernet.IP.TCP.chksum",
-            "Ethernet.IPv6.UDP.chksum" "Ethernet.IPv6.fl",
+            "Ethernet.IPv6.UDP.chksum",
+            "Ethernet.IPv6.fl",
             "Ethernet.IP.ICMP.chksum",
             "Ethernet.IP.ICMP.id",
             "Ethernet.IP.ICMP.seq",
@@ -247,6 +266,7 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
 
 
 def check_dissector_level(level: int):
+    """Check that the dissector level is legal."""
     current_dissection_levels = [
         PCAPDissectorLevel.COUNT_ONLY.value,
         PCAPDissectorLevel.THROUGH_IP.value,
@@ -254,12 +274,12 @@ def check_dissector_level(level: int):
     ]
     if level not in current_dissection_levels:
         error(f"currently supported dissection levels: {current_dissection_levels}")
-        exit(1)
+        sys.exit(1)
     return True
 
 
-def pcap_data_merge(d1: dict, d2: dict):
-    "merges counters in deep d2 dict into d1 -- note destructive to d1"
+def pcap_data_merge(d1: dict, d2: dict) -> dict:
+    """Merge counters in deep d2 dict into d1 -- note destructive to d1."""
     for key in d2:
         for subkey in d2[key]:
             if key not in d1:
