@@ -30,6 +30,7 @@ class PCAPDissectMany:
             **self.kwargs,
         )
         pd.load()
+        pd.dissection.pcap_file = "bogus"
         return pd.dissection
 
     def load_pcap(
