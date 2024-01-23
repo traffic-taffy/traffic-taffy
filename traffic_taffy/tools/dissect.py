@@ -1,9 +1,10 @@
 from traffic_taffy.dissector import (
-    PCAPDissector,
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
+    PCAPDissector,
 )
+from traffic_taffy.dissectmany import PCAPDissectMany
 
 
 def main():
@@ -46,6 +47,19 @@ def main():
 
     check_dissector_level(args.dissection_level)
 
+    pdm = PCAPDissectMany(
+        args.input_file,
+        bin_size=args.bin_size,
+        dissector_level=args.dissection_level,
+        maximum_count=args.packet_count,
+        cache_results=args.cache_pcap_results,
+        cache_file_suffix=args.cache_file_suffix,
+        ignore_list=args.ignore_list,
+        pcap_filter=args.filter,
+    )
+    dissection = pdm.load_pcap(
+        args.input_file, maximum_count=args.packet_count, force=args.force
+    )
     pd = PCAPDissector(
         args.input_file,
         bin_size=args.bin_size,
@@ -56,7 +70,7 @@ def main():
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
     )
-    pd.load(force=args.force)
+    pd.dissection = dissection
 
     if args.fsdb:
         pd.print_to_fsdb(
