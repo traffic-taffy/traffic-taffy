@@ -180,10 +180,7 @@ class Dissection:
             if specified and specified != cached:
                 # special checks for certain types of parameters:
 
-                if parameter == "dissector_level":
-                    debug("------------ here 1")
                 if parameter == "dissector_level" and specified <= cached:
-                    debug(f"here with dissector_level {specified} and {cached}")
                     # loading a more detailed cache is ok
                     continue
 
@@ -194,8 +191,8 @@ class Dissection:
                     # TODO: only store basename?
                     continue
 
-                debug(
-                    f"parameter {parameter} doesn't match: specified={specified} != cached={cached}"
+                error(
+                    f"cache parameter '{parameter}' doesn't match: required={specified} != cached={cached}"
                 )
                 ok_to_load = False
 

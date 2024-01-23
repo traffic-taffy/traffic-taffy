@@ -1,6 +1,7 @@
 import os
 from traffic_taffy.dissector_engine.dpkt import DissectionEngineDpkt
 from traffic_taffy.dissection import Dissection
+from traffic_taffy.dissector import PCAPDissector, PCAPDissectorLevel
 
 
 def test_dissector_load():
@@ -12,9 +13,10 @@ def test_dissector_load():
 
 
 def test_dissector_simple_callback():
-    from traffic_taffy.dissector import PCAPDissector, PCAPDissectorLevel
+    base_pcap = "/tmp/dissector-test.pcap"  # doesn't need to exist
+    save_file = base_pcap + ".taffy"
 
-    dpkt_engine = DissectionEngineDpkt("bogus")
+    dpkt_engine = DissectionEngineDpkt(base_pcap)
     dpkt_engine.init_dissection()
     dpkt_engine.dissection.bin_size = 2
     dpkt_engine.dissector_level = PCAPDissectorLevel.COUNT_ONLY
@@ -42,8 +44,6 @@ def test_dissector_simple_callback():
         12: {TOTAL_COUNT: {TOTAL_SUBKEY: 1}},
     }
 
-    base_pcap = "/tmp/dissector-test.pcap"
-    save_file = base_pcap + ".taffy"
     if os.path.exists(save_file):
         os.unlink(save_file)
 
@@ -52,8 +52,7 @@ def test_dissector_simple_callback():
     # create a new one to make sure it's blank
     pd = PCAPDissector(
         base_pcap,
-        dissector_level=PCAPDissectorLevel.DETAILED,
-        bin_size=20,
+        dissector_level=PCAPDissectorLevel.DETAILED.value,
         cache_results=True,
     )
 
