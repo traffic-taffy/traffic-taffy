@@ -86,7 +86,10 @@ def main():
         )
 
         # compare the pcaps
-        reports = pc.compare()
+        try:
+            reports = pc.compare()
+        except ValueError:
+            exit()
 
         if args.fsdb:
             output = Fsdb(None, printing_arguments)
