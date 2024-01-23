@@ -77,6 +77,7 @@ def main():
         interactive=args.interactive,
         by_percentage=args.by_percentage,
         ignore_list=args.ignore_list,
+        pcap_filter=args.pcap_filter,
     )
     pc.graph_it()
 
