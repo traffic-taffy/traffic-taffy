@@ -59,7 +59,6 @@ class PcapCompare:
 
         report = {}
 
-        # TODO: missing key in right_side (major items added)
         keys = set(left_side.keys())
         keys = keys.union(right_side.keys())
         for key in keys:

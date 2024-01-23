@@ -17,7 +17,7 @@ class PCAPDissectMany:
         if not self.maximum_cores:
             # since we're loading multiple files in parallel, reduce the
             # maximum number of cores available to the splitter
-            # TODO: this may undercount due to int flooring()
+            # Note: this may undercount due to int flooring()
             self.maximum_cores = int(multiprocessing.cpu_count() / len(self.pcap_files))
 
     def load_pcap_piece(self, pcap_io_buffer):
@@ -45,7 +45,6 @@ class PCAPDissectMany:
         if dissection:
             return dissection
 
-        # TODO: check caching availability here
         info(f"processing {pcap_file}")
         ps = PCAPParallel(
             pcap_file,

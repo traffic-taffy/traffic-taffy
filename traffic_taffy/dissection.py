@@ -188,7 +188,6 @@ class Dissection:
                     specified
                 ) == os.path.basename(cached):
                     # as long as the basename is ok, we'll assume it's a different path
-                    # TODO: only store basename?
                     continue
 
                 error(
