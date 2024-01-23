@@ -40,10 +40,13 @@ def test_pcap_normalize():
     # comparisons easier
 
     ret_index = ["a=b", "a=b", "a=b", "c=d", "a=b", "c=d", "c=d"]
+    keys = [x.split("=")[0] for x in ret_index]
+    subkeys = [x.split("=")[1] for x in ret_index]
     assert results == {
         "time": [2, 4, 6, 6, 8, 3, 9],
         "index": ret_index,
-        "key": ret_index,
+        "key": keys,
+        "subkey": subkeys,
         "count": [1, 1, 1, 2, 1, 2, 2],
     }
 
@@ -65,35 +68,27 @@ def test_pcap_normalize_with_gaps():
     dissection.data = data
     results = pg.normalize_bins(dissection)
     # TODO: sort these and ensure they're right (again)
+    ret_index = [
+        "a=b",
+        "c=d",
+        "a=b",
+        "a=b",
+        "c=d",
+        "a=b",
+        "c=d",
+        "a=b",
+        "a=b",
+        "c=d",
+        "a=b",
+    ]
+    keys = [x.split("=")[0] for x in ret_index]
+    subkeys = [x.split("=")[1] for x in ret_index]
     assert results == {
         "time": [14, 21, 28, 42, 42, 56, 63, 70, 84, 84, 98],
         "count": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        "index": [
-            "a=b",
-            "c=d",
-            "a=b",
-            "a=b",
-            "c=d",
-            "a=b",
-            "c=d",
-            "a=b",
-            "a=b",
-            "c=d",
-            "a=b",
-        ],
-        "key": [
-            "a=b",
-            "c=d",
-            "a=b",
-            "a=b",
-            "c=d",
-            "a=b",
-            "c=d",
-            "a=b",
-            "a=b",
-            "c=d",
-            "a=b",
-        ],
+        "index": ret_index,
+        "key": keys,
+        "subkey": subkeys,
     }
 
 
