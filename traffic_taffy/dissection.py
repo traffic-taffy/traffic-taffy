@@ -141,7 +141,10 @@ class Dissection:
                         self.data[timestamp] = defaultdict(Counter)
                     elif key not in self.data[timestamp]:
                         self.data[timestamp][key] = Counter()
-                    elif isinstance(self.data[timestamp][key], dict):
+                    elif (
+                        isinstance(self.data[timestamp][key], dict)
+                        and subkey not in self.data[timestamp][key]
+                    ):
                         self.data[timestamp][key][subkey] = 0
                     self.data[timestamp][key][subkey] += other_dissection.data[
                         timestamp
