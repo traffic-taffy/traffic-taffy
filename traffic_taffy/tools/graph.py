@@ -78,6 +78,7 @@ def main():
         by_percentage=args.by_percentage,
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
+        cache_file_suffix=args.cache_file_suffix,
     )
     pc.graph_it()
 
