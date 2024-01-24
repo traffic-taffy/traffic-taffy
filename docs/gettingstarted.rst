@@ -10,6 +10,9 @@ Using *pip* or *pipx*:
 
     pip install traffic-taffy
 
+**Note:** python by default installs programs to $HOME/.local/bin --
+make sure this is in your PATH.
+
 
 Example usage
 -------------
