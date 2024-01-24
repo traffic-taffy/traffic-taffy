@@ -41,6 +41,7 @@ class PcapGraph(PcapGraphData):
         self.ignore_list = ignore_list
         self.by_percentage = by_percentage
         self.pcap_filter = pcap_filter
+        self.cache_file_suffix = cache_file_suffix
 
         super().__init__()
 
