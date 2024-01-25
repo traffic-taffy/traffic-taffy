@@ -56,6 +56,7 @@ def main():
         cache_file_suffix=args.cache_file_suffix,
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
+        layers=args.layers,
     )
     dissection = pdm.load_pcap(
         args.input_file, maximum_count=args.packet_count, force=args.force
@@ -69,6 +70,7 @@ def main():
         cache_file_suffix=args.cache_file_suffix,
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
+        layers=args.layers,
     )
     pd.dissection = dissection
 

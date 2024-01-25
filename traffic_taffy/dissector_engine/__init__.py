@@ -1,6 +1,7 @@
 """Base class for a dissection engine with subclasses overriding load()"""
 
 from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
+from typing import List
 
 
 class DissectionEngine:
@@ -13,6 +14,7 @@ class DissectionEngine:
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         cache_file_suffix: str = "pkl",
         ignore_list: list = [],
+        layers: List[str] | None = None,
     ):
         self.pcap_file = pcap_file
         self.dissector_level = dissector_level
@@ -21,6 +23,7 @@ class DissectionEngine:
         self.pcap_filter = pcap_filter
         self.cache_file_suffix = cache_file_suffix
         self.ignore_list = set(ignore_list)
+        self.layers = layers
 
     def init_dissection(self) -> Dissection:
         self.dissection = Dissection(

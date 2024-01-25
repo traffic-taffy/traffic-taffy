@@ -3,7 +3,7 @@ from traffic_taffy.dissection import Dissection
 from pcap_parallel import PCAPParallel as pcapp
 from logging import warning
 
-from scapy.all import sniff
+from scapy.all import sniff, load_layer
 
 
 class DissectionEngineScapy(DissectionEngine):
@@ -16,6 +16,11 @@ class DissectionEngineScapy(DissectionEngine):
         load_this = self.pcap_file
         if isinstance(self.pcap_file, str):
             load_this = pcapp.open_maybe_compressed(self.pcap_file)
+
+        if self.layers:
+            for layer in self.layers:
+                load_layer(layer)
+
         sniff(
             offline=load_this,
             prn=self.callback,

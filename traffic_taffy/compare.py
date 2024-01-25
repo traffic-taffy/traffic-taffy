@@ -26,6 +26,7 @@ class PcapCompare:
         dissection_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
         between_times: List[int] | None = None,
         ignore_list: List[str] = [],
+        layers: List[str] | None = None,
     ) -> None:
         self.pcap_files = pcap_files
         self.deep = deep
@@ -37,6 +38,7 @@ class PcapCompare:
         self.bin_size = bin_size
         self.cache_file_suffix = cache_file_suffix
         self.ignore_list = ignore_list
+        self.layers = layers
 
     @property
     def pcap_files(self):
@@ -157,6 +159,7 @@ class PcapCompare:
             cache_file_suffix=self.cache_file_suffix,
             dissector_level=self.dissection_level,
             ignore_list=self.ignore_list,
+            layers=self.layers,
         )
         results = pdm.load_all()
         return results

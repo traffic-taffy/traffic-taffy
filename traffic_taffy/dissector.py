@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from collections import Counter, defaultdict
 from logging import error, warning
+from typing import List
 
 from rich import print
 
@@ -24,6 +25,7 @@ class PCAPDissector:
         cache_results: bool = False,
         cache_file_suffix: str = "taffy",
         ignore_list: list | None = None,
+        layers: List[str] | None = None,
     ) -> None:
         """Create a dissector object."""
         if ignore_list is None:
@@ -38,6 +40,7 @@ class PCAPDissector:
             cache_file_suffix = "." + cache_file_suffix
         self.cache_file_suffix = cache_file_suffix
         self.ignore_list = ignore_list
+        self.layers = layers
 
         if dissector_level == PCAPDissectorLevel.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
@@ -61,6 +64,7 @@ class PCAPDissector:
             self.dissector_level,
             self.cache_file_suffix,
             set(self.ignore_list),
+            self.layers,
         )
 
     def load_from_cache(self: PCAPDissector, force: bool = False) -> Dissection:
@@ -203,18 +207,27 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     parser.add_argument(
-        "-C",
-        "--cache-pcap-results",
-        action="store_true",
-        help="Cache and use PCAP results into/from a cache file file",
-    )
-
-    parser.add_argument(
         "-F",
         "--filter",
         default=None,
         type=str,
         help="filter to apply to the pcap file when processing",
+    )
+
+    parser.add_argument(
+        "-L",
+        "--layers",
+        default=[],
+        type=str,
+        nargs="*",
+        help="List of extra layers to load (eg: tls, http, etc)",
+    )
+
+    parser.add_argument(
+        "-C",
+        "--cache-pcap-results",
+        action="store_true",
+        help="Cache and use PCAP results into/from a cache file file",
     )
 
     parser.add_argument(

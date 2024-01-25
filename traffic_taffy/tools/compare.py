@@ -84,6 +84,7 @@ def main():
             bin_size=args.bin_size,
             ignore_list=args.ignore_list,
             pcap_filter=args.filter,
+            layers=args.layers,
         )
 
         # compare the pcaps

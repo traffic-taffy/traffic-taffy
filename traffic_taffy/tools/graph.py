@@ -79,6 +79,7 @@ def main():
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
         cache_file_suffix=args.cache_file_suffix,
+        layers=args.layers,
     )
     pc.graph_it()
 

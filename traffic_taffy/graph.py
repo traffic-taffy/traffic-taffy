@@ -25,6 +25,7 @@ class PcapGraph(PcapGraphData):
         by_percentage: bool = False,
         pcap_filter: str | None = None,
         cache_file_suffix: str = "taffy",
+        layers: List[str] | None = None,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -42,6 +43,7 @@ class PcapGraph(PcapGraphData):
         self.by_percentage = by_percentage
         self.pcap_filter = pcap_filter
         self.cache_file_suffix = cache_file_suffix
+        self.layers = layers
 
         super().__init__()
 
@@ -59,6 +61,7 @@ class PcapGraph(PcapGraphData):
             cache_results=self.cache_pcap_results,
             ignore_list=self.ignore_list,
             cache_file_suffix=self.cache_file_suffix,
+            layers=self.layers,
         )
         self.dissections = pdm.load_all()
         info("done reading pcap files")
