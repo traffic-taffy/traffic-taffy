@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="traffic-taffy",
-    version="0.5.0",
+    version="0.5.1",
     author="Wes Hardaker",
     author_email="opensource@hardakers.net",
     description="A tool for doing differential analysis of pcap files",
@@ -30,11 +30,14 @@ setuptools.setup(
     test_suite="nose.collector",
     tests_require=["nose"],
     install_requires=[
-        "pandas",
-        "rich",
-        "seaborn",
-        "scapy",
+        "PyQt6-Charts",
         "dpkt",
+        "msgpack",
+        "pandas",
         "pcap-parallel",
+        "pyfsdb",
+        "rich",
+        "scapy",
+        "seaborn",
     ],
 )
