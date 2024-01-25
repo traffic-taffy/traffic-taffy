@@ -1,3 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "traffic-taffy"
+dynamic = ["version"]
+description = "A tool for doing differential analysis of pcap files"
+readme = "README.md"
+license = ""
+requires-python = ">=3.7"
+authors = [
+    { name = "Wes Hardaker", email = "opensource@hardakers.net" },
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "dpkt",
+    "msgpack",
+    "pandas",
+    "pcap-parallel",
+    "pyfsdb",
+    "PyQt6-Charts",
+    "rich",
+    "scapy",
+    "seaborn",
+    "cryptography",
+    "pyOpenSSL==22.1.0",
+]
+
+[project.scripts]
+taffy-cache-info = "traffic_taffy.tools.cache_info:main"
+taffy-compare = "traffic_taffy.tools.compare:main"
+taffy-dissect = "traffic_taffy.tools.dissect:main"
+taffy-explorer = "traffic_taffy.tools.explorer:main"
+taffy-graph = "traffic_taffy.tools.graph:main"
+
+[project.urls]
+Homepage = "https://github.com/hardaker/traffic-taffy"
+
+[tool.hatch.version]
+path = "traffic_taffy/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/traffic_taffy",
+]
+
 [tool.ruff]
 ignore = ["E501"]  # long lines
 fixable = ["ALL"]  # gulp
