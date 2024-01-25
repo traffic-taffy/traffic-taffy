@@ -61,7 +61,7 @@ create this graph.
 
 ::
 
-   taffy-graph -d 10 -C -b 1 -m __TOTAL__ -o total-traffic.png *.pcap.xz
+   taffy-graph -d 10 -C -b 1 -m __TOTAL__ -m packets -o total-traffic.png *.pcap.xz
 
 Which produces the following graph:
 
