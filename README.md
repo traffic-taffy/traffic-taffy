@@ -15,4 +15,16 @@ This tool is designed to do just that.
 
 ## Usage
 
-TBD
+See the online [readthedocs
+documentation](https://traffic-taffy.readthedocs.io/).
+
+# Copyright and License
+
+This project is copyrighted by the University of Southern California,
+Information Sciences institute.  It is released under the Apache 2.0
+license.
+
+# Acknowledgments
+
+We greatly thank Comcast for this project was made possible through
+their Comcast Innovation Fund.
