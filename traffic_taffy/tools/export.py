@@ -1,53 +1,55 @@
 """Export the results of a traffic-taffy dissection(s) into an FSDB file."""
 
+import logging
 import sys
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType, Namespace
+
 import pyfsdb
+
+from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import (
+    check_dissector_level,
     dissector_add_parseargs,
     limitor_add_parseargs,
-    check_dissector_level,
 )
-from traffic_taffy.dissectmany import PCAPDissectMany
 
 
-def main():
-    "Export traffic-taffy data into an FSDB file."
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
-    import logging
+def parse_args() -> Namespace:
+    """Parse the command line arguments for taffy-export."""
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        epilog="Exmaple Usage: ",
+    )
 
-    def parse_args():
-        "Parse the command line arguments."
-        parser = ArgumentParser(
-            formatter_class=ArgumentDefaultsHelpFormatter,
-            description=__doc__,
-            epilog="Exmaple Usage: ",
-        )
+    parser.add_argument(
+        "--log-level",
+        "--ll",
+        default="info",
+        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
+    )
 
-        parser.add_argument(
-            "--log-level",
-            "--ll",
-            default="info",
-            help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
-        )
+    dissector_add_parseargs(parser)
+    limitor_add_parseargs(parser)
 
-        dissector_add_parseargs(parser)
-        limitor_add_parseargs(parser)
+    parser.add_argument(
+        "-o",
+        "--output-file",
+        default=sys.stdout,
+        type=FileType("w"),
+        help="Where to store output data",
+    )
 
-        parser.add_argument(
-            "-o",
-            "--output-file",
-            default=sys.stdout,
-            type=FileType("w"),
-            help="Where to store output data",
-        )
+    parser.add_argument("input_files", nargs="*", type=str, help="input pcap file")
 
-        parser.add_argument("input_files", nargs="*", type=str, help="input pcap file")
+    args = parser.parse_args()
+    log_level = args.log_level.upper()
+    logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
+    return args
 
-        args = parser.parse_args()
-        log_level = args.log_level.upper()
-        logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
-        return args
 
+def main() -> None:
+    """Export traffic-taffy data into an FSDB file."""
     args = parse_args()
 
     check_dissector_level(args.dissection_level)
@@ -68,7 +70,7 @@ def main():
     dissection = dissections.pop()
     dissection.merge_all(dissections)
 
-    # TODO: make this optional
+    # TODO(hardaker): make this optional
     del dissection[0]  # delete the summary timestamp
 
     oh = pyfsdb.Fsdb(out_file_handle=args.output_file)
