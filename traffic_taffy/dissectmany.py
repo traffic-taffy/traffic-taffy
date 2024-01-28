@@ -74,7 +74,9 @@ class PCAPDissectMany:
 
         return dissection
 
-    def load_all(self):
+    def load_all(self, return_as_list: bool = False):
         with ProcessPoolExecutor() as executor:
             dissections = executor.map(self.load_pcap, self.pcap_files)
+            if return_as_list:  # convert from generator
+                dissections = [x for x in dissections]
             return dissections
