@@ -1,3 +1,5 @@
+"""Export the results of a traffic-taffy dissection(s) into an FSDB file."""
+
 import sys
 import pyfsdb
 from traffic_taffy.dissector import (
@@ -9,6 +11,7 @@ from traffic_taffy.dissectmany import PCAPDissectMany
 
 
 def main():
+    "Export traffic-taffy data into an FSDB file."
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, FileType
     import logging
 
