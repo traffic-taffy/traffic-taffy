@@ -36,6 +36,7 @@ taffy-compare = "traffic_taffy.tools.compare:main"
 taffy-dissect = "traffic_taffy.tools.dissect:main"
 taffy-explorer = "traffic_taffy.tools.explorer:main"
 taffy-graph = "traffic_taffy.tools.graph:main"
+taffy-export = "traffic_taffy.tools.export:main"
 
 [project.urls]
 Homepage = "https://github.com/hardaker/traffic-taffy"
