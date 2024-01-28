@@ -150,6 +150,10 @@ class Dissection:
                         timestamp
                     ][key][subkey]
 
+    def merge_all(self: Dissection, other_dissections: List[Dissection]) -> None:
+        for dissection in other_dissections:
+            self.merge(dissection)
+
     @staticmethod
     def subdict_producer():
         return defaultdict(Counter)
