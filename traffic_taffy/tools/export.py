@@ -27,13 +27,6 @@ def main():
             help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
         )
 
-        parser.add_argument(
-            "-f",
-            "--fsdb",
-            action="store_true",
-            help="Print results in an FSDB formatted output",
-        )
-
         dissector_add_parseargs(parser)
         limitor_add_parseargs(parser)
 
