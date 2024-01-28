@@ -2,7 +2,6 @@
 An Example Case Study
 *********************
 
-
 The best way of showing how `traffic-taffy` can be used to analyze
 large datasets, we will walk through an example dataset to analyze its
 contents.
@@ -56,17 +55,22 @@ Using a *level 10 dissection* analyzer, with *1 second bin time* we
 can produce a graph of the total traffic to get a feel for the size of
 the event.  use *-C* to enable caching of the results (note: this
 first run will take a while to complete).  We use the special
-identifier *__TOTAL__*  to select just the total number of packets to
-create this graph.
+identifier *__TOTAL__* and sub-identifier *packet* to select just the
+total number of packets to create this graph.
+
+**Note: a first time level 10 analysis will take a long time to run,
+ but future runs will be much faster because we turned on caching (-C)**
 
 ::
 
-   taffy-graph -d 10 -C -b 1 -m __TOTAL__ -m packets -o total-traffic.png *.pcap.xz
+   taffy-graph -d 10 -C -b 1 -m __TOTAL__ -M packet -o total-traffic.png *.pcap.xz
 
 Which produces the following graph:
 
 .. image:: images/total-traffic.png
    :width: 600px
+
+*Bug note: the -M packet shouldn't be required*
 
 Starting with a high-level analysis
 ===================================
@@ -102,11 +106,20 @@ listed as a header above the table section:
   in the "right" PCAP file
 * The delta between the left and right percentages
 
+Narrowing it down to just results before and during the attack
+--------------------------------------------------------------
+
 We look specifically at the output for the file that exists just
 before the start of the attack (*20190907-064359-01587810.lax.pcap.xz*)
 vs the one just within the attack
-(*20190907-064519-01587811.lax.pcap.xz*).  All of these results
-display the following header:
+(*20190907-064519-01587811.lax.pcap.xz*).
+
+::
+   taffy-compare -C -c 10000 -x 5 -t 10 \
+       20190907-064359-01587810.lax.pcap.xz \
+       20190907-064519-01587811.lax.pcap.xz
+
+All of these results display the following header:
 
 .. image:: images/header.png
    :width: 600px
