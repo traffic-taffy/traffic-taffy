@@ -30,7 +30,19 @@ class Output:
 
         # intentionally reversed, as it should default to high to low
         sort_order = not self.output_options.get("reverse_sort", False)
+
         sort_by = self.output_options.get("sort_by", "delta_percentage")
+        sort_by = sort_by.lower().replace(" ", "")  # LC and remove spaces
+
+        sort_map = {
+            "delta%": "delta_percentage",
+            "delta": "delta_absolute",
+            "left": "left_count",
+            "right": "right_count",
+            "left%": "left_percentage",
+            "right%": "right_percentage",
+        }
+        sort_by = sort_map.get(sort_by, sort_by)
 
         for key in sorted(contents):
             reported: bool = False

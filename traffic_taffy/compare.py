@@ -299,4 +299,5 @@ def get_comparison_args(args):
         "only_negative": args.only_negative,
         "top_records": args.top_records,
         "reverse_sort": args.reverse_sort,
+        "sort_by": args.sort_by,
     }

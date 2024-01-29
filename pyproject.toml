@@ -50,6 +50,8 @@ include = [
 ]
 
 [tool.ruff]
-ignore = ["E501"]  # long lines
+# long lines, unsorted imports, too many args
+ignore = ["E501", "I001", "PLR0913"]
 fixable = ["ALL"]  # gulp
 # select = ["ALL"]
+# select = ["A", "ARG", "C4", "COM", "EM", "E", "ANN"]
