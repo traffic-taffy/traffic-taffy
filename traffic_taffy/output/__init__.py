@@ -32,7 +32,9 @@ class Output:
         sort_order = not self.output_options.get("reverse_sort", False)
 
         sort_by = self.output_options.get("sort_by", "delta_percentage")
-        sort_by = sort_by.lower().replace(" ", "")  # LC and remove spaces
+
+        # convert to lower case, and remove spaces and dashes
+        sort_by = sort_by.lower().replace(" ", "").replace("-", "")
 
         sort_map = {
             "delta%": "delta_percentage",
