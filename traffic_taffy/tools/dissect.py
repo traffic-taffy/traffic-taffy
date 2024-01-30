@@ -61,7 +61,7 @@ def main():
     dissection = pdm.load_pcap(
         args.input_file,
         maximum_count=args.packet_count,
-        force_overwrite=args.force,
+        force_overwrite=args.force_overwrite,
         force_load=args.force_load,
     )
     pd = PCAPDissector(
