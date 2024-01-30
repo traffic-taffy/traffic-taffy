@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 from collections import defaultdict, Counter
 from typing import Any
-from logging import debug, info, error
+from logging import debug, info, error, warning
 from enum import Enum
 import msgpack
 import ipaddress
@@ -162,7 +162,9 @@ class Dissection:
     # Loading / Saving
     #
 
-    def load_from_cache(self: Dissection, force: bool = False) -> dict | None:
+    def load_from_cache(
+        self: Dissection, force_overwrite: bool = False, force_load: bool = True
+    ) -> dict | None:
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
         if not os.path.exists(self.pcap_file + self.cache_file_suffix):
@@ -218,9 +220,16 @@ class Dissection:
             self.load_saved_contents(cached_contents)
             return self
 
-        if force:
+        if force_overwrite:
             info("forced continuing without loading the cache")
             return None
+
+        if force_load:
+            warning(
+                f"cache file '{cached_file}' supposedly invalid -- attempting to load anyway"
+            )
+            self.load_saved_contents(cached_contents)
+            return self
 
         error(f"Failed to load cached data for {self.pcap_file} due to differences")
         error("refusing to continue -- remove the cache to recreate it")

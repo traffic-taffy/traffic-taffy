@@ -26,6 +26,8 @@ class PcapGraph(PcapGraphData):
         pcap_filter: str | None = None,
         cache_file_suffix: str = "taffy",
         layers: List[str] | None = None,
+        force_overwrite: bool = False,
+        force_load: bool = False,
     ):
         self.pcap_files = pcap_files
         self.output_file = output_file
@@ -44,6 +46,8 @@ class PcapGraph(PcapGraphData):
         self.pcap_filter = pcap_filter
         self.cache_file_suffix = cache_file_suffix
         self.layers = layers
+        self.force_overwrite = force_overwrite
+        self.force_load = force_load
 
         super().__init__()
 
@@ -62,6 +66,8 @@ class PcapGraph(PcapGraphData):
             ignore_list=self.ignore_list,
             cache_file_suffix=self.cache_file_suffix,
             layers=self.layers,
+            force_overwrite=self.force_overwrite,
+            force_load=self.force_load,
         )
         self.dissections = pdm.load_all()
         info("done reading pcap files")

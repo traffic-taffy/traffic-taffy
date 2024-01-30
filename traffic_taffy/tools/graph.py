@@ -80,6 +80,8 @@ def main():
         pcap_filter=args.filter,
         cache_file_suffix=args.cache_file_suffix,
         layers=args.layers,
+        force_overwrite=args.force_overwrite,
+        force_load=args.force_load,
     )
     pc.graph_it()
 

@@ -24,6 +24,7 @@ class PCAPDissectMany:
         kwargs = copy.copy(self.kwargs)
         # force false for actually loading
         kwargs["cache_results"] = False
+
         pd = PCAPDissector(
             pcap_io_buffer,
             *self.args,
@@ -34,14 +35,22 @@ class PCAPDissectMany:
         return pd.dissection
 
     def load_pcap(
-        self, pcap_file, split_size=None, maximum_count: int = 0, force: bool = False
+        self,
+        pcap_file,
+        split_size=None,
+        maximum_count: int = 0,
+        force_overwrite: bool = False,
+        force_load: bool = False,
     ):
         pd = PCAPDissector(
             pcap_file,
             *self.args,
             **self.kwargs,
         )
-        dissection = pd.load_from_cache(force=force)
+        dissection = pd.load_from_cache(
+            force_overwrite=self.kwargs["force_overwrite"],
+            force_load=self.kwargs["force_load"],
+        )
         if dissection:
             return dissection
 

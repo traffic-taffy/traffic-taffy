@@ -26,6 +26,8 @@ class PCAPDissector:
         cache_file_suffix: str = "taffy",
         ignore_list: list | None = None,
         layers: List[str] | None = None,
+        force_overwrite: bool = False,
+        force_load: bool = False,
     ) -> None:
         """Create a dissector object."""
         if ignore_list is None:
@@ -41,6 +43,8 @@ class PCAPDissector:
         self.cache_file_suffix = cache_file_suffix
         self.ignore_list = ignore_list
         self.layers = layers
+        self.force_overwrite = force_overwrite
+        self.force_load = force_load
 
         if dissector_level == PCAPDissectorLevel.COUNT_ONLY and bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
@@ -67,19 +71,27 @@ class PCAPDissector:
             self.layers,
         )
 
-    def load_from_cache(self: PCAPDissector, force: bool = False) -> Dissection:
+    def load_from_cache(
+        self: PCAPDissector, force_overwrite: bool = False, force_load: bool = False
+    ) -> Dissection:
         if self.cache_results:
             args = self.dissection_args()
             self.dissection = Dissection(*args)
-            cached_data = self.dissection.load_from_cache(force=force)
+            cached_data = self.dissection.load_from_cache(
+                force_overwrite=force_overwrite, force_load=force_load
+            )
             if cached_data:
                 return cached_data
             return None
         return None
 
-    def load(self: PCAPDissector, force: bool = False) -> dict:
+    def load(
+        self: PCAPDissector, force_overwrite: bool = False, force_load: bool = False
+    ) -> dict:
         """Load data from a pcap file or its cached results."""
-        cached_data = self.load_from_cache(force=force)
+        cached_data = self.load_from_cache(
+            force_overwrite=force_overwrite, force_load=force_load
+        )
         if cached_data:
             return cached_data
 
@@ -239,9 +251,15 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     parser.add_argument(
-        "--force",
+        "--force-overwrite",
         action="store_true",
         help="Force continuing with an incompatible cache (and rewriting it)",
+    )
+
+    parser.add_argument(
+        "--force-load",
+        action="store_true",
+        help="Force continuing with an incompatible cache (trying to load it anyway)",
     )
 
     return parser

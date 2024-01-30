@@ -59,7 +59,10 @@ def main():
         layers=args.layers,
     )
     dissection = pdm.load_pcap(
-        args.input_file, maximum_count=args.packet_count, force=args.force
+        args.input_file,
+        maximum_count=args.packet_count,
+        force_overwrite=args.force,
+        force_load=args.force_load,
     )
     pd = PCAPDissector(
         args.input_file,
