@@ -60,9 +60,11 @@ class PcapGraphData:
         datasets = concat(datasets, ignore_index=True)
 
         if calculate_load_fraction:
-            time_groups = datasets.groupby("time")
+            # TODO(hardaker): this only works with single key types
+            # (need to further group by keys and the max of each key being graphed)
+            time_groups = datasets.groupby(["time"])
             datasets["load_fraction"] = (
-                100 * datasets["count"] / time_groups.transform("max")["count"]
+                100 * datasets["count"] / time_groups.transform("sum")["count"]
             )
 
         return datasets
