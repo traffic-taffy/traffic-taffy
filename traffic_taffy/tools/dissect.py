@@ -57,6 +57,8 @@ def main():
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
         layers=args.layers,
+        force_overwrite=args.force_overwrite,
+        force_load=args.force_load,
     )
     dissection = pdm.load_pcap(
         args.input_file,
@@ -74,6 +76,8 @@ def main():
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
         layers=args.layers,
+        force_overwrite=args.force_overwrite,
+        force_load=args.force_load,
     )
     pd.dissection = dissection
 
