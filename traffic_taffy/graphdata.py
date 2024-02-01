@@ -1,29 +1,36 @@
+"""A module for storing/transforming data (frequently to be graphed)."""
+
 import os
 from pandas import DataFrame, to_datetime, concat
+from traffic_taffy.dissection import Dissection
 
 
 class PcapGraphData:
+    """A base class for storing/transforming data (frequently to be graphed)."""
+
     def __init__(self):
+        """Create an instance of a PcapGraphData."""
         self.dissections = []
-        pass
 
     @property
-    def dissections(self):
+    def dissections(self) -> list:
+        """Dissections stored within the PcapGraphData instance."""
         return self._dissections
 
     @dissections.setter
-    def dissections(self, newvalue):
+    def dissections(self, newvalue: list) -> None:
         self._dissections = newvalue
 
-    def normalize_bins(self, dissection):
-        results = {}
-        time_keys = list(dissection.data.keys())
+    def normalize_bins(self, dissection: Dissection) -> dict:
+        """Transform a dissection's list of data into a dictionary."""
+        results: dict = {}
+        time_keys: list = list(dissection.data.keys())
         if time_keys[0] == 0:  # likely always
             time_keys.pop(0)
 
-        results = {"time": [], "count": [], "index": [], "key": [], "subkey": []}
+        results: dict = {"time": [], "count": [], "index": [], "key": [], "subkey": []}
 
-        # TODO: this could likely be made much more efficient and needs hole-filling
+        # TODO(hardaker): this could likely be made much more efficient and needs hole-filling
         for timestamp, key, subkey, value in dissection.find_data(
             timestamps=time_keys,
             match_string=self.match_string,
@@ -40,7 +47,10 @@ class PcapGraphData:
 
         return results
 
-    def get_dataframe(self, merge=False, calculate_load_fraction=False):
+    def get_dataframe(
+        self, merge: bool = False, calculate_load_fraction: bool = False
+    ) -> DataFrame:
+        """Create a pandas dataframe from stored dissections."""
         datasets = []
         if merge:
             dissection = next(self.dissections).clone()
