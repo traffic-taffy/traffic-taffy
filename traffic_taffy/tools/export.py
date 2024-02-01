@@ -19,7 +19,7 @@ def parse_args() -> Namespace:
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: ",
+        epilog="Example Usage: taffy-export -C -m IP.UDP.sport file.pcap",
     )
 
     parser.add_argument(

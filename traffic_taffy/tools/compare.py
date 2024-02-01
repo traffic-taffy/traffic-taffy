@@ -19,7 +19,7 @@ def parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: ",
+        epilog="Example Usage: taffy-compare -C file1.pcap file2.pcap",
     )
 
     output_options = parser.add_argument_group("Output format")

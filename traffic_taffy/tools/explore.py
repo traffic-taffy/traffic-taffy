@@ -641,7 +641,7 @@ def parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: ",
+        epilog="Example Usage: taffy-explore -C file1.pcap file2.pcap",
     )
 
     limitor_parser = limitor_add_parseargs(parser)

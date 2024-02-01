@@ -11,7 +11,7 @@ def parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: ",
+        epilog="Example Usage: taffy-cache-info something.taffy",
     )
 
     parser.add_argument(

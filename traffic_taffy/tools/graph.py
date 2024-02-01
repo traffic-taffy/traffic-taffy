@@ -15,7 +15,7 @@ def parse_args():
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Exmaple Usage: ",
+        epilog="Example Usage: taffy-graph -C -m TOTAL -M packet -o graph.png file.pcap",
     )
 
     parser.add_argument(

@@ -16,7 +16,7 @@ def main():
         parser = ArgumentParser(
             formatter_class=ArgumentDefaultsHelpFormatter,
             description=__doc__,
-            epilog="Exmaple Usage: ",
+            epilog="Example Usage: taffy-dissect -C -d 10 -n 10000 file.pcap",
         )
 
         parser.add_argument(
