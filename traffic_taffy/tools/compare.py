@@ -93,6 +93,8 @@ def main():
             ignore_list=args.ignore_list,
             pcap_filter=args.filter,
             layers=args.layers,
+            force_load=args.force_load,
+            force_overwrite=args.force_overwrite,
         )
 
         # compare the pcaps
