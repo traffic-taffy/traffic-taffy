@@ -40,7 +40,7 @@ def parse_args() -> Namespace:
         help="Where to store output data",
     )
 
-    parser.add_argument("input_files", nargs="*", type=str, help="input pcap file")
+    parser.add_argument("input_pcaps", nargs="*", type=str, help="input pcap file")
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -55,7 +55,7 @@ def main() -> None:
     check_dissector_level(args.dissection_level)
 
     pdm = PCAPDissectMany(
-        args.input_files,
+        args.input_pcaps,
         bin_size=args.bin_size,
         dissector_level=args.dissection_level,
         maximum_count=args.packet_count,

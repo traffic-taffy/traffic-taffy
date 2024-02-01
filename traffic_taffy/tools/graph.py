@@ -50,7 +50,7 @@ def parse_args():
     dissector_add_parseargs(parser)
     limitor_add_parseargs(parser)
 
-    parser.add_argument("input_file", type=str, help="PCAP file to graph", nargs="+")
+    parser.add_argument("input_pcaps", type=str, help="PCAP file to graph", nargs="+")
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -65,7 +65,7 @@ def main():
     check_dissector_level(args.dissection_level)
 
     pc = PcapGraph(
-        args.input_file,
+        args.input_pcaps,
         args.output_file,
         maximum_count=args.packet_count,
         minimum_count=args.minimum_count,

@@ -36,7 +36,7 @@ def main():
         dissector_add_parseargs(parser)
         limitor_add_parseargs(parser)
 
-        parser.add_argument("input_file", type=str, help="input pcap file")
+        parser.add_argument("input_pcap", type=str, help="input pcap file")
 
         args = parser.parse_args()
         log_level = args.log_level.upper()
@@ -48,7 +48,7 @@ def main():
     check_dissector_level(args.dissection_level)
 
     pdm = PCAPDissectMany(
-        args.input_file,
+        args.input_pcap,
         bin_size=args.bin_size,
         dissector_level=args.dissection_level,
         maximum_count=args.packet_count,
@@ -61,13 +61,13 @@ def main():
         force_load=args.force_load,
     )
     dissection = pdm.load_pcap(
-        args.input_file,
+        args.input_pcap,
         maximum_count=args.packet_count,
         force_overwrite=args.force_overwrite,
         force_load=args.force_load,
     )
     pd = PCAPDissector(
-        args.input_file,
+        args.input_pcap,
         bin_size=args.bin_size,
         dissector_level=args.dissection_level,
         maximum_count=args.packet_count,
