@@ -9,7 +9,7 @@
 project = "traffic-taffy"
 copyright = "2024, USC/ISI"
 author = "Wes Hardaker"
-release = "0.5.2"
+release = "0.5.3"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
