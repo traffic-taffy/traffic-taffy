@@ -71,7 +71,7 @@ def main() -> None:
     dissection.merge_all(dissections)
 
     # TODO(hardaker): make this optional
-    del dissection[0]  # delete the summary timestamp
+    del dissection.data[0]  # delete the summary timestamp
 
     oh = pyfsdb.Fsdb(out_file_handle=args.output_file)
     oh.out_column_names = ["timestamp", "key", "value", "count"]
