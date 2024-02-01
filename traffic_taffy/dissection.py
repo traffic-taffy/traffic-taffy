@@ -39,7 +39,7 @@ class Dissection:
         bin_size: int = 0,
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         cache_file_suffix: str = "taffy",
-        ignore_list: list = [],
+        ignore_list: list | None = None,
         *args: list,
         **kwargs: dict,
     ) -> Dissection:
@@ -52,7 +52,7 @@ class Dissection:
         self.dissector_level = dissector_level
         self.maximum_count = maximum_count
         self.pcap_filter = pcap_filter
-        self.ignore_list = ignore_list
+        self.ignore_list = ignore_list or []
 
         self.parameters = [
             "pcap_file",
@@ -81,10 +81,11 @@ class Dissection:
 
     @property
     def timestamp(self) -> int:
+        """Timestamp currently being worked on."""
         return self._timestamp
 
     @timestamp.setter
-    def timestamp(self: Dissection, newval):
+    def timestamp(self: Dissection, newval: int) -> None:
         self._timestamp = newval
 
     @property
@@ -93,19 +94,19 @@ class Dissection:
         return self._data
 
     @data.setter
-    def data(self: Dissection, newval):
+    def data(self: Dissection, newval: dict) -> None:
         self._data = newval
 
     @property
-    def pcap_file(self: Dissection):
-        """The PCAP file name of this dissection"""
+    def pcap_file(self: Dissection) -> str:
+        """The PCAP file name of this dissection."""
         return self._pcap_file
 
     @pcap_file.setter
-    def pcap_file(self: Dissection, newval):
+    def pcap_file(self: Dissection, newval: str) -> None:
         self._pcap_file = newval
 
-    def incr(self: Dissection, key: str, value: Any, count: int = 1):
+    def incr(self: Dissection, key: str, value: Any, count: int = 1) -> None:
         """Increase one field within the counter."""
         # always save a total count at the zero bin
         # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
@@ -117,8 +118,8 @@ class Dissection:
 
     def calculate_metadata(self: Dissection) -> None:
         """Calculate thing like the number of value entries within each key/subkey."""
-        # TODO: do we do this with or without key and value matches?
-        for timestamp in self.data.keys():
+        # TODO(hardaker): do we do this with or without key and value matches?
+        for timestamp in self.data:
             for key in self.data[timestamp]:
                 if self.WIDTH_SUBKEY in self.data[timestamp][key]:
                     # make sure to avoid counting itself
@@ -131,12 +132,12 @@ class Dissection:
                     # don't count the NEW subkey either
                     self.data[timestamp][key] -= 1
 
-    def merge(self: Dissection, other_dissection) -> None:
-        "merges counters in two dissections into self -- note destructive to self"
+    def merge(self: Dissection, other_dissection: Dissection) -> None:
+        """Merge counters from another dissection into self."""
         for timestamp in other_dissection.data:
             for key in other_dissection.data[timestamp]:
                 for subkey in other_dissection.data[timestamp][key]:
-                    # TODO: this is horribly inefficient
+                    # TODO(hardaker): this is horribly inefficient
                     if timestamp not in self.data:
                         self.data[timestamp] = defaultdict(Counter)
                     elif key not in self.data[timestamp]:
@@ -151,11 +152,13 @@ class Dissection:
                     ][key][subkey]
 
     def merge_all(self: Dissection, other_dissections: List[Dissection]) -> None:
+        """Merge multiple dissection contents into this one."""
         for dissection in other_dissections:
             self.merge(dissection)
 
     @staticmethod
-    def subdict_producer():
+    def subdict_producer() -> defaultdict:
+        """Create a factory for creating a producer."""
         return defaultdict(Counter)
 
     #
@@ -165,6 +168,7 @@ class Dissection:
     def load_from_cache(
         self: Dissection, force_overwrite: bool = False, force_load: bool = True
     ) -> dict | None:
+        """Load the dissection data from a cache."""
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
         if not os.path.exists(self.pcap_file + self.cache_file_suffix):
@@ -233,19 +237,18 @@ class Dissection:
 
         error(f"Failed to load cached data for {self.pcap_file} due to differences")
         error("refusing to continue -- remove the cache to recreate it")
-        raise ValueError(
-            "INCOMPATIBLE CACHE: remove the cache or don't use it to continue"
-        )
+        msg = "INCOMPATIBLE CACHE: remove the cache or don't use it to continue"
+        raise ValueError(msg)
 
     def save_to_cache(self: Dissection, where: str | None = None) -> None:
+        """Save the dissection contents to a cache."""
         if not where and self.pcap_file and isinstance(self.pcap_file, str):
             where = self.pcap_file + self.cache_file_suffix
         if where:
             self.save(where)
 
     def save(self: Dissection, where: str) -> None:
-        "Saves a generated dissection to a msgpack file"
-
+        """Saves a generated dissection to a msgpack file."""
         # wrap the report in a version header
         versioned_cache = {
             self.DISSECTION_KEY: self.DISSECTION_VERSION,
@@ -256,7 +259,7 @@ class Dissection:
 
         for parameter in self.parameters:
             versioned_cache["parameters"][parameter] = getattr(self, parameter)
-            # TODO: fix this hack
+            # TODO(hardaker): fix this hack
 
             # basically, bin_size of 0 is 1...  but it may be faster
             # to leave it at zero to avoid the bin_size math of 1,
@@ -280,9 +283,11 @@ class Dissection:
 
         # save it
         info(f"caching PCAP data to '{where}'")
-        msgpack.dump(versioned_cache, open(where, "wb"))
+        with open(where, "wb") as saveto:
+            msgpack.dump(versioned_cache, saveto)
 
-    def load_saved_contents(self: Dissection, versioned_cache):
+    def load_saved_contents(self: Dissection, versioned_cache: dict):
+        """Set parameters from the cache."""
         # set the local parameters from the cache
         for parameter in self.parameters:
             setattr(self, parameter, versioned_cache["parameters"][parameter])
@@ -291,8 +296,9 @@ class Dissection:
         self.data = versioned_cache["dissection"]
 
     def load_saved(self: Dissection, where: str, dont_overwrite: bool = False) -> dict:
-        "Loads a previous saved report from a file instead of re-parsing pcaps"
-        contents = msgpack.load(open(where, "rb"), strict_map_key=False)
+        """Load a saved report from a cache file."""
+        with open(where, "rb") as cache_file:
+            contents = msgpack.load(cache_file, strict_map_key=False)
 
         # convert the ignore list to a set (msgpack doesn't do sets)
         contents["parameters"]["ignore_list"] = set(
@@ -320,14 +326,15 @@ class Dissection:
         match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
-    ):
+    ) -> list:
+        """Search through data for appropriate records."""
         data = self.data
 
         if not timestamps:
             timestamps = data.keys()
 
         # find timestamps/key values with at least one item above count
-        # TODO: we should really use pandas for this
+        # TODO(hardaker): we should really use pandas for this
         usable = defaultdict(set)
         for timestamp in timestamps:
             for key in data[timestamp]:
@@ -345,7 +352,7 @@ class Dissection:
                     ):
                         usable[key].add(subkey)
 
-        # TODO: move the timestamp inside the other fors for faster
+        # TODO(hardaker): move the timestamp inside the other fors for faster
         # processing of skipped key/subkeys
         for timestamp in timestamps:
             for key in sorted(data[timestamp]):
@@ -370,10 +377,11 @@ class Dissection:
 
     @staticmethod
     def make_printable(value_type: str, value: Any) -> str:
+        """Turn a value into a printable version if needed."""
         try:
             if isinstance(value, bytes):
-                if value_type in Dissection.display_transformers:
-                    value = str(Dissection.display_transformers[value_type](value))
+                if value_type in Dissection.DISPLAY_TRANSFORMERS:
+                    value = str(Dissection.DISPLAY_TRANSFORMERS[value_type](value))
                 else:
                     value = "0x" + value.hex()
             else:
@@ -388,16 +396,17 @@ class Dissection:
         return value
 
     @staticmethod
-    def print_mac_address(value):
-        "Converts bytes to ethernet mac style address"
+    def print_mac_address(value: bytes) -> str:
+        """Convert bytes to ethernet mac style address."""
 
-        # TODO: certainly inefficient
-        def two_hex(value):
+        # TODO(hardaker): certainly inefficient
+        def two_hex(value: bytes) -> str:
             return f"{value:02x}"
 
         return ":".join(map(two_hex, value))
 
-    display_transformers = {
+    # has to go at the end to pick up the above function names
+    DISPLAY_TRANSFORMERS: dict = {
         "Ethernet.IP.src": ipaddress.ip_address,
         "Ethernet.IP.dst": ipaddress.ip_address,
         "Ethernet.IP6.src": ipaddress.ip_address,

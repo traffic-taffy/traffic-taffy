@@ -54,9 +54,19 @@ include = [
 ignore = ["E501", "I001", "PLR0913", "ANN101", "ANN204",
 # allow boolean typed position arguments/defaults
 "FBT001", "FBT002",
-# don't require issues
+# don't require issues,
 "TD003",
+# trailing commas is often wrong because of black formatting
+"COM812",
+# generic typing (list vs List) doesn't work until python 3.8
+"UP006",
+# Logging statement uses f-string
+"G004",
+# complaining about simple if/else
+"SIM108",
+# allow blind exceptions
+"BLE001"
 ]
 fixable = ["ALL"]  # gulp
-select = ["ALL"]
+# select = ["ALL"]
 # select = ["A", "ARG", "C4", "COM", "EM", "E", "ANN"]
