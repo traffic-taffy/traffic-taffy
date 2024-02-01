@@ -48,8 +48,8 @@ class PCAPDissectMany:
             **self.kwargs,
         )
         dissection = pd.load_from_cache(
-            force_overwrite=self.kwargs["force_overwrite"],
-            force_load=self.kwargs["force_load"],
+            force_overwrite=self.kwargs.get("force_overwrite", False),
+            force_load=self.kwargs.get("force_load", False),
         )
         if dissection:
             return dissection
