@@ -64,6 +64,8 @@ def main() -> None:
         ignore_list=args.ignore_list,
         pcap_filter=args.filter,
         layers=args.layers,
+        force_load=args.force_load,
+        force_overwrite=args.force_overwrite,
     )
 
     dissections = pdm.load_all(return_as_list=True)
