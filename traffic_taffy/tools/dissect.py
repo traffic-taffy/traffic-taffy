@@ -36,7 +36,7 @@ def main():
         dissector_add_parseargs(parser)
         limitor_add_parseargs(parser)
 
-        parser.add_argument("input_pcap", type=str, help="input pcap file")
+        parser.add_argument("input_pcaps", type=str, help="input pcap file", nargs="*")
 
         args = parser.parse_args()
         log_level = args.log_level.upper()
@@ -47,8 +47,9 @@ def main():
 
     check_dissector_level(args.dissection_level)
 
+    # load all the files
     pdm = PCAPDissectMany(
-        args.input_pcap,
+        args.input_pcaps,
         bin_size=args.bin_size,
         dissector_level=args.dissection_level,
         maximum_count=args.packet_count,
@@ -60,14 +61,15 @@ def main():
         force_overwrite=args.force_overwrite,
         force_load=args.force_load,
     )
-    dissection = pdm.load_pcap(
-        args.input_pcap,
-        maximum_count=args.packet_count,
-        force_overwrite=args.force_overwrite,
-        force_load=args.force_load,
-    )
+    dissections = pdm.load_all(True)
+
+    # merge them into a single dissection
+    dissection = dissections.pop(0)
+    dissection.merge_all(dissections)
+
+    # put the dissection into a dissector for reporting
     pd = PCAPDissector(
-        args.input_pcap,
+        args.input_pcaps[0],
         bin_size=args.bin_size,
         dissector_level=args.dissection_level,
         maximum_count=args.packet_count,
@@ -81,6 +83,7 @@ def main():
     )
     pd.dissection = dissection
 
+    # output as requested
     if args.fsdb:
         pd.print_to_fsdb(
             timestamps=[0],
