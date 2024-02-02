@@ -349,6 +349,8 @@ class Dissection:
     ) -> list:
         """Search through data for appropriate records."""
         data = self.data
+        if match_value and not isinstance(match_value, list):
+            match_value = [match_value]
 
         if not timestamps:
             timestamps = data.keys()
@@ -390,7 +392,7 @@ class Dissection:
                         subkey = Dissection.make_printable(key, subkey)
                         count = Dissection.make_printable(None, count)
 
-                    if match_value and match_value not in subkey:
+                    if match_value and not any(x in subkey for x in match_value):
                         continue
 
                     yield (timestamp, key, subkey, count)

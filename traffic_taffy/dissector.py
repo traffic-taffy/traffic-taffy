@@ -282,6 +282,7 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
         "--match-value",
         default=None,
         type=str,
+        nargs="*",
         help="Only report on data with this substring in the packet value field",
     )
 
