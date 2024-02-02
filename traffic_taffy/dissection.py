@@ -283,6 +283,26 @@ class Dissection:
 
         # save it
         info(f"caching PCAP data to '{where}'")
+
+        # convert int keys that are too large
+        for timestamp in versioned_cache["dissection"]:
+            for key in versioned_cache["dissection"][timestamp]:
+                versioned_cache["dissection"][timestamp][key] = dict(
+                    versioned_cache["dissection"][timestamp][key]
+                )
+                # sigh -- msgpack can't handle large int based dictionary keys
+                fix_list = []
+                for subkey in versioned_cache["dissection"][timestamp][key]:
+                    if isinstance(subkey, int) and subkey > 2**32 - 1:
+                        info(f"converting {key} {subkey}")
+                        fix_list.append(subkey)
+
+                for subkey in fix_list:
+                    versioned_cache["dissection"][timestamp][key][
+                        str(subkey)
+                    ] = versioned_cache["dissection"][timestamp][key][subkey]
+                    del versioned_cache["dissection"][timestamp][key][subkey]
+
         with open(where, "wb") as saveto:
             msgpack.dump(versioned_cache, saveto)
 
