@@ -294,7 +294,7 @@ class Dissection:
                 fix_list = []
                 for subkey in versioned_cache["dissection"][timestamp][key]:
                     if isinstance(subkey, int) and subkey > 2**32 - 1:
-                        info(f"converting {key} {subkey}")
+                        debug(f"converting too large int key {key} {subkey}")
                         fix_list.append(subkey)
 
                 for subkey in fix_list:
