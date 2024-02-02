@@ -33,6 +33,12 @@ def main():
             help="Print results in an FSDB formatted output",
         )
 
+        parser.add_argument(
+            "--dont-fork",
+            action="store_true",
+            help="Do not fork into multiple processes per file (still fork per file)",
+        )
+
         dissector_add_parseargs(parser)
         limitor_add_parseargs(parser)
 
@@ -61,7 +67,7 @@ def main():
         force_overwrite=args.force_overwrite,
         force_load=args.force_load,
     )
-    dissections = pdm.load_all(True)
+    dissections = pdm.load_all(True, dont_fork=args.dont_fork)
 
     # merge them into a single dissection
     dissection = dissections.pop(0)

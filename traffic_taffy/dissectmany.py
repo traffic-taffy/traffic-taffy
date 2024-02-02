@@ -83,7 +83,16 @@ class PCAPDissectMany:
 
         return dissection
 
-    def load_all(self, return_as_list: bool = False):
+    def load_all(self, return_as_list: bool = False, dont_fork: bool = False):
+        if dont_fork:
+            # handle each one individually -- typically for inserting debugging stops
+            dissections = []
+            for pcap_file in self.pcap_files:
+                dissection = self.load_pcap(pcap_file)
+                dissections.append(dissection)
+            return dissections
+
+        # use all available resources
         with ProcessPoolExecutor() as executor:
             dissections = executor.map(self.load_pcap, self.pcap_files)
             if return_as_list:  # convert from generator
