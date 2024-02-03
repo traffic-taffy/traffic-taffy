@@ -27,6 +27,8 @@ class PcapCompare:
         between_times: List[int] | None = None,
         ignore_list: List[str] = [],
         layers: List[str] | None = None,
+        force_load: bool = False,
+        force_overwrite: bool = False,
     ) -> None:
         self.pcap_files = pcap_files
         self.deep = deep
@@ -39,6 +41,8 @@ class PcapCompare:
         self.cache_file_suffix = cache_file_suffix
         self.ignore_list = ignore_list
         self.layers = layers
+        self.force_overwrite = force_overwrite
+        self.force_load = force_load
 
     @property
     def pcap_files(self):
@@ -160,6 +164,8 @@ class PcapCompare:
             dissector_level=self.dissection_level,
             ignore_list=self.ignore_list,
             layers=self.layers,
+            force_load=self.force_load,
+            force_overwrite=self.force_overwrite,
         )
         results = pdm.load_all()
         return results
