@@ -1,13 +1,14 @@
-"""Loads the cached data for a file to display the results about it"""
+"""Loads the cached data for a file to display the results about it."""
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from pathlib import Path
 from rich import print
 import logging
 import msgpack
 
 
 def parse_args() -> Namespace:
-    "Parse the command line arguments."
+    """Parse the command line arguments."""
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
@@ -34,15 +35,17 @@ def parse_args() -> Namespace:
     return args
 
 
-def main():
+def main() -> None:
+    """Run taffy-cache-info."""
     args = parse_args()
 
     for cache_file in args.cache_file:
         print(f"===== {cache_file} ======")
-        contents = msgpack.load(open(cache_file, "rb"), strict_map_key=False)
+        with Path(cache_file).open("rb") as fh:
+            contents = msgpack.load(fh, strict_map_key=False)
 
         # play the major keys
-        for key in contents.keys():
+        for key in contents:
             if key != "dissection" and key != "parameters":
                 print(f"{key:<20} {contents[key]}")
 

@@ -1,3 +1,5 @@
+"""A graphical PCAP comparison and graphing tool."""
+
 import sys
 from os.path import basename
 import logging
@@ -38,27 +40,31 @@ from PyQt6.QtWidgets import (
     QMenu,
     QCheckBox,
 )
+from typing import Optional
 
 
 class CallWithParameter:
-    def __init__(self, function, *args):
+    """A callable object that takes parameters."""
+
+    def __init__(self, function: callable, *args: list):
+        """Create a Callable object."""
         self.parameters = args
         self.function = function
 
     def __call__(self):
+        """Call a registered callback routine and its parameters."""
         self.function(*self.parameters)
 
 
 class TaffyExplorer(QDialog, PcapGraphData):
-    """Explore PCAP files by comparison slices"""
+    """Explore PCAP files by comparison slices."""
 
     def testplot(self, area):
         print(area)
-        # self.traffic_graph.setPlotArea(area)
-        # self.detail_graph.setPlotArea(area)
         self.traffic_graph.zoomIn(area)
 
     def __init__(self, args):
+        """Create a TaffyExplorer UI."""
         super().__init__()
 
         self.mainLayout = QVBoxLayout()
@@ -70,7 +76,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.detail_graph_view.setRubberBand(QChartView.RubberBand.RectangleRubberBand)
         self.detail_graph.setMinimumSize(1000, 400)
         # this is the screen space not the zoom setting
-        # self.detail_graph.plotAreaChanged.connect(self.testplot)
         self.mainLayout.addWidget(self.detail_graph_view)
 
         # create the mini graph next
@@ -105,10 +110,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.quit_button = QPushButton("Quit")
         self.mainLayout.addWidget(self.quit_button)
         self.quit_button.clicked.connect(self.quit)
-
-        # self.tree = QTreeWidget()
-        # self.tree.setHeaderHidden(True)
-        # self.tree.setIndentation(0)
 
         self.args = args
 
@@ -145,7 +146,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.chart_column = "count"
 
     def quit(self):
-        exit()
+        sys.exit()
 
     def create_initial_comparison_report_arguments(self):
         if len(self.dissections) == 1:
@@ -196,7 +197,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         chart: QChart,
         match_string: str,
         match_value: str | None = None,
-        chart_column: str = None,
+        chart_column: Optional[str] = None,
     ):
         self.match_string = match_string
         self.match_value = match_value
@@ -230,8 +231,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
             series.setName(df["subkey"][index])
             series.setOpacity(0.5)
             series_set.append(series)
-            # axisx = QDateTimeAxis()
-            # chart.setAxisX()
 
         if len(df) == 0:
             return  # TODO: handle displaying an error
@@ -247,8 +246,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
             first_time = timestamps[1]  # skip the leading 0 timestamp
             last_time = timestamps[-1]
 
-            # maxv = max(dict(dissection.data.values()))
-
             # tick-height:
             tick_height = int(0.01 * maxv)
 
@@ -261,9 +258,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
             series.setName(dissection.pcap_file)
             series.setColor(grey)
             series_set.append(series)
-            # chart.addSeries(series)
-            # series.attachAxis(axisX)
-            # series.attachAxis(axisY)
 
             # beginning end markers
             series = QLineSeries()
@@ -273,11 +267,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             series.setMarkerSize(20)
             triangle = QImage("images/grey_triangle.png").scaled(10, 10)
             series.setLightMarker(triangle)
-            # series.setColor(grey)
             series_set.append(series)
-            # chart.addSeries(series)
-            # series.attachAxis(axisX)
-            # series.attachAxis(axisY)
 
         # we always add the real data last to keep file name coloring consistent
 
@@ -286,7 +276,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
         self.axisX = QDateTimeAxis()
         self.axisX.setTickCount(5)
         self.axisX.setFormat("yyyy-MM-dd\nhh:mm")
-        # self.axisX.setLabelsAngle(-45)
         chart.addAxis(self.axisX, Qt.AlignmentFlag.AlignBottom)
 
         if self.axisY:
@@ -301,16 +290,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
             chart.addSeries(series)
             series.attachAxis(self.axisX)
             series.attachAxis(self.axisY)
-
-        # series = QLineSeries()
-        # series.append(first_time, 0)
-        # series.append(first_time, maxv)
-        # series.attachAxis(axisX)
-        # series.attachAxis(axisY)
-        # chart.addSeries(series)
-
-        # chart.createDefaultAxes()
-        # chart.zoomIn(QRectF(QPointF(first_time/1000.0, maxv), QPointF(last_time/1000.0, 0)))
 
         self.saved_df = df
         self.minimum_count = tmpv
@@ -376,20 +355,14 @@ class TaffyExplorer(QDialog, PcapGraphData):
     # def clearGridLayout(layout, deleteWidgets: bool = True):
 
     #     for widget in layout.something():
-    #         layout.removeWidget(widget)
-    #         widget.deletLater()
 
     # while (QLayoutItem* item = layout->takeAt(0))
 
     #     if (deleteWidgets)
-    #     {
     #         if (QWidget* widget = item->widget())
     #             widget->deleteLater();
-    #     }
     #     if (QLayout* childLayout = item->layout())
-    #         clearLayout(childLayout, deleteWidgets);
     #     delete item;
-    # }
 
     def set_left_dissection(self, action):
         self.left_w.setText(basename(action.text()))
@@ -517,8 +490,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
 
     def update_report(self):
         # TODO: less duplication with this and compare:print_report()
-        "fills in the grid table showing the differences from a saved report"
-
+        "Fills in the grid table showing the differences from a saved report."
         old_widget = self.comparison_panel_w
 
         # add a new one
@@ -592,7 +564,6 @@ class TaffyExplorer(QDialog, PcapGraphData):
                 debug(f"  adding {subkey}")
 
                 subkey_button = QPushButton("    " + subkey)
-                # subkey_button.setAlignment(Qt.AlignmentFlag.AlignLeft)
                 subkey_button.clicked.connect(
                     CallWithParameter(self.update_detail_chart, key, subkey)
                 )
