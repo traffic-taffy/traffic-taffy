@@ -106,6 +106,7 @@ class DissectionEngineDpkt(DissectionEngine):
                     if udp and (udp.sport == 53 or udp.dport == 53):
                         try:
                             dns = dpkt.dns.DNS(udp.data)
+                            prefix += "UDP.DNS."
                         except dpkt.dpkt.UnpackError:
                             self.incr(
                                 dissection, prefix + "UDP.DNS.unparsable", "PARSE_ERROR"
@@ -113,82 +114,64 @@ class DissectionEngineDpkt(DissectionEngine):
                             debug("DPKT unparsable DNS data")
                             return
 
-                        self.incr(dissection, prefix + "UDP.DNS.id", dns.id)
-                        self.incr(dissection, prefix + "UDP.DNS.opcode", dns.op)
-                        # self.incr(dissection, prefix + "UDP.DNS.qd", dns.qd)
-                        # self.incr(dissection, prefix + "UDP.DNS.an", dns.an)
-                        # self.incr(dissection, prefix + "UDP.DNS.ns", dns.ns)
-                        # self.incr(dissection, prefix + "UDP.DNS.ar", dns.ar)
+                    if tcp and (tcp.sport == 53 or tcp.dport == 53):
+                        try:
+                            dns = dpkt.dns.DNS(tcp.data)
+                            prefix += "TCP.DNS."
+                        except dpkt.dpkt.UnpackError:
+                            self.incr(
+                                dissection, prefix + "TCP.DNS.unparsable", "PARSE_ERROR"
+                            )
+                            debug("DPKT unparsable DNS data")
+                            return
+
+                    if dns:
+                        self.incr(dissection, prefix + "id", dns.id)
+                        self.incr(dissection, prefix + "opcode", dns.op)
+                        # self.incr(dissection, prefix + "qd", dns.qd)
+                        # self.incr(dissection, prefix + "an", dns.an)
+                        # self.incr(dissection, prefix + "ns", dns.ns)
+                        # self.incr(dissection, prefix + "ar", dns.ar)
 
                         # flags and headers
-                        self.incr(dissection, prefix + "UDP.DNS.rcode", dns.rcode)
-                        self.incr(dissection, prefix + "UDP.DNS.ra", dns.ra)
-                        self.incr(dissection, prefix + "UDP.DNS.rd", dns.rd)
-                        self.incr(dissection, prefix + "UDP.DNS.tc", dns.tc)
-                        self.incr(dissection, prefix + "UDP.DNS.z", dns.zero)
-                        self.incr(dissection, prefix + "UDP.DNS.opcode", dns.opcode)
-                        self.incr(dissection, prefix + "UDP.DNS.qr", dns.qr)
-                        self.incr(dissection, prefix + "UDP.DNS.aa", dns.aa)
-                        # self.incr(dissection, prefix + "UDP.DNS.ad", dns.ad)
+                        self.incr(dissection, prefix + "rcode", dns.rcode)
+                        self.incr(dissection, prefix + "ra", dns.ra)
+                        self.incr(dissection, prefix + "rd", dns.rd)
+                        self.incr(dissection, prefix + "tc", dns.tc)
+                        self.incr(dissection, prefix + "z", dns.zero)
+                        self.incr(dissection, prefix + "opcode", dns.opcode)
+                        self.incr(dissection, prefix + "qr", dns.qr)
+                        self.incr(dissection, prefix + "aa", dns.aa)
+                        # self.incr(dissection, prefix + "ad", dns.ad)
 
                         # record counts
-                        self.incr(dissection, prefix + "UDP.DNS.qdcount", len(dns.qd))
-                        self.incr(dissection, prefix + "UDP.DNS.ancount", len(dns.an))
-                        self.incr(dissection, prefix + "UDP.DNS.nscount", len(dns.ns))
-                        self.incr(dissection, prefix + "UDP.DNS.arcount", len(dns.ar))
+                        self.incr(dissection, prefix + "qdcount", len(dns.qd))
+                        self.incr(dissection, prefix + "ancount", len(dns.an))
+                        self.incr(dissection, prefix + "nscount", len(dns.ns))
+                        self.incr(dissection, prefix + "arcount", len(dns.ar))
 
                         for record in dns.qd:
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.qd.qname", record.name
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.qd.qtype", record.type
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.qd.qclass", record.cls
-                            )
+                            self.incr(dissection, prefix + "qd.qname", record.name)
+                            self.incr(dissection, prefix + "qd.qtype", record.type)
+                            self.incr(dissection, prefix + "qd.qclass", record.cls)
 
                         for record in dns.an:
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.an.rrname", record.name
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.an.type", record.type
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.an.rclass", record.cls
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.an.rdlen", record.rlen
-                            )
-                            self.incr(dissection, prefix + "UDP.DNS.an.ttl", record.ttl)
+                            self.incr(dissection, prefix + "an.rrname", record.name)
+                            self.incr(dissection, prefix + "an.type", record.type)
+                            self.incr(dissection, prefix + "an.rclass", record.cls)
+                            self.incr(dissection, prefix + "an.rdlen", record.rlen)
+                            self.incr(dissection, prefix + "an.ttl", record.ttl)
 
                         for record in dns.ns:
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ns.rrname", record.name
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ns.type", record.type
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ns.rclass", record.cls
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ns.rdata", record.nsname
-                            )
-                            self.incr(dissection, prefix + "UDP.DNS.ns.ttl", record.ttl)
+                            self.incr(dissection, prefix + "ns.rrname", record.name)
+                            self.incr(dissection, prefix + "ns.type", record.type)
+                            self.incr(dissection, prefix + "ns.rclass", record.cls)
+                            self.incr(dissection, prefix + "ns.rdata", record.nsname)
+                            self.incr(dissection, prefix + "ns.ttl", record.ttl)
 
                         for record in dns.ar:
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ar.rrname", record.name
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ar.type", record.type
-                            )
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ar.rclass", record.cls
-                            )
-                            self.incr(dissection, prefix + "UDP.DNS.ar.ttl", record.ttl)
-                            self.incr(
-                                dissection, prefix + "UDP.DNS.ar.rdlen", record.rlen
-                            )
+                            self.incr(dissection, prefix + "ar.rrname", record.name)
+                            self.incr(dissection, prefix + "ar.type", record.type)
+                            self.incr(dissection, prefix + "ar.rclass", record.cls)
+                            self.incr(dissection, prefix + "ar.ttl", record.ttl)
+                            self.incr(dissection, prefix + "ar.rdlen", record.rlen)
