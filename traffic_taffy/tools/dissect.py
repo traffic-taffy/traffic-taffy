@@ -1,3 +1,4 @@
+"""Performs generic dissection of a PCAP file."""
 import logging
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -9,9 +10,11 @@ from traffic_taffy.dissectmany import PCAPDissectMany
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 
 
-def main():
+def main() -> None:
+    """Dissect a pcap file and report contents."""
+
     def parse_args() -> Namespace:
-        "Parse the command line arguments."
+        """Parse the command line arguments."""
         parser = ArgumentParser(
             formatter_class=ArgumentDefaultsHelpFormatter,
             description=__doc__,
@@ -66,7 +69,7 @@ def main():
         force_overwrite=args.force_overwrite,
         force_load=args.force_load,
     )
-    dissections = pdm.load_all(True, dont_fork=args.dont_fork)
+    dissections = pdm.load_all(return_as_list=True, dont_fork=args.dont_fork)
 
     # merge them into a single dissection
     dissection = dissections.pop(0)
