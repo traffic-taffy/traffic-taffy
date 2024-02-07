@@ -1,6 +1,6 @@
-"""Takes a set of pcap files to compare and creates a report"""
+"""Takes a set of pcap files to compare and creates a report."""
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 import logging
 from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
@@ -14,7 +14,7 @@ from traffic_taffy.dissector import (
 from traffic_taffy.compare import PcapCompare
 
 
-def parse_args():
+def parse_args() -> Namespace:
     "Parse the command line arguments."
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,

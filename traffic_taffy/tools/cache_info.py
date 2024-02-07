@@ -1,12 +1,12 @@
 """Loads the cached data for a file to display the results about it"""
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 from rich import print
 import logging
 import msgpack
 
 
-def parse_args():
+def parse_args() -> Namespace:
     "Parse the command line arguments."
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,

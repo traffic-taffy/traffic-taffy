@@ -4,7 +4,7 @@ import logging
 from logging import debug
 from datetime import datetime
 import datetime as dt
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -636,7 +636,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
         (self.match_string, self.match_value) = (tmp_key, tmp_value)
 
 
-def parse_args():
+def parse_args() -> Namespace:
     "Parse the command line arguments."
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
