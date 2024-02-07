@@ -142,6 +142,26 @@ class DissectionEngineDpkt(DissectionEngine):
                             (command, _, content) = tcp.data.partition(b"\r\n")
                             http = dpkt.http.Message(content)
                             prefix += "TCP.HTTP 1."
+
+                            (method, _, remaining) = command.partition(b" ")
+                            method = method.decode("utf-8")
+                            print(remaining)
+                            if method in [
+                                "GET",
+                                "POST",
+                                "HEAD",
+                                "PUT",
+                                "DELETE",
+                                "CONNECT",
+                                "TRACE",
+                                "PATCH",
+                                "OPTIONS",
+                            ]:
+                                prefix += "Request."
+                                self.incr(dissection, prefix + "Method", method)
+                            else:
+                                prefix += "Response."
+
                         except dpkt.dpkt.UnpackError:
                             self.incr(
                                 dissection,
@@ -157,7 +177,9 @@ class DissectionEngineDpkt(DissectionEngine):
                             if not isinstance(parts, list):
                                 parts = [parts]
                             for value in parts:
-                                self.incr(dissection, prefix + header, value)
+                                self.incr(
+                                    dissection, prefix + header, value.capitalize()
+                                )
 
                     if dns:
                         self.incr(dissection, prefix + "id", dns.id)
