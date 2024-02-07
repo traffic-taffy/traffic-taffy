@@ -17,6 +17,7 @@ class PCAPDissectorLevel(Enum):
 
     COUNT_ONLY = 1
     THROUGH_IP = 2
+    COMMON_LAYERS = 3
     DETAILED = 10
 
 

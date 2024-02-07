@@ -302,6 +302,7 @@ def check_dissector_level(level: int):
     current_dissection_levels = [
         PCAPDissectorLevel.COUNT_ONLY.value,
         PCAPDissectorLevel.THROUGH_IP.value,
+        PCAPDissectorLevel.COMMON_LAYERS.value,
         PCAPDissectorLevel.DETAILED.value,
     ]
     if level not in current_dissection_levels:

@@ -11,7 +11,7 @@ class DissectionEngine:
         pcap_filter: str = "",
         maximum_count: int = 0,
         bin_size: int = 0,
-        dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
+        dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.COMMON_LAYERS,
         cache_file_suffix: str = "pkl",
         ignore_list: list = [],
         layers: List[str] | None = None,
