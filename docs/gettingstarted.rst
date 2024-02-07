@@ -56,6 +56,11 @@ you always use cache files (add the -C switch)**.
     as UDP and port 53, for example, but does not dive further into
     the associated packets.
 
+  * 3: Looks for packets of high interest and parses them:
+
+    - DNS
+    - more TBD
+
   * 10: The deepest packet parser which extracts all information
     possible from the packets (uses the `scapy` dissection engine).
     This is definitely the best choice, but it is very slow in
@@ -64,6 +69,22 @@ you always use cache files (add the -C switch)**.
 
   *Warning: watch out for over-use of memory -- no memory limitation
   techniques currently exist*
+
+Speed comparison for different levels
+-------------------------------------
+
+The following table shows the differences in speeds for different
+levels on a sample set of 10,000 captured DNS packtes.  Note: This is
+not an accurate study at all, just an example.
+
+=========== ============================
+Level       Speed
+=========== ============================
+1           0.196s
+2           0.521s
+3           0.861s
+10          4.299s
+=========== ============================
 
 
 Typical workflow
