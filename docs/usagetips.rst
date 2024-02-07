@@ -1,7 +1,10 @@
 Usage Tips
 ==========
 
-Some general tips for use the traffic-taffy tools:
+Some general tips for use the traffic-taffy tools are below.  These
+tips are particularly helpful to the `taffy-compare` and `taffy-graph`
+tools, but most of the tools support these dissection and output
+limiting flags.
 
 Use caching
 -----------
@@ -47,3 +50,23 @@ Argument Description
 -x 10    Show only the top 10 differences:
 -s right Optionally sort by the right column instead of the delta %
 ======== =============================
+
+Filter the outputs to the likely candidate packets
+--------------------------------------------------
+
+The tools support filtering the output both by packet field name and
+by value, which can be highly helpful for generating output from both
+`taffy-compare` and `taffy-graph`.  For example, if you know you want
+to study *DNS* packet fields in particular and really just for names
+*example.com* you can use `-m DNS -M example.com` to limit the
+results.
+
+=============== =======================
+Argument        Description
+=============== =======================
+-m DNS          limit the output to just field names with "DNS" in the name
+-M example.com  limit the output to just field values with "exmaple.com" in them
+=============== =======================
+
+*TODO:* currently these matches are simple, fast in-the-string matches
+only.  Regular expressions are needed in the future.
