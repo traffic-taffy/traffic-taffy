@@ -151,26 +151,99 @@ class DissectionEngineDpkt(DissectionEngine):
                         self.incr(dissection, prefix + "arcount", len(dns.ar))
 
                         for record in dns.qd:
-                            self.incr(dissection, prefix + "qd.qname", record.name)
+                            self.incr(
+                                dissection, prefix + "qd.qname", record.name + "."
+                            )
                             self.incr(dissection, prefix + "qd.qtype", record.type)
                             self.incr(dissection, prefix + "qd.qclass", record.cls)
 
                         for record in dns.an:
-                            self.incr(dissection, prefix + "an.rrname", record.name)
+                            self.incr(
+                                dissection, prefix + "an.rrname", record.name + "."
+                            )
                             self.incr(dissection, prefix + "an.type", record.type)
                             self.incr(dissection, prefix + "an.rclass", record.cls)
                             self.incr(dissection, prefix + "an.rdlen", record.rlen)
                             self.incr(dissection, prefix + "an.ttl", record.ttl)
 
+                            # concepts from dpkt.dns.DNS.upnack_rdata()
+                            if record.type == dpkt.dns.DNS_A:
+                                # TODO(hardaker): decode this hex streem to an IP
+                                self.incr(dissection, prefix + "an.rdata", record.ip)
+                            elif record.type == dpkt.dns.DNS_AAAA:
+                                # TODO(hardaker): decode this hex streem to an IP(v6)
+                                self.incr(dissection, prefix + "an.rdata", record.ip6)
+                            elif record.type == dpkt.dns.DNS_NS:
+                                self.incr(
+                                    dissection, prefix + "an.nsname", record.nsname
+                                )
+                            elif record.type == dpkt.dns.DNS_CNAME:
+                                self.incr(dissection, prefix + "an.cname", record.cname)
+                            elif record.type == dpkt.dns.DNS_CNAME:
+                                self.incr(
+                                    dissection, prefix + "an.ptrname", record.ptrname
+                                )
+                            elif record.type == dpkt.dns.DNS_MX:
+                                self.incr(
+                                    dissection,
+                                    prefix + "an.preference",
+                                    record.preference,
+                                )
+                                self.incr(
+                                    dissection, prefix + "an.mxname", record.mxname
+                                )
+                            elif record.type == dpkt.dns.DNS_SRV:
+                                self.incr(
+                                    dissection, prefix + "an.priority", record.priority
+                                )
+                                self.incr(
+                                    dissection, prefix + "an.weight", record.weight
+                                )
+                                self.incr(dissection, prefix + "an.port", record.port)
+                                self.incr(
+                                    dissection, prefix + "an.srvname", record.srvname
+                                )
+                                self.incr(dissection, prefix + "an.off", record.off)
+                            elif (
+                                record.type == dpkt.dns.DNS_TXT
+                                or record.type == dpkt.dns.DNS_HINFO
+                            ):
+                                self.incr(dissection, prefix + "an.text", record.text)
+                            elif record.type == dpkt.dns.DNS_SOA:
+                                self.incr(
+                                    dissection, prefix + "an.mname", record.mname + "."
+                                )
+                                self.incr(dissection, prefix + "an.rname", record.rname)
+                                self.incr(
+                                    dissection, prefix + "an.serial", record.serial
+                                )
+                                self.incr(
+                                    dissection, prefix + "an.refresh", record.refresh
+                                )
+                                self.incr(
+                                    dissection, prefix + "an.refresh", record.refresh
+                                )
+                                self.incr(dissection, prefix + "an.retry", record.retry)
+                                self.incr(
+                                    dissection, prefix + "an.expire", record.expire
+                                )
+                                self.incr(
+                                    dissection, prefix + "an.minimum", record.minimum
+                                )
+
                         for record in dns.ns:
-                            self.incr(dissection, prefix + "ns.rrname", record.name)
+                            self.incr(
+                                dissection, prefix + "ns.rrname", record.name + "."
+                            )
                             self.incr(dissection, prefix + "ns.type", record.type)
                             self.incr(dissection, prefix + "ns.rclass", record.cls)
                             self.incr(dissection, prefix + "ns.rdata", record.nsname)
                             self.incr(dissection, prefix + "ns.ttl", record.ttl)
 
                         for record in dns.ar:
-                            self.incr(dissection, prefix + "ar.rrname", record.name)
+                            self.incr(
+                                dissection, prefix + "ar.rrname", record.name + "."
+                            )
                             self.incr(dissection, prefix + "ar.type", record.type)
                             self.incr(dissection, prefix + "ar.rclass", record.cls)
                             self.incr(dissection, prefix + "ar.ttl", record.ttl)
