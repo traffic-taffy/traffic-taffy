@@ -1,4 +1,4 @@
-"""Read a PCAP file and graph it or parts of it"""
+"""Read a PCAP file and graph it or parts of it."""
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 from traffic_taffy.graph import PcapGraph
@@ -11,7 +11,7 @@ import logging
 
 
 def parse_args() -> Namespace:
-    "Parse the command line arguments."
+    """Parse the command line arguments."""
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
@@ -59,7 +59,8 @@ def parse_args() -> Namespace:
     return args
 
 
-def main():
+def main() -> None:
+    """Run taffy-graph."""
     args = parse_args()
 
     check_dissector_level(args.dissection_level)
