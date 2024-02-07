@@ -110,6 +110,7 @@ class DissectionEngineDpkt(DissectionEngine):
 
                 if level >= PCAPDissectorLevel.COMMON_LAYERS.value:
                     dns = None
+                    http = None
                     if udp and (udp.sport == 53 or udp.dport == 53):
                         try:
                             dns = dpkt.dns.DNS(udp.data)
@@ -131,6 +132,32 @@ class DissectionEngineDpkt(DissectionEngine):
                             )
                             debug("DPKT unparsable DNS data")
                             return
+
+                    if (
+                        tcp
+                        and (tcp.sport == 80 or tcp.dport == 80)
+                        and len(tcp.data) > 0
+                    ):
+                        try:
+                            (command, _, content) = tcp.data.partition(b"\r\n")
+                            http = dpkt.http.Message(content)
+                            prefix += "TCP.HTTP 1."
+                        except dpkt.dpkt.UnpackError:
+                            self.incr(
+                                dissection,
+                                prefix + "TCP.HTTP.unparsable",
+                                "PARSE_ERROR",
+                            )
+                            debug("DPKT unparsable HTTP data")
+                            return
+
+                    if http:
+                        for header in http.headers:
+                            parts = http.headers[header]
+                            if not isinstance(parts, list):
+                                parts = [parts]
+                            for value in parts:
+                                self.incr(dissection, prefix + header, value)
 
                     if dns:
                         self.incr(dissection, prefix + "id", dns.id)
