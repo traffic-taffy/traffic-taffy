@@ -13,6 +13,10 @@ import dpkt
 class DissectionEngineDpkt(DissectionEngine):
     """A dissection engine for quickly parsing and counting packets."""
 
+    DNS_PORT: int = 53
+    HTTP_PORT: int = 80
+    IPV6_VERSION: int = 6
+
     def __init__(self, *args: list, **kwargs: dict):
         """Create a dissection engine for quickly parsing and counting packets."""
         super().__init__(*args, **kwargs)
@@ -67,7 +71,7 @@ class DissectionEngineDpkt(DissectionEngine):
                 tcp = None
 
                 ipver = "IP"
-                if ip.v == 6:
+                if ip.v == DissectionEngineDpkt.IPV6_VERSION:
                     ipver = "IPv6"
 
                 prefix = f"Ethernet.{ipver}."
@@ -111,7 +115,7 @@ class DissectionEngineDpkt(DissectionEngine):
                 if level >= PCAPDissectorLevel.COMMON_LAYERS.value:
                     dns = None
                     http = None
-                    if udp and (udp.sport == 53 or udp.dport == 53):
+                    if udp and DissectionEngineDpkt.DNS_PORT in (udp.sport, udp.dport):
                         try:
                             dns = dpkt.dns.DNS(udp.data)
                             prefix += "UDP.DNS."
@@ -122,7 +126,7 @@ class DissectionEngineDpkt(DissectionEngine):
                             debug("DPKT unparsable DNS data")
                             return
 
-                    if tcp and (tcp.sport == 53 or tcp.dport == 53):
+                    if tcp and DissectionEngineDpkt.DNS_PORT in (tcp.sport, tcp.dport):
                         try:
                             dns = dpkt.dns.DNS(tcp.data)
                             prefix += "TCP.DNS."
@@ -135,7 +139,7 @@ class DissectionEngineDpkt(DissectionEngine):
 
                     if (
                         tcp
-                        and (tcp.sport == 80 or tcp.dport == 80)
+                        and DissectionEngineDpkt.HTTP_PORT in (tcp.sport, tcp.dport)
                         and len(tcp.data) > 0
                     ):
                         try:
@@ -145,7 +149,6 @@ class DissectionEngineDpkt(DissectionEngine):
 
                             (method, _, remaining) = command.partition(b" ")
                             method = method.decode("utf-8")
-                            print(remaining)
                             if method in [
                                 "GET",
                                 "POST",
@@ -260,10 +263,7 @@ class DissectionEngineDpkt(DissectionEngine):
                                     dissection, prefix + "an.srvname", record.srvname
                                 )
                                 self.incr(dissection, prefix + "an.off", record.off)
-                            elif (
-                                record.type == dpkt.dns.DNS_TXT
-                                or record.type == dpkt.dns.DNS_HINFO
-                            ):
+                            elif record.type in (dpkt.dns.DNS_TXT, dpkt.dns.DNS_HINFO):
                                 for text_record in record:
                                     self.incr(
                                         dissection, prefix + "an.text", text_record
