@@ -52,7 +52,7 @@ def test_dissector_simple_callback():
     # create a new one to make sure it's blank
     pd = PCAPDissector(
         base_pcap,
-        dissector_level=PCAPDissectorLevel.DETAILED.value,
+        dissector_level=PCAPDissectorLevel.COUNT_ONLY.value,
         cache_results=True,
     )
 
