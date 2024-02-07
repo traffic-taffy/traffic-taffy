@@ -31,7 +31,6 @@ def test_pcap_splitter():
     ]:
         debug(f"===== trying to load {test_pcap} ====")
         if not os.path.exists(test_pcap):
-            print(f"a test requires a {test_pcap} file to read and parse")
             continue
 
         # clean up previous runs
