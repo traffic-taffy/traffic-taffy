@@ -215,7 +215,10 @@ class DissectionEngineDpkt(DissectionEngine):
                                 record.type == dpkt.dns.DNS_TXT
                                 or record.type == dpkt.dns.DNS_HINFO
                             ):
-                                self.incr(dissection, prefix + "an.text", record.text)
+                                for text_record in record:
+                                    self.incr(
+                                        dissection, prefix + "an.text", text_record
+                                    )
                             elif record.type == dpkt.dns.DNS_SOA:
                                 self.incr(
                                     dissection, prefix + "an.mname", record.mname + "."
@@ -244,7 +247,7 @@ class DissectionEngineDpkt(DissectionEngine):
                             )
                             self.incr(dissection, prefix + "ns.type", record.type)
                             self.incr(dissection, prefix + "ns.rclass", record.cls)
-                            self.incr(dissection, prefix + "ns.rdata", record.nsname)
+                            # self.incr(dissection, prefix + "ns.rdata", record.nsname)
                             self.incr(dissection, prefix + "ns.ttl", record.ttl)
 
                         for record in dns.ar:
