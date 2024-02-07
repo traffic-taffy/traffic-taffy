@@ -4,7 +4,7 @@ from traffic_taffy.dissection import Dissection
 from traffic_taffy.dissector import PCAPDissector, PCAPDissectorLevel
 
 
-def test_dissector_load():
+def test_dissector_load() -> None:
     from traffic_taffy.dissector import PCAPDissector
 
     pd = PCAPDissector("bogus")
@@ -12,7 +12,7 @@ def test_dissector_load():
     assert pd.pcap_file == "bogus"
 
 
-def test_dissector_simple_callback():
+def test_dissector_simple_callback() -> None:
     base_pcap = "/tmp/dissector-test.pcap"  # doesn't need to exist
     save_file = base_pcap + ".taffy"
 
@@ -67,5 +67,5 @@ def test_dissector_simple_callback():
     os.unlink(save_file)
 
 
-def test_dissector_scapy_callback():
+def test_dissector_scapy_callback() -> None:
     assert True
