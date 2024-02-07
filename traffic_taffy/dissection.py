@@ -1,15 +1,15 @@
 """A Dissection class stores the results of a PCAP enumeration."""
 
 from __future__ import annotations
-import os
 from collections import defaultdict, Counter
-from typing import Any
+from typing import Any, Dict, ClassVar
 from logging import debug, info, error, warning
 from enum import Enum
 import msgpack
 import ipaddress
 from typing import List
 from copy import deepcopy
+from pathlib import Path
 
 
 class PCAPDissectorLevel(Enum):
@@ -31,6 +31,8 @@ class Dissection:
     TOTAL_SUBKEY: str = "packet"
     WIDTH_SUBKEY: str = "__WIDTH__"
     NEW_RIGHT_SUBKEY: str = "__NEW_VALUES__"
+
+    PRINTABLE_LENGTH: int = 40
 
     def __init__(
         self: Dissection,
@@ -172,7 +174,7 @@ class Dissection:
         """Load the dissection data from a cache."""
         if not self.pcap_file or not isinstance(self.pcap_file, str):
             return None
-        if not os.path.exists(self.pcap_file + self.cache_file_suffix):
+        if not Path(self.pcap_file + self.cache_file_suffix).exists():
             return None
 
         cached_file = self.pcap_file + self.cache_file_suffix
@@ -209,9 +211,10 @@ class Dissection:
                     # loading a more detailed cache is ok
                     continue
 
-                if parameter == "pcap_file" and os.path.basename(
-                    specified
-                ) == os.path.basename(cached):
+                if (
+                    parameter == "pcap_file"
+                    and Path(specified).name == Path(cached).name
+                ):
                     # as long as the basename is ok, we'll assume it's a different path
                     continue
 
@@ -249,7 +252,7 @@ class Dissection:
             self.save(where)
 
     def save(self: Dissection, where: str) -> None:
-        """Saves a generated dissection to a msgpack file."""
+        """Save a generated dissection to a msgpack file."""
         # wrap the report in a version header
         versioned_cache = {
             self.DISSECTION_KEY: self.DISSECTION_VERSION,
@@ -304,10 +307,10 @@ class Dissection:
                     ] = versioned_cache["dissection"][timestamp][key][subkey]
                     del versioned_cache["dissection"][timestamp][key][subkey]
 
-        with open(where, "wb") as saveto:
+        with Path(where).open("wb") as saveto:
             msgpack.dump(versioned_cache, saveto)
 
-    def load_saved_contents(self: Dissection, versioned_cache: dict):
+    def load_saved_contents(self: Dissection, versioned_cache: dict) -> None:
         """Set parameters from the cache."""
         # set the local parameters from the cache
         for parameter in self.parameters:
@@ -318,7 +321,7 @@ class Dissection:
 
     def load_saved(self: Dissection, where: str, dont_overwrite: bool = False) -> dict:
         """Load a saved report from a cache file."""
-        with open(where, "rb") as cache_file:
+        with Path(where).open("rb") as cache_file:
             contents = msgpack.load(cache_file, strict_map_key=False)
 
         # convert the ignore list to a set (msgpack doesn't do sets)
@@ -414,8 +417,9 @@ class Dissection:
                 value = "0x" + value.hex()
             else:
                 value = "[unprintable]"
-        if len(value) > 40:
-            value = value[0:40] + "..."  # truncate to reasonable
+        if len(value) > Dissection.PRINTABLE_LENGTH:
+            # truncate to reasonable
+            value = value[0 : Dissection.PRINTABLE_LENGTH] + "..."
         return value
 
     @staticmethod
@@ -429,7 +433,7 @@ class Dissection:
         return ":".join(map(two_hex, value))
 
     # has to go at the end to pick up the above function names
-    DISPLAY_TRANSFORMERS: dict = {
+    DISPLAY_TRANSFORMERS: ClassVar[Dict[str, callable]] = {
         "Ethernet.IP.src": ipaddress.ip_address,
         "Ethernet.IP.dst": ipaddress.ip_address,
         "Ethernet.IP6.src": ipaddress.ip_address,
