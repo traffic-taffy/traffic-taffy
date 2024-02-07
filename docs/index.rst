@@ -12,6 +12,7 @@ Traffic-taffy: finding tasty bumps in your network's traffic
 
    gettingstarted
    casestudy
+   usagetips
    tools/index
 
 The **traffic-taffy** project aims to help you compare PCAP files that
