@@ -1,5 +1,6 @@
 """Takes a set of pcap files to compare and creates a report."""
 
+import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 import logging
 from traffic_taffy.output.console import Console
@@ -15,7 +16,7 @@ from traffic_taffy.compare import PcapCompare
 
 
 def parse_args() -> Namespace:
-    "Parse the command line arguments."
+    """Parse the command line arguments."""
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
@@ -31,7 +32,7 @@ def parse_args() -> Namespace:
     )
 
     limitor_parser = limitor_add_parseargs(parser)
-    compare_add_parseargs(limitor_parser, False)
+    compare_add_parseargs(limitor_parser, add_subgroup=False)
     dissector_add_parseargs(parser)
 
     debugging_group = parser.add_argument_group("Debugging options")
@@ -62,7 +63,8 @@ def parse_args() -> Namespace:
     return args
 
 
-def main():
+def main() -> None:
+    """Run taffy-compare."""
     args = parse_args()
 
     # setup output options
@@ -101,7 +103,7 @@ def main():
         try:
             reports = pc.compare()
         except ValueError:
-            exit()
+            sys.exit()
 
         if args.fsdb:
             output = Fsdb(None, printing_arguments)
