@@ -1,19 +1,27 @@
+"""A dissection engine for quickly parsing and counting packets."""
+
+from __future__ import annotations
+
 from logging import debug
 from traffic_taffy.dissector_engine import DissectionEngine
 from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
-from pcap_parallel import PCAPParallel as pcapp
+from pcap_parallel import PCAPParallel
 
 import dpkt
 
 
 class DissectionEngineDpkt(DissectionEngine):
-    def __init__(self, *args, **kwargs):
+    """A dissection engine for quickly parsing and counting packets."""
+
+    def __init__(self, *args: list, **kwargs: dict):
+        """Create a dissection engine for quickly parsing and counting packets."""
         super().__init__(*args, **kwargs)
 
     def load(self) -> Dissection:
+        """Load the specified PCAP into memory."""
         self.init_dissection()
         if isinstance(self.pcap_file, str):
-            pcap = dpkt.pcap.Reader(pcapp.open_maybe_compressed(self.pcap_file))
+            pcap = dpkt.pcap.Reader(PCAPParallel.open_maybe_compressed(self.pcap_file))
         else:
             # it's an open handle already
             pcap = dpkt.pcap.Reader(self.pcap_file)
@@ -24,11 +32,13 @@ class DissectionEngineDpkt(DissectionEngine):
         self.dissection.calculate_metadata()
         return self.dissection
 
-    def incr(self, dissection, name, value):
+    def incr(self, dissection: Dissection, name: str, value: str | int) -> None:
+        """Increment a given name and value counter."""
         if name not in self.ignore_list:
             dissection.incr(name, value)
 
-    def callback(self, timestamp: float, packet: bytes):
+    def callback(self, timestamp: float, packet: bytes) -> None:
+        """Dissect and count one packet."""
         # if binning is requested, save it in a binned time slot
         dissection: Dissection = self.dissection
 
@@ -56,13 +66,13 @@ class DissectionEngineDpkt(DissectionEngine):
                 udp = None
                 tcp = None
 
-                IPVER = "IP"
+                ipver = "IP"
                 if ip.v == 6:
-                    IPVER = "IPv6"
+                    ipver = "IPv6"
 
-                prefix = f"Ethernet.{IPVER}."
+                prefix = f"Ethernet.{ipver}."
 
-                # TODO: make sure all these match scapy
+                # TODO(hardaker): make sure all these match scapy
                 self.incr(dissection, prefix + "dst", ip.dst)
                 self.incr(dissection, prefix + "src", ip.src)
                 self.incr(dissection, prefix + "df", ip.df)
@@ -85,10 +95,9 @@ class DissectionEngineDpkt(DissectionEngine):
                     self.incr(dissection, prefix + "UDP.len", udp.ulen)
                     self.incr(dissection, prefix + "UDP.chksum", udp.sum)
 
-                    # TODO: handle DNS and others for level 3
+                    # TODO(hardaker): handle DNS and others for level 3
 
                 elif isinstance(ip.data, dpkt.tcp.TCP):
-                    # TODO
                     tcp = ip.data
                     self.incr(dissection, prefix + "TCP.sport", tcp.sport)
                     self.incr(dissection, prefix + "TCP.dport", tcp.dport)
@@ -98,8 +107,6 @@ class DissectionEngineDpkt(DissectionEngine):
                     self.incr(dissection, prefix + "TCP.window", tcp.win)
                     self.incr(dissection, prefix + "TCP.chksum", tcp.sum)
                     self.incr(dissection, prefix + "TCP.options", tcp.opts)
-
-                    # TODO: handle DNS and others for level 3
 
                 if level >= PCAPDissectorLevel.COMMON_LAYERS.value:
                     dns = None
