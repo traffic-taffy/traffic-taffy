@@ -1,21 +1,27 @@
+"""A scapy engine for deeply parsing and counting packets."""
+
+from __future__ import annotations
 from traffic_taffy.dissector_engine import DissectionEngine
 from traffic_taffy.dissection import Dissection
-from pcap_parallel import PCAPParallel as pcapp
+from pcap_parallel import PCAPParallel
 from logging import warning
 
 from scapy.all import sniff, load_layer
 
 
 class DissectionEngineScapy(DissectionEngine):
-    def _init_(self, *args, **kwargs):
-        super()._init_(*args, **kwargs)
+    """A scapy engine class for deeply parsing and counting packets."""
+
+    def __init__(self, *args: list, **kwargs: dict):
+        """Create a scapy engine class."""
+        super().__init__(*args, **kwargs)
 
     def load(self) -> Dissection:
-        "Loads a pcap file into a nested dictionary of statistical counts"
+        """Load a pcap file into a nested dictionary of statistical counts."""
         self.init_dissection()
         load_this = self.pcap_file
         if isinstance(self.pcap_file, str):
-            load_this = pcapp.open_maybe_compressed(self.pcap_file)
+            load_this = PCAPParallel.open_maybe_compressed(self.pcap_file)
 
         if self.layers:
             for layer in self.layers:
@@ -29,16 +35,16 @@ class DissectionEngineScapy(DissectionEngine):
             filter=self.pcap_filter,
         )
         self.dissection.calculate_metadata()
-        # TODO: for some reason this fails on xz compressed files when processing in parallel
+        # TODO(hardaker): for some reason this fails on xz compressed files when processing in parallel
         return self.dissection
 
-    def add_item(self, field_value, prefix: str) -> None:
-        "Adds an item to the self.dissection regardless of it's various types"
-
+    def add_item(self, field_value: str | int, prefix: str) -> None:
+        """Add an item to the self.dissection regardless of it's various types"""
         if isinstance(field_value, list):
             if len(field_value) > 0:
                 # if it's a list of tuples, count the (eg TCP option) names
-                # TODO: values can be always the same or things like timestamps
+                #
+                # TODO(hardaker): values can be always the same or things like timestamps
                 #       that will always change or are too unique
                 if isinstance(field_value[0], tuple):
                     for item in field_value:
@@ -48,11 +54,7 @@ class DissectionEngineScapy(DissectionEngine):
                         self.add_item(item, prefix)
             # else:
             #     debug(f"ignoring empty-list: {field_value}")
-        elif (
-            isinstance(field_value, str)
-            or isinstance(field_value, int)
-            or isinstance(field_value, float)
-        ):
+        elif isinstance(field_value, (str, int, float)):
             self.dissection.incr(prefix, field_value)
 
         elif isinstance(field_value, bytes):
@@ -64,8 +66,7 @@ class DissectionEngineScapy(DissectionEngine):
                 self.dissection.incr(prefix, converted)
 
     def add_layer(self, layer, prefix: str | None = "") -> None:
-        "Analyzes a layer to add counts to each layer sub-component"
-
+        """Analyze a layer to add counts to each layer sub-component."""
         if hasattr(layer, "fields_desc"):
             name_list = [field.name for field in layer.fields_desc]
         elif hasattr(layer, "fields"):
@@ -90,7 +91,8 @@ class DissectionEngineScapy(DissectionEngine):
                 warning(f"scapy error at '{prefix}' in field '{field_name}'")
                 warning(e)
 
-    def callback(self, packet):
+    def callback(self, packet) -> None:
+        """Handle one packet to dissect."""
         prefix = "."
         self.timestamp = int(packet.time)
         if self.bin_size:
