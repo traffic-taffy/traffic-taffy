@@ -1,11 +1,13 @@
 """The primary statistical packet comparison engine."""
 
 from __future__ import annotations
-from argparse import ArgumentParser, Namespace
 from logging import debug, error
-from typing import List
+from typing import List, TYPE_CHECKING
 import datetime as dt
 from datetime import datetime
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser, Namespace
 
 from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissectmany import PCAPDissectMany
@@ -203,7 +205,8 @@ class PcapCompare:
                 error(
                     "the requested pcap data was not long enough to compare against itself"
                 )
-                raise ValueError("not large enough pcap file")
+                errorstr: str = "not large enough pcap file"
+                raise ValueError(errorstr)
             debug(
                 f"found {len(timestamps)} timestamps from {timestamps[2]} to {timestamps[-1]}"
             )

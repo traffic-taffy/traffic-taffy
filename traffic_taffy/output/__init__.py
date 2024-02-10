@@ -1,7 +1,10 @@
 """Base module for output classes."""
 
 from __future__ import annotations
-from traffic_taffy.comparison import Comparison
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from traffic_taffy.comparison import Comparison
 
 
 class Output:

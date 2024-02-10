@@ -1,16 +1,18 @@
 """A module for dissecting a number of PCAP files."""
 
 from __future__ import annotations
-from io import BufferedIOBase
 from concurrent.futures import ProcessPoolExecutor
 from logging import info
 import copy
 import multiprocessing
 from pcap_parallel import PCAPParallel
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from traffic_taffy.dissector import PCAPDissector
-from traffic_taffy.dissection import Dissection
+
+if TYPE_CHECKING:
+    from io import BufferedIOBase
+    from traffic_taffy.dissection import Dissection
 
 
 class PCAPDissectMany:
