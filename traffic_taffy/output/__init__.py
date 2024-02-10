@@ -1,25 +1,37 @@
+"""Base module for output classes."""
+
+from __future__ import annotations
+from traffic_taffy.comparison import Comparison
+
+
 class Output:
-    def __init__(self, report, options={}):
+    """Base class for outputting reports."""
+
+    def __init__(self, report: Comparison, options: dict | None = None):
+        """Initialize the base."""
         self.report = report
-        self.output_options = options
+        self.output_options = options or {}
 
     @property
-    def report(self):
+    def report(self) -> Comparison:
+        """The report itself."""
         return self._report
 
     @report.setter
-    def report(self, new_report):
+    def report(self, new_report: Comparison) -> None:
         self._report = new_report
 
     @property
-    def output_options(self):
+    def output_options(self) -> dict:
+        """A list of output options."""
         return self._output_options
 
     @output_options.setter
-    def output_options(self, new_output_options):
+    def output_options(self, new_output_options: dict) -> None:
         self._output_options = new_output_options
 
-    def output(self, report=None):
+    def output(self, report: Comparison | None = None) -> None:
+        """Dump a report to the output stream."""
         if not report:
             report = self.report
         contents = report.contents
@@ -55,7 +67,7 @@ class Output:
             ):
                 continue
 
-            # TODO: we don't do match_value here?
+            # TODO(hardaker): we don't do match_value here?
 
             record_count = 0
             for subkey, data in sorted(
@@ -84,14 +96,16 @@ class Output:
 
         self.output_close()
 
-    def output_new_section(self, key):
+    def output_new_section(self, key: str) -> None:
+        """Create a new section header."""
         return
 
-    def output_close(self):
+    def output_close(self) -> None:
+        """Close the output stream."""
         return
 
     def filter_check(self, data: dict) -> bool:
-        "Return true if we should include it."
+        """Return true if we should include it."""
         delta: float = data["delta_percentage"]
         total: int = data["total"]
 
@@ -122,12 +136,11 @@ class Output:
             # just check output_options["minimum_count"]
             if total > self.output_options["minimum_count"]:
                 return True
-        else:
+        elif (
+            total > self.output_options["minimum_count"]
+            and abs(delta) > self.output_options["print_threshold"]
+        ):
             # require both
-            if (
-                total > self.output_options["minimum_count"]
-                and abs(delta) > self.output_options["print_threshold"]
-            ):
-                return True
+            return True
 
         return False
