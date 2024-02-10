@@ -45,11 +45,11 @@ class Fsdb(Output):
                 self.in_report,
                 key,
                 subkey,
-                data["left_count"],
-                data["right_count"],
-                data["delta_absolute"],
-                data["left_percentage"],
-                data["right_percentage"],
-                data["delta_percentage"],
+                data.left_count,
+                data.right_count,
+                data.delta_absolute,
+                data.left_percentage,
+                data.right_percentage,
+                data.delta_percentage,
             ]
         )
