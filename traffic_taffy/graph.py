@@ -1,3 +1,7 @@
+"""Create an output graph from a dissection data."""
+
+from __future__ import annotations
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 from logging import debug, info
@@ -9,19 +13,21 @@ from traffic_taffy.graphdata import PcapGraphData
 
 
 class PcapGraph(PcapGraphData):
+    """Create an output graph from a dissection data."""
+
     def __init__(
         self,
         pcap_files: str,
         output_file: str,
-        maximum_count: int = None,
-        minimum_count: int = None,
-        bin_size: int = None,
-        match_string: str = None,
-        match_value: str = None,
+        maximum_count: int | None = None,
+        minimum_count: int | None = None,
+        bin_size: int | None = None,
+        match_string: str | None = None,
+        match_value: str | None = None,
         cache_pcap_results: bool = False,
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
         interactive: bool = False,
-        ignore_list: List[str] = [],
+        ignore_list: List[str] | None = None,
         by_percentage: bool = False,
         pcap_filter: str | None = None,
         cache_file_suffix: str = "taffy",
@@ -29,6 +35,7 @@ class PcapGraph(PcapGraphData):
         force_overwrite: bool = False,
         force_load: bool = False,
     ):
+        """Create an instance of a graphing object."""
         self.pcap_files = pcap_files
         self.output_file = output_file
         self.maximum_count = maximum_count
@@ -41,7 +48,7 @@ class PcapGraph(PcapGraphData):
         self.cache_pcap_results = cache_pcap_results
         self.dissector_level = dissector_level
         self.interactive = interactive
-        self.ignore_list = ignore_list
+        self.ignore_list = ignore_list or []
         self.by_percentage = by_percentage
         self.pcap_filter = pcap_filter
         self.cache_file_suffix = cache_file_suffix
@@ -51,8 +58,8 @@ class PcapGraph(PcapGraphData):
 
         super().__init__()
 
-    def load_pcaps(self):
-        "loads the pcap and counts things into bins"
+    def load_pcaps(self) -> None:
+        """Load the pcap and counts things into bins."""
         self.data = {}
 
         info("reading pcap files")
@@ -72,7 +79,8 @@ class PcapGraph(PcapGraphData):
         self.dissections = pdm.load_all()
         info("done reading pcap files")
 
-    def create_graph(self):
+    def create_graph(self) -> None:
+        """Create the graph itself and save it."""
         df = self.get_dataframe(merge=True, calculate_load_fraction=self.by_percentage)
 
         hue_variable = "index"
@@ -102,8 +110,8 @@ class PcapGraph(PcapGraphData):
         else:
             plt.show()
 
-    def show_graph(self):
-        "Graph the results of the data collection"
+    def show_graph(self) -> None:
+        """Graph the results of the data collection."""
         debug("creating the graph")
         sns.set_theme()
 
@@ -119,7 +127,8 @@ class PcapGraph(PcapGraphData):
                 if not self.match_string and not self.match_value:
                     self.interactive = False
 
-    def graph_it(self):
+    def graph_it(self) -> None:
+        """Load the pcaps and graph it."""
         debug("--- loading pcaps")
         self.load_pcaps()
         debug("--- creating graph")
