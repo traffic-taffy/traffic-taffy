@@ -14,6 +14,21 @@ from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.dissection import Dissection
 
+from collections import namedtuple
+
+Report = namedtuple(
+    "Report",
+    [
+        "delta_percentage",
+        "delta_absolute",
+        "total",
+        "left_count",
+        "right_count",
+        "left_percentage",
+        "right_percentage",
+    ],
+)
+
 
 class PcapCompare:
     """Take a set of PCAPs to then perform various comparisons upon."""
@@ -107,15 +122,15 @@ class PcapCompare:
                     new_left_count += 1
 
                 delta_absolute = right_count - left_count
-                report[key][subkey] = {
-                    "delta_percentage": delta_percentage,
-                    "delta_absolute": delta_absolute,
-                    "total": total,
-                    "left_count": left_count,
-                    "right_count": right_count,
-                    "left_percentage": left_percentage,
-                    "right_percentage": right_percentage,
-                }
+                report[key][subkey] = Report(
+                    delta_percentage=delta_percentage,
+                    delta_absolute=delta_absolute,
+                    total=total,
+                    left_count=left_count,
+                    right_count=right_count,
+                    left_percentage=left_percentage,
+                    right_percentage=right_percentage,
+                )
 
             new_right_count = 0
             for subkey in right_side[key]:
@@ -128,15 +143,15 @@ class PcapCompare:
                     right_percentage = right_side[key][subkey] / right_side_total
                     new_right_count += 1  # this value wasn't in the left
 
-                    report[key][subkey] = {
-                        "delta_percentage": delta_percentage,
-                        "delta_absolute": right_count,
-                        "total": total,
-                        "left_count": left_count,
-                        "right_count": right_count,
-                        "left_percentage": left_percentage,
-                        "right_percentage": right_percentage,
-                    }
+                    report[key][subkey] = Report(
+                        delta_percentage=delta_percentage,
+                        delta_absolute=right_count,
+                        total=total,
+                        left_count=left_count,
+                        right_count=right_count,
+                        left_percentage=left_percentage,
+                        right_percentage=right_percentage,
+                    )
 
             if right_side_total == 0:
                 right_percent = 100
@@ -148,15 +163,15 @@ class PcapCompare:
             else:
                 left_percent = new_left_count / left_side_total
 
-            report[key][Dissection.NEW_RIGHT_SUBKEY] = {
-                "delta_absolute": new_right_count - new_left_count,
-                "total": new_left_count + new_right_count,
-                "left_count": new_left_count,
-                "right_count": new_right_count,
-                "left_percentage": left_percent,
-                "right_percentage": right_percent,
-                "delta_percentage": right_percent - left_percent,
-            }
+            report[key][Dissection.NEW_RIGHT_SUBKEY] = Report(
+                delta_absolute=new_right_count - new_left_count,
+                total=new_left_count + new_right_count,
+                left_count=new_left_count,
+                right_count=new_right_count,
+                left_percentage=left_percent,
+                right_percentage=right_percent,
+                delta_percentage=right_percent - left_percent,
+            )
 
         return Comparison(report)
 

@@ -63,7 +63,7 @@ class Console(Output):
 
     def output_record(self, key: str, subkey: Any, data: Dict[str, Any]) -> None:
         """Print a report to the console."""
-        delta_percentage: float = data["delta_percentage"]
+        delta_percentage: float = data.delta_percentage
 
         # apply some fancy styling
         style = ""
@@ -80,8 +80,8 @@ class Console(Output):
         # construct the output line with styling
         subkey = Dissection.make_printable(key, subkey)
         line = f"  {style}{subkey:<50}{endstyle}"
-        line += f" {data['left_count']:>8} {data['right_count']:>8} {data['delta_absolute']:>8}"
-        line += f" {100*data['left_percentage']:>7.2f} {100*data['right_percentage']:>7.2f}  {100*delta_percentage:>7.2f}"
+        line += f" {data.left_count:>8} {data.right_count:>8} {data.delta_absolute:>8}"
+        line += f" {100*data.left_percentage:>7.2f} {100*data.right_percentage:>7.2f}  {100*delta_percentage:>7.2f}"
 
         # print it to the rich console
         self.console.print(line)
