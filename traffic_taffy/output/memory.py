@@ -1,11 +1,17 @@
+"""Store contents of a report in memory."""
 from collections import defaultdict
+from typing import Any
 
 from traffic_taffy.output import Output
 from traffic_taffy.dissection import Dissection
+from traffic_taffy.comparison import Comparison
 
 
 class Memory(Output):
-    def __init__(self, *args, **kwargs):
+    """A class for storing report contents in memory."""
+
+    def __init__(self, *args: list, **kwargs: dict):
+        """Create a Memory object."""
         super().__init__(*args, **kwargs)
         self.console = None
         self.have_done_header = False
@@ -13,30 +19,31 @@ class Memory(Output):
         self.memory = None
 
     @property
-    def title(self):
+    def title(self) -> str:
+        """The title of the report."""
         return self._title
 
     @title.setter
-    def title(self, new_title):
+    def title(self, new_title: str) -> None:
         self._title = new_title
 
     @property
-    def memory(self):
+    def memory(self) -> dict:
+        """The data for the report."""
         return self._memory
 
     @memory.setter
-    def memory(self, new_memory):
+    def memory(self, new_memory: dict) -> None:
         self._memory = new_memory
 
-    def output_start(self, report):
-        "Prints the header about columns being displayed"
+    def output_start(self, report: Comparison) -> None:
+        """Print the header about columns being displayed."""
         # This should match the spacing in print_contents()
         self.title = report.title
         self.memory = defaultdict(list)
 
-    def output_record(self, key, subkey, data) -> None:
-        "prints a report to the console"
-
+    def output_record(self, key: str, subkey: Any, data: dict) -> None:
+        """Print a report to the console."""
         subkey = Dissection.make_printable(key, subkey)
         self.memory[key].append(
             {
