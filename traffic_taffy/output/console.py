@@ -1,12 +1,14 @@
 """A module to output comparison results to the console."""
 
 from __future__ import annotations
-from typing import Dict, Any
+from typing import Dict, Any, TYPE_CHECKING
 from rich.console import Console as RichConsole
 
 from traffic_taffy.output import Output
 from traffic_taffy.dissection import Dissection
-from traffic_taffy.comparison import Comparison
+
+if TYPE_CHECKING:
+    from traffic_taffy.comparison import Comparison
 
 
 class Console(Output):
