@@ -75,7 +75,7 @@ class Output:
             record_count = 0
             for subkey, data in sorted(
                 contents[key].items(),
-                key=lambda x: x[1][sort_by],
+                key=lambda x: getattr(x[1], sort_by),
                 reverse=sort_order,
             ):
                 if not self.filter_check(data):
@@ -109,8 +109,8 @@ class Output:
 
     def filter_check(self, data: dict) -> bool:
         """Return true if we should include it."""
-        delta: float = data["delta_percentage"]
-        total: int = data["total"]
+        delta: float = data.delta_percentage
+        total: int = data.total
 
         if self.output_options["only_positive"] and delta <= 0:
             return False
