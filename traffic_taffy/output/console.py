@@ -1,21 +1,31 @@
+"""A module to output comparison results to the console."""
+
+from __future__ import annotations
+from typing import Dict, Any
+from rich.console import Console as RichConsole
+
 from traffic_taffy.output import Output
 from traffic_taffy.dissection import Dissection
-from rich.console import Console as RichConsole
+from traffic_taffy.comparison import Comparison
 
 
 class Console(Output):
-    def __init__(self, *args, **kwargs):
+    """An output class for reporting to a console."""
+
+    def __init__(self, *args: list, **kwargs: Dict[str, Any]):
+        """Create a console reporting object."""
         super().__init__(*args, **kwargs)
         self.console = None
         self.have_done_header = False
 
     # actual routines to print stuff
-    def init_console(self):
+    def init_console(self) -> None:
+        """Initialize the rich console object."""
         if not self.console:
             self.console = RichConsole()
 
-    def output_start(self, report):
-        "Prints the header about columns being displayed"
+    def output_start(self, report: Comparison) -> None:
+        """Print the header about columns being displayed."""
         # This should match the spacing in print_contents()
         self.init_console()
 
@@ -42,12 +52,12 @@ class Console(Output):
 
         self.console.print(line)
 
-    def output_new_section(self, key):
-        print(f"----- {key}")
+    def output_new_section(self, key: str) -> None:
+        """Print a new section border."""
+        self.console.print(f"----- {key}")
 
-    def output_record(self, key, subkey, data) -> None:
-        "prints a report to the console"
-
+    def output_record(self, key: str, subkey: Any, data: Dict[str, Any]) -> None:
+        """Print a report to the console"""
         delta_percentage: float = data["delta_percentage"]
 
         # apply some fancy styling
