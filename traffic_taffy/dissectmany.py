@@ -1,13 +1,23 @@
-from traffic_taffy.dissector import PCAPDissector
-from pcap_parallel import PCAPParallel
+"""A module for dissecting a number of PCAP files."""
+
+from __future__ import annotations
+from io import BufferedIOBase
 from concurrent.futures import ProcessPoolExecutor
 from logging import info
 import copy
 import multiprocessing
+from pcap_parallel import PCAPParallel
+from typing import List
+
+from traffic_taffy.dissector import PCAPDissector
+from traffic_taffy.dissection import Dissection
 
 
 class PCAPDissectMany:
-    def __init__(self, pcap_files, *args, **kwargs):
+    """A class for dissecting a number of PCAP files."""
+
+    def __init__(self, pcap_files: List[str], *args: list, **kwargs: dict):
+        """Create a PCAPDissectMany instance."""
         self.pcap_files = pcap_files
         self.args = args
         self.kwargs = kwargs
@@ -20,7 +30,8 @@ class PCAPDissectMany:
             # Note: this may undercount due to int flooring()
             self.maximum_cores = int(multiprocessing.cpu_count() / len(self.pcap_files))
 
-    def load_pcap_piece(self, pcap_io_buffer):
+    def load_pcap_piece(self, pcap_io_buffer: BufferedIOBase) -> Dissection:
+        """Load one piece of a pcap from a buffer."""
         kwargs = copy.copy(self.kwargs)
         # force false for actually loading
         kwargs["cache_results"] = False
@@ -36,12 +47,10 @@ class PCAPDissectMany:
 
     def load_pcap(
         self,
-        pcap_file,
-        split_size=None,
-        maximum_count: int = 0,
-        force_overwrite: bool = False,
-        force_load: bool = False,
-    ):
+        pcap_file: str,
+        split_size: int | None = None,
+    ) -> Dissection:
+        """Load one pcap file."""
         pd = PCAPDissector(
             pcap_file,
             *self.args,
@@ -83,7 +92,10 @@ class PCAPDissectMany:
 
         return dissection
 
-    def load_all(self, return_as_list: bool = False, dont_fork: bool = False):
+    def load_all(
+        self, return_as_list: bool = False, dont_fork: bool = False
+    ) -> List[Dissection]:
+        """Load all PCAPs in parallel."""
         if dont_fork:
             # handle each one individually -- typically for inserting debugging stops
             dissections = []
@@ -96,5 +108,5 @@ class PCAPDissectMany:
         with ProcessPoolExecutor() as executor:
             dissections = executor.map(self.load_pcap, self.pcap_files)
             if return_as_list:  # convert from generator
-                dissections = [x for x in dissections]
+                dissections = list(dissections)
             return dissections
