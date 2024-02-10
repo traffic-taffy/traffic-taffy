@@ -12,6 +12,9 @@ from traffic_taffy.comparison import Comparison
 class Console(Output):
     """An output class for reporting to a console."""
 
+    BOLD_LIMIT = 0.5
+    POSITIVE = 0.0
+
     def __init__(self, *args: list, **kwargs: Dict[str, Any]):
         """Create a console reporting object."""
         super().__init__(*args, **kwargs)
@@ -57,18 +60,18 @@ class Console(Output):
         self.console.print(f"----- {key}")
 
     def output_record(self, key: str, subkey: Any, data: Dict[str, Any]) -> None:
-        """Print a report to the console"""
+        """Print a report to the console."""
         delta_percentage: float = data["delta_percentage"]
 
         # apply some fancy styling
         style = ""
-        if delta_percentage < -0.5:
+        if delta_percentage < -Console.BOLD_LIMIT:
             style = "[bold red]"
-        elif delta_percentage < 0.0:
+        elif delta_percentage < Console.POSITIVE:
             style = "[red]"
-        elif delta_percentage > 0.5:
+        elif delta_percentage > Console.BOLD_LIMIT:
             style = "[bold green]"
-        elif delta_percentage > 0.0:
+        elif delta_percentage > Console.POSITIVE:
             style = "[green]"
         endstyle = style.replace("[", "[/")
 
