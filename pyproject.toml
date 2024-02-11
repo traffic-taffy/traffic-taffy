@@ -65,7 +65,9 @@ ignore = ["E501", "I001", "PLR0913", "ANN101", "ANN204",
 # complaining about simple if/else
 "SIM108",
 # allow blind exceptions
-"BLE001"
+"BLE001",
+# allow for loop variable overrides
+"PLW2901",
 ]
 fixable = ["ALL"]  # gulp
 # select = ["ALL"]
