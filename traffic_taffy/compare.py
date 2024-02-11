@@ -14,20 +14,18 @@ from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.dissection import Dissection
 
-from collections import namedtuple
+from dataclasses import dataclass
 
-Report = namedtuple(
-    "Report",
-    [
-        "delta_percentage",
-        "delta_absolute",
-        "total",
-        "left_count",
-        "right_count",
-        "left_percentage",
-        "right_percentage",
-    ],
-)
+
+@dataclass
+class Report:
+    delta_percentage: float
+    delta_absolute: int
+    total: int
+    left_count: int
+    right_count: int
+    left_percentage: float
+    right_percentage: float
 
 
 class PcapCompare:
