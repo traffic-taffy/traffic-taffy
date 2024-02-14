@@ -25,7 +25,7 @@ class Dissection:
     """Class to store the data from an enumerated pcap."""
 
     DISSECTION_KEY: str = "PCAP_DISSECTION_VERSION"
-    DISSECTION_VERSION: int = 7
+    DISSECTION_VERSION: int = 8
 
     TOTAL_COUNT: str = "__TOTAL__"
     TOTAL_SUBKEY: str = "packet"
