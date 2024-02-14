@@ -84,7 +84,7 @@ class DissectionEngineScapy(DissectionEngine):
             try:
                 field_value = getattr(layer, field_name)
                 if hasattr(field_value, "fields"):
-                    self.add_layer(field_value, new_prefix + ".")
+                    self.add_layer(field_value, new_prefix + "_")
                 else:
                     self.add_item(field_value, new_prefix)
             except Exception as e:
@@ -93,7 +93,7 @@ class DissectionEngineScapy(DissectionEngine):
 
     def callback(self, packet) -> None:
         """Handle one packet to dissect."""
-        prefix = "."
+        prefix = "_"
         self.timestamp = int(packet.time)
         if self.bin_size:
             self.timestamp = self.timestamp - self.timestamp % self.bin_size
@@ -101,5 +101,5 @@ class DissectionEngineScapy(DissectionEngine):
         self.dissection.timestamp = int(self.timestamp)
         self.dissection.incr(Dissection.TOTAL_COUNT, Dissection.TOTAL_SUBKEY)
         for payload in packet.iterpayloads():
-            prefix = f"{prefix}{payload.name}."
+            prefix = f"{prefix}{payload.name}_"
             self.add_layer(payload, prefix[1:])
