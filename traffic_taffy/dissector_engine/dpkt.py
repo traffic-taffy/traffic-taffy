@@ -210,7 +210,7 @@ class DissectionEngineDpkt(DissectionEngine):
                         return
 
                     if tcp and DissectionEngineDpkt.DNS_PORT in (tcp.sport, tcp.dport):
-                        self.dissect_dns(udp.data, prefix + "UDP_DNS_")
+                        self.dissect_dns(tcp.data, prefix + "TCP_DNS_")
                         return
 
                     if (
