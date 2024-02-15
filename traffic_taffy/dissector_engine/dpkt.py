@@ -73,12 +73,12 @@ class DissectionEngineDpkt(DissectionEngine):
         self.incr(dissection, prefix + "arcount", len(dns.ar))
 
         for record in dns.qd:
-            self.incr(dissection, prefix + "qd_qname", record.name + "_")
+            self.incr(dissection, prefix + "qd_qname", record.name + ".")
             self.incr(dissection, prefix + "qd_qtype", record.type)
             self.incr(dissection, prefix + "qd_qclass", record.cls)
 
         for record in dns.an:
-            self.incr(dissection, prefix + "an_rrname", record.name + "_")
+            self.incr(dissection, prefix + "an_rrname", record.name + ".")
             self.incr(dissection, prefix + "an_type", record.type)
             self.incr(dissection, prefix + "an_rclass", record.cls)
             self.incr(dissection, prefix + "an_rdlen", record.rlen)
@@ -114,7 +114,7 @@ class DissectionEngineDpkt(DissectionEngine):
                 for text_record in record:
                     self.incr(dissection, prefix + "an_text", text_record)
             elif record.type == dpkt.dns.DNS_SOA:
-                self.incr(dissection, prefix + "an_mname", record.mname + "_")
+                self.incr(dissection, prefix + "an_mname", record.mname + ".")
                 self.incr(dissection, prefix + "an_rname", record.rname)
                 self.incr(dissection, prefix + "an_serial", record.serial)
                 self.incr(dissection, prefix + "an_refresh", record.refresh)
@@ -124,7 +124,7 @@ class DissectionEngineDpkt(DissectionEngine):
                 self.incr(dissection, prefix + "an_minimum", record.minimum)
 
         for record in dns.ns:
-            self.incr(dissection, prefix + "ns_rrname", record.name + "_")
+            self.incr(dissection, prefix + "ns_rrname", record.name + ".")
             self.incr(dissection, prefix + "ns_type", record.type)
             self.incr(dissection, prefix + "ns_rclass", record.cls)
             # self.incr(dissection, prefix + "ns_rdata", record.nsname)
