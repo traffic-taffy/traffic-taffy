@@ -18,6 +18,14 @@ This tool is designed to do just that.
 See the online [readthedocs
 documentation](https://traffic-taffy.readthedocs.io/).
 
+## Development
+
+Traffic-taffy is under very rapid development with a fair amount of
+refactoring as time goes on into better class architectures.  If you
+are considering looking at portions of the code and submitting pull
+requests, please reach out to Wes ahead of time to check what changes
+might be coming that will cause merge conflicts.
+
 # Copyright and License
 
 This project is copyrighted by the University of Southern California,
