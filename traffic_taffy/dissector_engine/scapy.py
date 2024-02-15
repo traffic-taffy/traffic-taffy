@@ -16,10 +16,8 @@ class DissectionEngineScapy(DissectionEngine):
         """Create a scapy engine class."""
         super().__init__(*args, **kwargs)
 
-    def load(self) -> Dissection:
+    def load_data(self) -> None:
         """Load a pcap file into a nested dictionary of statistical counts."""
-        self.init_dissection()
-        load_this = self.pcap_file
         if isinstance(self.pcap_file, str):
             load_this = PCAPParallel.open_maybe_compressed(self.pcap_file)
 
@@ -34,9 +32,7 @@ class DissectionEngineScapy(DissectionEngine):
             count=self.maximum_count,
             filter=self.pcap_filter,
         )
-        self.dissection.calculate_metadata()
         # TODO(hardaker): for some reason this fails on xz compressed files when processing in parallel
-        return self.dissection
 
     def add_item(self, field_value: str | int, prefix: str) -> None:
         """Add an item to the self.dissection regardless of it's various types"""

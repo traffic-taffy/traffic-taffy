@@ -36,3 +36,10 @@ class DissectionEngine:
             ignore_list=self.ignore_list,
         )
         return self.dissection
+
+    def load(self) -> Dissection:
+        """Load the capture file into memory."""
+        self.init_dissection()
+        self.load_data()
+        self.dissection.calculate_metadata()
+        return self.dissection

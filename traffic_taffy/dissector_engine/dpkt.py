@@ -21,9 +21,9 @@ class DissectionEngineDpkt(DissectionEngine):
         """Create a dissection engine for quickly parsing and counting packets."""
         super().__init__(*args, **kwargs)
 
-    def load(self) -> Dissection:
+    def load_data(self) -> None:
         """Load the specified PCAP into memory."""
-        self.init_dissection()
+        # Note: called from self.load() after initializing
         if isinstance(self.pcap_file, str):
             pcap = dpkt.pcap.Reader(PCAPParallel.open_maybe_compressed(self.pcap_file))
         else:
@@ -33,13 +33,109 @@ class DissectionEngineDpkt(DissectionEngine):
             pcap.setfilter(self.pcap_filter)
         pcap.dispatch(self.maximum_count, self.callback)
 
-        self.dissection.calculate_metadata()
-        return self.dissection
-
     def incr(self, dissection: Dissection, name: str, value: str | int) -> None:
         """Increment a given name and value counter."""
         if name not in self.ignore_list:
             dissection.incr(name, value)
+
+    def dissect_dns(self, dns_data: bytes, prefix: str = None) -> None:
+        try:
+            dns = dpkt.dns.DNS(dns_data)
+        except dpkt.dpkt.UnpackError:
+            self.incr(self.dissection, prefix + "UDP_DNS_unparsable", "PARSE_ERROR")
+            debug("DPKT unparsable DNS data")
+            return
+
+        dissection = self.dissection
+
+        self.incr(dissection, prefix + "id", dns.id)
+        self.incr(dissection, prefix + "opcode", dns.op)
+        # self.incr(dissection, prefix + "qd", dns.qd)
+        # self.incr(dissection, prefix + "an", dns.an)
+        # self.incr(dissection, prefix + "ns", dns.ns)
+        # self.incr(dissection, prefix + "ar", dns.ar)
+
+        # flags and headers
+        self.incr(dissection, prefix + "rcode", dns.rcode)
+        self.incr(dissection, prefix + "ra", dns.ra)
+        self.incr(dissection, prefix + "rd", dns.rd)
+        self.incr(dissection, prefix + "tc", dns.tc)
+        self.incr(dissection, prefix + "z", dns.zero)
+        self.incr(dissection, prefix + "opcode", dns.opcode)
+        self.incr(dissection, prefix + "qr", dns.qr)
+        self.incr(dissection, prefix + "aa", dns.aa)
+        # self.incr(dissection, prefix + "ad", dns.ad)
+
+        # record counts
+        self.incr(dissection, prefix + "qdcount", len(dns.qd))
+        self.incr(dissection, prefix + "ancount", len(dns.an))
+        self.incr(dissection, prefix + "nscount", len(dns.ns))
+        self.incr(dissection, prefix + "arcount", len(dns.ar))
+
+        for record in dns.qd:
+            self.incr(dissection, prefix + "qd_qname", record.name + "_")
+            self.incr(dissection, prefix + "qd_qtype", record.type)
+            self.incr(dissection, prefix + "qd_qclass", record.cls)
+
+        for record in dns.an:
+            self.incr(dissection, prefix + "an_rrname", record.name + "_")
+            self.incr(dissection, prefix + "an_type", record.type)
+            self.incr(dissection, prefix + "an_rclass", record.cls)
+            self.incr(dissection, prefix + "an_rdlen", record.rlen)
+            self.incr(dissection, prefix + "an_ttl", record.ttl)
+
+            # concepts from dpkt.dns.DNS_upnack_rdata()
+            if record.type == dpkt.dns.DNS_A:
+                # TODO(hardaker): decode this hex streem to an IP
+                self.incr(dissection, prefix + "an_rdata", record.ip)
+            elif record.type == dpkt.dns.DNS_AAAA:
+                # TODO(hardaker): decode this hex streem to an IP(v6)
+                self.incr(dissection, prefix + "an_rdata", record.ip6)
+            elif record.type == dpkt.dns.DNS_NS:
+                self.incr(dissection, prefix + "an_nsname", record.nsname)
+            elif record.type == dpkt.dns.DNS_CNAME:
+                self.incr(dissection, prefix + "an_cname", record.cname)
+            elif record.type == dpkt.dns.DNS_CNAME:
+                self.incr(dissection, prefix + "an_ptrname", record.ptrname)
+            elif record.type == dpkt.dns.DNS_MX:
+                self.incr(
+                    dissection,
+                    prefix + "an_preference",
+                    record.preference,
+                )
+                self.incr(dissection, prefix + "an_mxname", record.mxname)
+            elif record.type == dpkt.dns.DNS_SRV:
+                self.incr(dissection, prefix + "an_priority", record.priority)
+                self.incr(dissection, prefix + "an_weight", record.weight)
+                self.incr(dissection, prefix + "an_port", record.port)
+                self.incr(dissection, prefix + "an_srvname", record.srvname)
+                self.incr(dissection, prefix + "an_off", record.off)
+            elif record.type in (dpkt.dns.DNS_TXT, dpkt.dns.DNS_HINFO):
+                for text_record in record:
+                    self.incr(dissection, prefix + "an_text", text_record)
+            elif record.type == dpkt.dns.DNS_SOA:
+                self.incr(dissection, prefix + "an_mname", record.mname + "_")
+                self.incr(dissection, prefix + "an_rname", record.rname)
+                self.incr(dissection, prefix + "an_serial", record.serial)
+                self.incr(dissection, prefix + "an_refresh", record.refresh)
+                self.incr(dissection, prefix + "an_refresh", record.refresh)
+                self.incr(dissection, prefix + "an_retry", record.retry)
+                self.incr(dissection, prefix + "an_expire", record.expire)
+                self.incr(dissection, prefix + "an_minimum", record.minimum)
+
+        for record in dns.ns:
+            self.incr(dissection, prefix + "ns_rrname", record.name + "_")
+            self.incr(dissection, prefix + "ns_type", record.type)
+            self.incr(dissection, prefix + "ns_rclass", record.cls)
+            # self.incr(dissection, prefix + "ns_rdata", record.nsname)
+            self.incr(dissection, prefix + "ns_ttl", record.ttl)
+
+        for record in dns.ar:
+            self.incr(dissection, prefix + "ar_rrname", record.name + "_")
+            self.incr(dissection, prefix + "ar_type", record.type)
+            self.incr(dissection, prefix + "ar_rclass", record.cls)
+            self.incr(dissection, prefix + "ar_ttl", record.ttl)
+            self.incr(dissection, prefix + "ar_rdlen", record.rlen)
 
     def callback(self, timestamp: float, packet: bytes) -> None:
         """Dissect and count one packet."""
@@ -113,29 +209,14 @@ class DissectionEngineDpkt(DissectionEngine):
                     self.incr(dissection, prefix + "TCP_options", tcp.opts)
 
                 if level >= PCAPDissectorLevel.COMMON_LAYERS.value:
-                    dns = None
                     http = None
                     if udp and DissectionEngineDpkt.DNS_PORT in (udp.sport, udp.dport):
-                        try:
-                            dns = dpkt.dns.DNS(udp.data)
-                            prefix += "UDP_DNS_"
-                        except dpkt.dpkt.UnpackError:
-                            self.incr(
-                                dissection, prefix + "UDP_DNS_unparsable", "PARSE_ERROR"
-                            )
-                            debug("DPKT unparsable DNS data")
-                            return
+                        self.dissect_dns(udp.data, prefix + "UDP_DNS_")
+                        return
 
                     if tcp and DissectionEngineDpkt.DNS_PORT in (tcp.sport, tcp.dport):
-                        try:
-                            dns = dpkt.dns.DNS(tcp.data)
-                            prefix += "TCP_DNS_"
-                        except dpkt.dpkt.UnpackError:
-                            self.incr(
-                                dissection, prefix + "TCP_DNS_unparsable", "PARSE_ERROR"
-                            )
-                            debug("DPKT unparsable DNS data")
-                            return
+                        self.dissect_dns(udp.data, prefix + "UDP_DNS_")
+                        return
 
                     if (
                         tcp
@@ -183,127 +264,3 @@ class DissectionEngineDpkt(DissectionEngine):
                                 self.incr(
                                     dissection, prefix + header, value.capitalize()
                                 )
-
-                    if dns:
-                        self.incr(dissection, prefix + "id", dns.id)
-                        self.incr(dissection, prefix + "opcode", dns.op)
-                        # self.incr(dissection, prefix + "qd", dns.qd)
-                        # self.incr(dissection, prefix + "an", dns.an)
-                        # self.incr(dissection, prefix + "ns", dns.ns)
-                        # self.incr(dissection, prefix + "ar", dns.ar)
-
-                        # flags and headers
-                        self.incr(dissection, prefix + "rcode", dns.rcode)
-                        self.incr(dissection, prefix + "ra", dns.ra)
-                        self.incr(dissection, prefix + "rd", dns.rd)
-                        self.incr(dissection, prefix + "tc", dns.tc)
-                        self.incr(dissection, prefix + "z", dns.zero)
-                        self.incr(dissection, prefix + "opcode", dns.opcode)
-                        self.incr(dissection, prefix + "qr", dns.qr)
-                        self.incr(dissection, prefix + "aa", dns.aa)
-                        # self.incr(dissection, prefix + "ad", dns.ad)
-
-                        # record counts
-                        self.incr(dissection, prefix + "qdcount", len(dns.qd))
-                        self.incr(dissection, prefix + "ancount", len(dns.an))
-                        self.incr(dissection, prefix + "nscount", len(dns.ns))
-                        self.incr(dissection, prefix + "arcount", len(dns.ar))
-
-                        for record in dns.qd:
-                            self.incr(
-                                dissection, prefix + "qd_qname", record.name + "_"
-                            )
-                            self.incr(dissection, prefix + "qd_qtype", record.type)
-                            self.incr(dissection, prefix + "qd_qclass", record.cls)
-
-                        for record in dns.an:
-                            self.incr(
-                                dissection, prefix + "an_rrname", record.name + "_"
-                            )
-                            self.incr(dissection, prefix + "an_type", record.type)
-                            self.incr(dissection, prefix + "an_rclass", record.cls)
-                            self.incr(dissection, prefix + "an_rdlen", record.rlen)
-                            self.incr(dissection, prefix + "an_ttl", record.ttl)
-
-                            # concepts from dpkt.dns.DNS_upnack_rdata()
-                            if record.type == dpkt.dns.DNS_A:
-                                # TODO(hardaker): decode this hex streem to an IP
-                                self.incr(dissection, prefix + "an_rdata", record.ip)
-                            elif record.type == dpkt.dns.DNS_AAAA:
-                                # TODO(hardaker): decode this hex streem to an IP(v6)
-                                self.incr(dissection, prefix + "an_rdata", record.ip6)
-                            elif record.type == dpkt.dns.DNS_NS:
-                                self.incr(
-                                    dissection, prefix + "an_nsname", record.nsname
-                                )
-                            elif record.type == dpkt.dns.DNS_CNAME:
-                                self.incr(dissection, prefix + "an_cname", record.cname)
-                            elif record.type == dpkt.dns.DNS_CNAME:
-                                self.incr(
-                                    dissection, prefix + "an_ptrname", record.ptrname
-                                )
-                            elif record.type == dpkt.dns.DNS_MX:
-                                self.incr(
-                                    dissection,
-                                    prefix + "an_preference",
-                                    record.preference,
-                                )
-                                self.incr(
-                                    dissection, prefix + "an_mxname", record.mxname
-                                )
-                            elif record.type == dpkt.dns.DNS_SRV:
-                                self.incr(
-                                    dissection, prefix + "an_priority", record.priority
-                                )
-                                self.incr(
-                                    dissection, prefix + "an_weight", record.weight
-                                )
-                                self.incr(dissection, prefix + "an_port", record.port)
-                                self.incr(
-                                    dissection, prefix + "an_srvname", record.srvname
-                                )
-                                self.incr(dissection, prefix + "an_off", record.off)
-                            elif record.type in (dpkt.dns.DNS_TXT, dpkt.dns.DNS_HINFO):
-                                for text_record in record:
-                                    self.incr(
-                                        dissection, prefix + "an_text", text_record
-                                    )
-                            elif record.type == dpkt.dns.DNS_SOA:
-                                self.incr(
-                                    dissection, prefix + "an_mname", record.mname + "_"
-                                )
-                                self.incr(dissection, prefix + "an_rname", record.rname)
-                                self.incr(
-                                    dissection, prefix + "an_serial", record.serial
-                                )
-                                self.incr(
-                                    dissection, prefix + "an_refresh", record.refresh
-                                )
-                                self.incr(
-                                    dissection, prefix + "an_refresh", record.refresh
-                                )
-                                self.incr(dissection, prefix + "an_retry", record.retry)
-                                self.incr(
-                                    dissection, prefix + "an_expire", record.expire
-                                )
-                                self.incr(
-                                    dissection, prefix + "an_minimum", record.minimum
-                                )
-
-                        for record in dns.ns:
-                            self.incr(
-                                dissection, prefix + "ns_rrname", record.name + "_"
-                            )
-                            self.incr(dissection, prefix + "ns_type", record.type)
-                            self.incr(dissection, prefix + "ns_rclass", record.cls)
-                            # self.incr(dissection, prefix + "ns_rdata", record.nsname)
-                            self.incr(dissection, prefix + "ns_ttl", record.ttl)
-
-                        for record in dns.ar:
-                            self.incr(
-                                dissection, prefix + "ar_rrname", record.name + "_"
-                            )
-                            self.incr(dissection, prefix + "ar_type", record.type)
-                            self.incr(dissection, prefix + "ar_rclass", record.cls)
-                            self.incr(dissection, prefix + "ar_ttl", record.ttl)
-                            self.incr(dissection, prefix + "ar_rdlen", record.rlen)
