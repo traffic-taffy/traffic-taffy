@@ -142,12 +142,7 @@ class DissectionEngineDpkt(DissectionEngine):
         # if binning is requested, save it in a binned time slot
         dissection: Dissection = self.dissection
 
-        dissection.timestamp = int(timestamp)
-        if dissection.bin_size:
-            dissection.timestamp = (
-                dissection.timestamp - dissection.timestamp % dissection.bin_size
-            )
-
+        self.start_packet(int(timestamp), dissection)
         dissection.incr(Dissection.TOTAL_COUNT, dissection.TOTAL_SUBKEY)
 
         level = self.dissector_level

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from traffic_taffy.dissector_engine import DissectionEngine
-from traffic_taffy.dissection import Dissection
 from pcap_parallel import PCAPParallel
 from logging import warning
 
@@ -90,12 +89,8 @@ class DissectionEngineScapy(DissectionEngine):
     def callback(self, packet) -> None:
         """Handle one packet to dissect."""
         prefix = "_"
-        self.timestamp = int(packet.time)
-        if self.bin_size:
-            self.timestamp = self.timestamp - self.timestamp % self.bin_size
+        self.start_packet(int(packet.time))
 
-        self.dissection.timestamp = int(self.timestamp)
-        self.dissection.incr(Dissection.TOTAL_COUNT, Dissection.TOTAL_SUBKEY)
         for payload in packet.iterpayloads():
             prefix = f"{prefix}{payload.name}_"
             self.add_layer(payload, prefix[1:])

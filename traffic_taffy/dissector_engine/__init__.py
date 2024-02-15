@@ -25,6 +25,22 @@ class DissectionEngine:
         self.ignore_list = set(ignore_list)
         self.layers = layers
 
+    def start_packet(
+        self, timestamp: int, dissection: Dissection | None = None
+    ) -> None:
+        if not dissection:
+            dissection = self.dissection
+
+        # set and bin-ize the timestamp
+        dissection.timestamp = int(timestamp)
+        if dissection.bin_size:
+            dissection.timestamp = (
+                dissection.timestamp - dissection.timestamp % dissection.bin_size
+            )
+
+        # increment the base counter for all packets
+        dissection.incr(Dissection.TOTAL_COUNT, dissection.TOTAL_SUBKEY)
+
     def init_dissection(self) -> Dissection:
         self.dissection = Dissection(
             pcap_file=self.pcap_file,
