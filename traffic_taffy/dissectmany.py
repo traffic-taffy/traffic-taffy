@@ -66,23 +66,34 @@ class PCAPDissectMany:
             return dissection
 
         info(f"processing {pcap_file}")
-        ps = PCAPParallel(
-            pcap_file,
-            split_size=split_size,
-            callback=self.load_pcap_piece,
-            maximum_count=self.kwargs.get("maximum_count", 0),
-            maximum_cores=self.maximum_cores,
-        )
-        results = ps.split()
+        if isinstance(pcap_file, str) and (
+            pcap_file.endswith(".dnstap") or pcap_file.endswith(".tap")
+        ):
+            # deal with dnstap files
 
-        # the data is coming back in (likely overlapping) chunks, and
-        # we need to merge them together
-        dissection = results.pop(0).result()
-        dissection.pcap_file = pcap_file  # splitting has the wrong name
-        for result in results:
-            dissection.merge(result.result())
+            # the Dissector already handles loading a dnstap engine
+            # TODO(hardaker): see if we can use a splitter here with the framing chunks
+            dissection = pd.load()
 
-        dissection.calculate_metadata()
+        else:  # assume pcap
+            ps = PCAPParallel(
+                pcap_file,
+                split_size=split_size,
+                callback=self.load_pcap_piece,
+                maximum_count=self.kwargs.get("maximum_count", 0),
+                maximum_cores=self.maximum_cores,
+            )
+            results = ps.split()
+
+            # the data is coming back in (likely overlapping) chunks, and
+            # we need to merge them together
+            dissection = results.pop(0).result()
+            dissection.pcap_file = pcap_file  # splitting has the wrong name
+            for result in results:
+                dissection.merge(result.result())
+
+            # recalculate metadata now that merges have happened
+            dissection.calculate_metadata()
 
         if self.kwargs.get("cache_results"):
             # create a dissector just to save the cache

@@ -97,7 +97,16 @@ class PCAPDissector:
 
         engine = None
         args = self.dissection_args()
-        if (
+
+        if isinstance(self.pcap_file, str) and (
+            self.pcap_file.endswith(".dnstap") or self.pcap_file.endswith(".tap")
+        ):
+            # we delay loading until the module and its requirements are needed
+            from traffic_taffy.dissector_engine.dnstap import DissectionEngineDNStap
+
+            engine = DissectionEngineDNStap(*args)
+
+        elif (
             self.dissector_level == PCAPDissectorLevel.DETAILED
             or self.dissector_level == PCAPDissectorLevel.DETAILED.value
         ):
