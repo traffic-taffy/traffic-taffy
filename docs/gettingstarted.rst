@@ -84,8 +84,8 @@ Speed comparison for different levels
 -------------------------------------
 
 The following table shows the differences in speeds for different
-levels on a sample set of 10,000 captured DNS packtes.  Note: This is
-not an accurate study at all, just an example.
+levels on a sample PCAP file containing 10,000 captured DNS packets.
+Note: This is not an accurate study at all, just an example.
 
 =========== ============================
 Level       Speed
