@@ -19,6 +19,8 @@ class DissectionEngineScapy(DissectionEngine):
         """Load a pcap file into a nested dictionary of statistical counts."""
         if isinstance(self.pcap_file, str):
             load_this = PCAPParallel.open_maybe_compressed(self.pcap_file)
+        else:
+            load_this = self.pcap_file
 
         if self.layers:
             for layer in self.layers:
