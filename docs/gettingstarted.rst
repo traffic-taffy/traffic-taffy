@@ -29,6 +29,16 @@ of 10000 records per pcap file (*-n 10000*)
 
    taffy-compare -n 10000 -x 10 -c 100 file1.pcap file2.pcap
 
+Input File Types Supported
+--------------------------
+
+The *traffic-taffy* tools currently support reading these types of
+files:
+
+* PCAP files
+* DNSTAP files
+* xz, gzip or bzip2 compressed PCAP files
+
 Important Command Line Options
 ------------------------------
 
