@@ -174,9 +174,12 @@ class TaffyExplorer(QDialog, PcapGraphData):
             cache_results=self.args.cache_pcap_results,
             cache_file_suffix=self.args.cache_file_suffix,
             dissection_level=self.args.dissection_level,
-            between_times=self.args.between_times,
+            # between_times=self.args.between_times,
             bin_size=self.args.bin_size,
-            pcap_filter=self.pcap_filter,
+            pcap_filter=self.args.filter,
+            layers=self.args.layers,
+            force_load=self.args.force_load,
+            force_overwrite=self.args.force_overwrite,
         )
 
         # create the graph data storage

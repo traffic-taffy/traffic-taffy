@@ -295,12 +295,20 @@ def compare_add_parseargs(
     )
 
     compare_parser.add_argument(
-        "-T",
-        "--between-times",
-        nargs=2,
-        type=int,
-        help="For single files, only display results between these timestamps",
+        "-s",
+        "--sort-by",
+        default="delta%",
+        type=str,
+        help="Sort report entries by this column",
     )
+
+    # compare_parser.add_argument(
+    #     "-T",
+    #     "--between-times",
+    #     nargs=2,
+    #     type=int,
+    #     help="For single files, only display results between these timestamps",
+    # )
 
     return compare_parser
 

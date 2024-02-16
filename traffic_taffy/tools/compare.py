@@ -44,14 +44,6 @@ def parse_args() -> Namespace:
         help="Define the logging verbosity level (debug, info, warning, error, ...).",
     )
 
-    parser.add_argument(
-        "-s",
-        "--sort-by",
-        default="delta%",
-        type=str,
-        help="Sort report entries by this column",
-    )
-
     parser.add_argument("pcap_files", type=str, nargs="*", help="PCAP files to analyze")
 
     args = parser.parse_args()
