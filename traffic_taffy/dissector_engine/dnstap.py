@@ -104,11 +104,11 @@ class DissectionEngineDNStap(DissectionEngineDpkt):
 
                 if message.type & 0x01 == 1:  # query
                     self.incr(
-                        dissection, protocol_prefix + "qr", 0
+                        dissection, protocol_prefix + "DNS_qr", 0
                     )  # query = 0 in the protocol
                 else:
                     self.incr(
-                        dissection, protocol_prefix + "qr", 1
+                        dissection, protocol_prefix + "DNS_qr", 1
                     )  # response = 1 in the protocol
 
                 count += 1
@@ -116,6 +116,6 @@ class DissectionEngineDNStap(DissectionEngineDpkt):
                     break
 
                 if level >= PCAPDissectorLevel.COMMON_LAYERS.value:
-                    self.dissect_dns(message.query_message, "dnstap_")
+                    self.dissect_dns(message.query_message, protocol_prefix + "DNS_")
 
         return dissection
