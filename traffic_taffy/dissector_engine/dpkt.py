@@ -42,8 +42,12 @@ class DissectionEngineDpkt(DissectionEngine):
         try:
             dns = dpkt.dns.DNS(dns_data)
         except dpkt.dpkt.UnpackError:
-            self.incr(self.dissection, prefix + "UDP_DNS_unparsable", "PARSE_ERROR")
+            self.incr(self.dissection, prefix + "unparsable_dns", "PARSE_ERROR")
             debug("DPKT unparsable DNS data")
+            return
+        except UnicodeDecodeError:
+            self.incr(self.dissection, prefix + "unparsable_utf8", "PARSE_ERROR")
+            debug("DPKT unparsable UTF8 data")
             return
 
         dissection = self.dissection
