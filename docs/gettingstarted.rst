@@ -36,7 +36,7 @@ The *traffic-taffy* tools currently support reading these types of
 files:
 
 * PCAP files
-* DNSTAP files
+* DNSTAP files (0.6 and later)
 * xz, gzip or bzip2 compressed PCAP files
 
 Important Command Line Options
