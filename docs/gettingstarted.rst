@@ -131,3 +131,5 @@ Typical workflow
    in memory and allows you to iterate and discover at a faster rate.
    Start with the same command line options listed in #2 above, and
    use the UI configuration to change the values at run-time.
+
+See :doc:`the case study <casestudy>` for a complete example.

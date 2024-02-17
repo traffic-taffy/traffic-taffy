@@ -59,7 +59,7 @@ identifier *__TOTAL__* and sub-identifier *packet* to select just the
 total number of packets to create this graph.
 
 **Note: a first time level 10 analysis will take a long time to run,
- but future runs will be much faster because we turned on caching (-C)**
+but future runs will be much faster because we turned on caching (-C)**
 
 ::
 
@@ -87,8 +87,8 @@ just use that (-C) and do not have to specify these parameters again.
 
    taffy-compare -C -c 10000 -x 5 -t 10 *.pcap.xz
 
-The full output can be found in this file:
-`<case-study-output/initial-compare.txt>`_ , but we highly some of the
+The full output can be found
+`in this file <https://github.com/hardaker/traffic-taffy/raw/main/docs/case-study-output/initial-compare.txt>`_ , but we highly some of the
 output using screenshots of `taffy-compare`'s colorized terminal
 output.
 
