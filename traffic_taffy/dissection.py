@@ -10,6 +10,7 @@ import ipaddress
 from typing import List
 from copy import deepcopy
 from pathlib import Path
+from traffic_taffy import __VERSION__ as VERSION
 
 
 class PCAPDissectorLevel(Enum):
@@ -259,6 +260,7 @@ class Dissection:
             "file": self.pcap_file,
             "parameters": {},
             "dissection": self.data,
+            "created_by": "traffic-taffy " + VERSION,
         }
 
         for parameter in self.parameters:
