@@ -147,7 +147,6 @@ class DissectionEngineDpkt(DissectionEngine):
         dissection: Dissection = self.dissection
 
         self.start_packet(int(timestamp), dissection)
-        dissection.incr(Dissection.TOTAL_COUNT, dissection.TOTAL_SUBKEY)
 
         level = self.dissector_level
         if isinstance(level, PCAPDissectorLevel):
