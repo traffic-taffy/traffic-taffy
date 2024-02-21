@@ -15,13 +15,17 @@ p.() {
     fi
 }
 
+# clean slate testing
+rm -rf test-outputs
+rm -f *.e2etest*
+mkdir -p test-outputs
+
 for level in 1 2 3 10 ; do
 
     # straight dissection
     p. dissect -d $level -c 100 -n 1000 test.pcap
 
     # with caching
-    rm -f *.e2etest*
     p. dissect -d $level -c 100 -C --cs e2etest.$level -n 1000 test.pcap
 
     # use cache
@@ -38,6 +42,15 @@ for level in 1 2 3 10 ; do
 
     # compare two files restricted comparison
     p. compare -d $level -C --cs e2etest.$level -c 100 -x 10 -t 10 test.pcap test.pcap
+
+    # graphing
+    p. graph -o test-outputs/test.$level.png  -d $level -C --cs e2etest.$level -m __TOTAL__ -m packet test.pcap
+
+    # export minimal
+    p. export -d $level -C --cs e2etest.$level -o test-outputs/test.$level.fsdb -c 10 -m IP  test.pcap
+
+    # exprot everything
+    p. export -d $level -C --cs e2etest.$level -o test-outputs/test.$level.fsdb test.pcap
 
 done
 
