@@ -179,7 +179,9 @@ class Dissection:
             return None
 
         cached_file = self.pcap_file + self.cache_file_suffix
-        cached_contents = self.load_saved(cached_file, dont_overwrite=True)
+        cached_contents = self.load_saved(
+            cached_file, dont_overwrite=True, force_load=force_load
+        )
 
         ok_to_load = True
 
@@ -321,7 +323,12 @@ class Dissection:
         # load the data
         self.data = versioned_cache["dissection"]
 
-    def load_saved(self: Dissection, where: str, dont_overwrite: bool = False) -> dict:
+    def load_saved(
+        self: Dissection,
+        where: str,
+        dont_overwrite: bool = False,
+        force_load: bool = False,
+    ) -> dict:
         """Load a saved report from a cache file."""
         with Path(where).open("rb") as cache_file:
             contents = msgpack.load(cache_file, strict_map_key=False)
@@ -332,7 +339,7 @@ class Dissection:
         )
 
         # check that the version header matches something we understand
-        if contents[self.DISSECTION_KEY] != self.DISSECTION_VERSION:
+        if not force_load and contents[self.DISSECTION_KEY] != self.DISSECTION_VERSION:
             raise ValueError(
                 "improper saved dissection version: report version = "
                 + str(contents[self.DISSECTION_KEY])
