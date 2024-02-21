@@ -17,7 +17,8 @@ Traffic-taffy: finding tasty bumps in your network's traffic
    tools/index
 
 The **traffic-taffy** project aims to help you compare PCAP files that
-contain both normal traffic loads and unusual spikes.
+contain both normal traffic loads and unusual spikes.  Also see the
+`Project Webpage <https://traffic-taffy.github.io/>`_.
 
 Acknowledgments
 ===============
