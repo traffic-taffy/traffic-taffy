@@ -39,7 +39,7 @@ taffy-graph = "traffic_taffy.tools.graph:main"
 taffy-export = "traffic_taffy.tools.export:main"
 
 [project.urls]
-Homepage = "https://github.com/hardaker/traffic-taffy"
+Homepage = "https://traffic-taffy.github.io/"
 
 [tool.hatch.version]
 path = "traffic_taffy/__init__.py"
