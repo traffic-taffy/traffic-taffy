@@ -45,22 +45,22 @@ class DissectionEngineScapy(DissectionEngine):
                 #       that will always change or are too unique
                 if isinstance(field_value[0], tuple):
                     for item in field_value:
-                        self.dissection.incr(prefix, item[0])
+                        self.incr(prefix, item[0])
                 else:
                     for item in field_value:
                         self.add_item(item, prefix)
             # else:
             #     debug(f"ignoring empty-list: {field_value}")
         elif isinstance(field_value, (str, int, float)):
-            self.dissection.incr(prefix, field_value)
+            self.incr(prefix, field_value)
 
         elif isinstance(field_value, bytes):
             try:
                 converted = field_value.decode("utf-8")
-                self.dissection.incr(prefix, converted)
+                self.incr(prefix, converted)
             except Exception:
                 converted = "0x" + field_value.hex()
-                self.dissection.incr(prefix, converted)
+                self.incr(prefix, converted)
 
     def add_layer(self, layer, prefix: str | None = "") -> None:
         """Analyze a layer to add counts to each layer sub-component."""

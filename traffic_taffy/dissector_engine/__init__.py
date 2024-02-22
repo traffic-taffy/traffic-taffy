@@ -59,3 +59,7 @@ class DissectionEngine:
         self.load_data()
         self.dissection.calculate_metadata()
         return self.dissection
+
+    def incr(self, name: str, value: str | int) -> None:
+        if name not in self.ignore_list:
+            self.dissection.incr(name, value)

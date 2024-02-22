@@ -65,19 +65,19 @@ class DissectionEngineDNStap(DissectionEngineDpkt):
                 # determine if it's IPv4 or IPv6
                 if message.socket_family == 1:
                     IP = "IP"
-                    self.incr(dissection, "Ethernet_type", 2048)
-                    self.incr(dissection, "Ethernet_IP_version", 4)
+                    self.incr("Ethernet_type", 2048)
+                    self.incr("Ethernet_IP_version", 4)
                 elif message.socket_family == 2:
                     IP = "IPv6"
-                    self.incr(dissection, "Ethernet_type", 34525)
-                    self.incr(dissection, "Ethernet_IP_version", 6)
+                    self.incr("Ethernet_type", 34525)
+                    self.incr("Ethernet_IP_version", 6)
                 else:
                     raise ValueError("unknown IP protocol in dnstap")
                 prefix = "Ethernet_" + IP + "_"
 
                 # set the source/dest addresses
-                self.incr(dissection, prefix + "src", message.query_address)
-                self.incr(dissection, prefix + "dst", message.response_address)
+                self.incr(prefix + "src", message.query_address)
+                self.incr(prefix + "dst", message.response_address)
 
                 # Determine the transport protocol
                 # TODO(hardaker): read these names from the protobuf spec directly
@@ -99,16 +99,16 @@ class DissectionEngineDNStap(DissectionEngineDpkt):
                     raise ValueError("unknown DNS socket protocol in dnstap")
                 # TODO(hardaker): get full protocol list here
 
-                self.incr(dissection, protocol_prefix + "sport", message.query_port)
-                self.incr(dissection, protocol_prefix + "dport", message.response_port)
+                self.incr(protocol_prefix + "sport", message.query_port)
+                self.incr(protocol_prefix + "dport", message.response_port)
 
                 if message.type & 0x01 == 1:  # query
                     self.incr(
-                        dissection, protocol_prefix + "DNS_qr", 0
+                        protocol_prefix + "DNS_qr", 0
                     )  # query = 0 in the protocol
                 else:
                     self.incr(
-                        dissection, protocol_prefix + "DNS_qr", 1
+                        protocol_prefix + "DNS_qr", 1
                     )  # response = 1 in the protocol
 
                 count += 1
