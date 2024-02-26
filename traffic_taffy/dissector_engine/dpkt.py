@@ -105,7 +105,6 @@ class DissectionEngineDpkt(DissectionEngine):
                 self.incr(prefix + "an_weight", record.weight)
                 self.incr(prefix + "an_port", record.port)
                 self.incr(prefix + "an_srvname", record.srvname)
-                self.incr(prefix + "an_off", record.off)
             elif record.type in (dpkt.dns.DNS_TXT, dpkt.dns.DNS_HINFO):
                 for text_record in record:
                     self.incr(prefix + "an_text", text_record)
