@@ -443,10 +443,10 @@ class Dissection:
 
     # has to go at the end to pick up the above function names
     DISPLAY_TRANSFORMERS: ClassVar[Dict[str, callable]] = {
-        "Ethernet.IP.src": ipaddress.ip_address,
-        "Ethernet.IP.dst": ipaddress.ip_address,
-        "Ethernet.IP6.src": ipaddress.ip_address,
-        "Ethernet.IP6.dst": ipaddress.ip_address,
-        "Ethernet.src": print_mac_address,
-        "Ethernet.dst": print_mac_address,
+        "Ethernet_IP_src": ipaddress.ip_address,
+        "Ethernet_IP_dst": ipaddress.ip_address,
+        "Ethernet_IP6_src": ipaddress.ip_address,
+        "Ethernet_IP6_dst": ipaddress.ip_address,
+        "Ethernet_src": print_mac_address,
+        "Ethernet_dst": print_mac_address,
     }
