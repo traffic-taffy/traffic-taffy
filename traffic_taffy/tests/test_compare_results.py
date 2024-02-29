@@ -1,5 +1,6 @@
 from collections import Counter
-from traffic_taffy.compare import PcapCompare, Report
+from traffic_taffy.compare import PcapCompare
+from traffic_taffy.report import Report
 
 
 def test_compare_results():
