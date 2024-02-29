@@ -462,6 +462,8 @@ class Dissection:
     }
 
     IANA_TRANSLATORS: ClassVar[Dict[str, str]] = {
+        "Ethernet_IP_proto": "protocols",
+        "Ethernet_IPv6_proto": "protocols",
         "Ethernet_IP_UDP_sport": "udp_ports",
         "Ethernet_IP_UDP_dport": "udp_ports",
         "Ethernet_IP_TCP_sport": "tcp_ports",
@@ -493,6 +495,8 @@ class Dissection:
         return f"{value} ({table[value]})"
 
     ENUM_TRANSLATORS: ClassVar[Dict[str, callable]] = {
+        "Ethernet_IP_proto": print_iana_values,
+        "Ethernet_IPv6_proto": print_iana_values,
         "Ethernet_IP_UDP_sport": print_iana_values,
         "Ethernet_IP_UDP_dport": print_iana_values,
         "Ethernet_IP_TCP_sport": print_iana_values,

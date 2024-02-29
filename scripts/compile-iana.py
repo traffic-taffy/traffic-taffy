@@ -86,6 +86,17 @@ def main():
     iana_data = {}
 
     #
+    # protocols
+    #
+    data = get_data(base, "protocol-numbers")
+    records = data["registry"]["record"]
+    protocols = {}
+    for record in records:
+        if "name" in record:
+            protocols[record["value"]] = record["name"]
+    iana_data["protocols"] = protocols
+
+    #
     # load UDP/TCP port numbers
     #
     data = get_data(base, "service-names-port-numbers")
