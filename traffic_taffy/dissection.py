@@ -416,7 +416,9 @@ class Dissection:
         try:
             if isinstance(value, bytes):
                 if value_type in Dissection.DISPLAY_TRANSFORMERS:
-                    value = str(Dissection.DISPLAY_TRANSFORMERS[value_type](value))
+                    value = str(
+                        Dissection.DISPLAY_TRANSFORMERS[value_type](value_type, value)
+                    )
                 else:
                     value = "0x" + value.hex()
             else:
@@ -432,7 +434,7 @@ class Dissection:
         return value
 
     @staticmethod
-    def print_mac_address(value: bytes) -> str:
+    def print_mac_address(value_type: str, value: bytes) -> str:
         """Convert bytes to ethernet mac style address."""
 
         # TODO(hardaker): certainly inefficient
@@ -441,12 +443,17 @@ class Dissection:
 
         return ":".join(map(two_hex, value))
 
+    @staticmethod
+    def print_ip_address(value_type: str, value: bytes) -> str:
+        """Convert binary bytes to IP addresses (v4 and v6)."""
+        return ipaddress.ip_address(value)
+
     # has to go at the end to pick up the above function names
     DISPLAY_TRANSFORMERS: ClassVar[Dict[str, callable]] = {
-        "Ethernet_IP_src": ipaddress.ip_address,
-        "Ethernet_IP_dst": ipaddress.ip_address,
-        "Ethernet_IP6_src": ipaddress.ip_address,
-        "Ethernet_IP6_dst": ipaddress.ip_address,
+        "Ethernet_IP_src": print_ip_address,
+        "Ethernet_IP_dst": print_ip_address,
+        "Ethernet_IP6_src": print_ip_address,
+        "Ethernet_IP6_dst": print_ip_address,
         "Ethernet_src": print_mac_address,
         "Ethernet_dst": print_mac_address,
     }
