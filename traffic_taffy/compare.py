@@ -13,19 +13,7 @@ from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.dissection import Dissection
-
-from dataclasses import dataclass
-
-
-@dataclass
-class Report:
-    delta_percentage: float
-    delta_absolute: int
-    total: int
-    left_count: int
-    right_count: int
-    left_percentage: float
-    right_percentage: float
+from traffic_taffy.algorithms.statistical import ComparisonStatistical
 
 
 class PcapCompare:
@@ -66,6 +54,8 @@ class PcapCompare:
         self.force_load = force_load
         self.merge_files = merge_files
 
+        self.algorithm = ComparisonStatistical()
+
     @property
     def pcap_files(self) -> List[str]:
         """List of pcap files being compared."""
@@ -83,97 +73,6 @@ class PcapCompare:
     @reports.setter
     def reports(self, newvalue: List[dict]) -> None:
         self._reports = newvalue
-
-    def compare_dissections(self, left_side: dict, right_side: dict) -> dict:
-        """Compare two dissections."""
-        report = {}
-
-        keys = set(left_side.keys())
-        keys = keys.union(right_side.keys())
-        for key in keys:
-            report[key] = {}
-
-            if key not in left_side:
-                left_side[key] = {}
-            left_side_total = sum(left_side[key].values())
-
-            if key not in right_side:
-                right_side[key] = {}
-            right_side_total = sum(right_side[key].values())
-
-            new_left_count = 0
-            for subkey in left_side[key]:
-                delta_percentage = 0.0
-                total = 0
-                if subkey in right_side[key]:
-                    left_percentage = left_side[key][subkey] / left_side_total
-                    right_percentage = right_side[key][subkey] / right_side_total
-                    delta_percentage = right_percentage - left_percentage
-                    total = right_side[key][subkey] + left_side[key][subkey]
-                    left_count = left_side[key][subkey]
-                    right_count = right_side[key][subkey]
-                else:
-                    delta_percentage = -1.0
-                    left_percentage = left_side[key][subkey] / left_side_total
-                    right_percentage = 0.0
-                    total = -left_side[key][subkey]
-                    left_count = left_side[key][subkey]
-                    right_count = 0
-                    new_left_count += 1
-
-                delta_absolute = right_count - left_count
-                report[key][subkey] = Report(
-                    delta_percentage=delta_percentage,
-                    delta_absolute=delta_absolute,
-                    total=total,
-                    left_count=left_count,
-                    right_count=right_count,
-                    left_percentage=left_percentage,
-                    right_percentage=right_percentage,
-                )
-
-            new_right_count = 0
-            for subkey in right_side[key]:
-                if subkey not in report[key]:
-                    delta_percentage = 1.0
-                    total = right_side[key][subkey]
-                    left_count = 0
-                    right_count = right_side[key][subkey]
-                    left_percentage = 0.0
-                    right_percentage = right_side[key][subkey] / right_side_total
-                    new_right_count += 1  # this value wasn't in the left
-
-                    report[key][subkey] = Report(
-                        delta_percentage=delta_percentage,
-                        delta_absolute=right_count,
-                        total=total,
-                        left_count=left_count,
-                        right_count=right_count,
-                        left_percentage=left_percentage,
-                        right_percentage=right_percentage,
-                    )
-
-            if right_side_total == 0:
-                right_percent = 100
-            else:
-                right_percent = new_right_count / right_side_total
-
-            if left_side_total == 0:
-                left_percent = 100
-            else:
-                left_percent = new_left_count / left_side_total
-
-            report[key][Dissection.NEW_RIGHT_SUBKEY] = Report(
-                delta_absolute=new_right_count - new_left_count,
-                total=new_left_count + new_right_count,
-                left_count=new_left_count,
-                right_count=new_right_count,
-                left_percentage=left_percent,
-                right_percentage=right_percent,
-                delta_percentage=right_percent - left_percent,
-            )
-
-        return Comparison(report)
 
     def load_pcaps(self) -> None:
         """Load all pcaps into memory and dissect them."""
@@ -209,7 +108,9 @@ class PcapCompare:
             for other in dissections:
                 # compare the two global summaries
 
-                report = self.compare_dissections(reference.data[0], other.data[0])
+                report = self.algorithm.compare_dissections(
+                    reference.data[0], other.data[0]
+                )
                 report.title = f"{reference.pcap_file} vs {other.pcap_file}"
 
                 reports.append(report)
@@ -243,7 +144,7 @@ class PcapCompare:
 
                 debug(f"comparing timestamps {time_left} and {time_right}")
 
-                report = self.compare_dissections(
+                report = self.algorithm.compare_dissections(
                     reference[time_left],
                     reference[time_right],
                 )
