@@ -1,5 +1,21 @@
 #!/bin/bash
 
+usage() {
+    echo "usage: $0 [-l level[s]]"
+    exit 1
+}
+
+levels="1 2 3 10"
+
+while getopts "l:h" arg ; do
+    case $arg in
+	l) levels=$OPTARG ;;
+	h) usage ;;
+	*) usage ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
 p.() {
     prog=${1}
     shift
@@ -20,7 +36,7 @@ rm -rf test-outputs
 rm -f *.e2etest*
 mkdir -p test-outputs
 
-for level in 1 2 3 10 ; do
+for level in $levels ; do
 
     # straight dissection
     p. dissect -d $level -c 100 -n 1000 test.pcap
