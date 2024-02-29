@@ -83,7 +83,7 @@ def main():
 
     base = Path(args.base_dir)
 
-    iana_data = {}
+    iana_data = defaultdict(dict)
 
     #
     # protocols
@@ -123,6 +123,24 @@ def main():
     #
     # DNS information
     #
+    data = get_data(base, "dns-parameters")
+    classes = data["registry"][0]["record"]
+    rrtypes = data["registry"][1]["record"]
+    opcodes = data["registry"][2]["record"]
+    rcodes = data["registry"][3]["record"]
+
+    for dns_class in classes:
+        iana_data["dns_classes"][dns_class["value"]] = dns_class["description"]
+
+    for rrtype in rrtypes:
+        iana_data["dns_rrtypes"][rrtype["value"]] = rrtype["type"]
+
+    for opcode in opcodes:
+        iana_data["dns_opcodes"][opcode["value"]] = opcode["description"]
+
+    for rcode in rcodes:
+        if "description" in rcode:
+            iana_data["dns_rcodes"][rcode["value"]] = rcode["description"]
 
     #
     # save everything
