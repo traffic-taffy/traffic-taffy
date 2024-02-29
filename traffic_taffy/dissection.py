@@ -464,6 +464,12 @@ class Dissection:
     IANA_TRANSLATORS: ClassVar[Dict[str, str]] = {
         "Ethernet_IP_UDP_sport": "udp_ports",
         "Ethernet_IP_UDP_dport": "udp_ports",
+        "Ethernet_IP_TCP_sport": "tcp_ports",
+        "Ethernet_IP_TCP_dport": "tcp_ports",
+        "Ethernet_IPv6_UDP_sport": "udp_ports",
+        "Ethernet_IPv6_UDP_dport": "udp_ports",
+        "Ethernet_IPv6_TCP_sport": "tcp_ports",
+        "Ethernet_IPv6_TCP_dport": "tcp_ports",
     }
 
     @staticmethod
@@ -484,6 +490,12 @@ class Dissection:
     ENUM_TRANSLATORS: ClassVar[Dict[str, callable]] = {
         "Ethernet_IP_UDP_sport": print_iana_values,
         "Ethernet_IP_UDP_dport": print_iana_values,
+        "Ethernet_IP_TCP_sport": print_iana_values,
+        "Ethernet_IP_TCP_dport": print_iana_values,
+        "Ethernet_IPv6_UDP_sport": print_iana_values,
+        "Ethernet_IPv6_UDP_dport": print_iana_values,
+        "Ethernet_IPv6_TCP_sport": print_iana_values,
+        "Ethernet_IPv6_TCP_dport": print_iana_values,
     }
 
     # has to go at the end to pick up the above function names
