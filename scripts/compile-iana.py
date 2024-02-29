@@ -83,6 +83,8 @@ def main():
 
     base = Path(args.base_dir)
 
+    iana_data = {}
+
     #
     # load UDP/TCP port numbers
     #
@@ -95,7 +97,7 @@ def main():
         else:
             debug(record)
     for port_type in port_data:
-        data[port_type + "_ports"] = port_data[port_type]
+        iana_data[port_type + "_ports"] = port_data[port_type]
 
     #
     # icmp messages
@@ -103,12 +105,9 @@ def main():
     data = get_data(base, "icmp-parameters")
     records = data["registry"][0]["record"]
     icmp_types = {}
-    import pdb
-
-    pdb.set_trace()
     for record in records:
         icmp_types[record["value"]] = record["description"]
-    data["icmp_types"] = icmp_types
+    iana_data["icmp_types"] = icmp_types
 
     #
     # DNS information
@@ -118,7 +117,7 @@ def main():
     # save everything
     #
     with open(args.output_file, "wb") as output_h:
-        pickle.dump(data, output_h)
+        pickle.dump(iana_data, output_h)
 
 
 if __name__ == "__main__":

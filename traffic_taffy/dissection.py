@@ -471,6 +471,10 @@ class Dissection:
         "Ethernet_IPv6_TCP_sport": "tcp_ports",
         "Ethernet_IPv6_TCP_dport": "tcp_ports",
         "Ethernet_IP_ICMP_code": "icmp_types",
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_dport": "udp_ports",
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_sport": "udp_ports",
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_dport": "tcp_ports",
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_sport": "tcp_ports",
     }
 
     @staticmethod
@@ -493,6 +497,10 @@ class Dissection:
         "Ethernet_IP_UDP_dport": print_iana_values,
         "Ethernet_IP_TCP_sport": print_iana_values,
         "Ethernet_IP_TCP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_sport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_sport": print_iana_values,
         "Ethernet_IPv6_UDP_sport": print_iana_values,
         "Ethernet_IPv6_UDP_dport": print_iana_values,
         "Ethernet_IPv6_TCP_sport": print_iana_values,
