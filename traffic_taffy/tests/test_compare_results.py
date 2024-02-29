@@ -1,9 +1,9 @@
 from collections import Counter
-from traffic_taffy.compare import PcapCompare
 from traffic_taffy.report import Report
+from traffic_taffy.algorithms.statistical import ComparisonStatistical
 
 
-def test_compare_results():
+def test_compare_statistical_algorithm():
     left_data = {0: {"src": Counter({"a": 5, "b": 10})}}  # total = 15
     right_data = {0: {"src": Counter({"a": 15, "c": 15})}}  # total = 30
 
@@ -49,7 +49,7 @@ def test_compare_results():
         }
     }
 
-    pc = PcapCompare([1, 2])  # bogus file names
-    report = pc.compare_dissections(left_data[0], right_data[0])
+    algorithm = ComparisonStatistical()  # bogus file names
+    report = algorithm.compare_dissections(left_data[0], right_data[0])
 
     assert report.contents == expected
