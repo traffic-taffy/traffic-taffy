@@ -470,6 +470,7 @@ class Dissection:
         "Ethernet_IPv6_UDP_dport": "udp_ports",
         "Ethernet_IPv6_TCP_sport": "tcp_ports",
         "Ethernet_IPv6_TCP_dport": "tcp_ports",
+        "Ethernet_IP_ICMP_code": "icmp_types",
     }
 
     @staticmethod
@@ -496,6 +497,7 @@ class Dissection:
         "Ethernet_IPv6_UDP_dport": print_iana_values,
         "Ethernet_IPv6_TCP_sport": print_iana_values,
         "Ethernet_IPv6_TCP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_code": print_iana_values,
     }
 
     # has to go at the end to pick up the above function names

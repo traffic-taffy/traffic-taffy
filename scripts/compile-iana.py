@@ -98,6 +98,23 @@ def main():
         data[port_type + "_ports"] = port_data[port_type]
 
     #
+    # icmp messages
+    #
+    data = get_data(base, "icmp-parameters")
+    records = data["registry"][0]["record"]
+    icmp_types = {}
+    import pdb
+
+    pdb.set_trace()
+    for record in records:
+        icmp_types[record["value"]] = record["description"]
+    data["icmp_types"] = icmp_types
+
+    #
+    # DNS information
+    #
+
+    #
     # save everything
     #
     with open(args.output_file, "wb") as output_h:
