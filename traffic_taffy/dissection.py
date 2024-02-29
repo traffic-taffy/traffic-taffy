@@ -7,10 +7,16 @@ from logging import debug, info, error, warning
 from enum import Enum
 import msgpack
 import ipaddress
+import pickle
 from typing import List
 from copy import deepcopy
 from pathlib import Path
 from traffic_taffy import __VERSION__ as VERSION
+
+# TODO(hardaker): fix using a global
+iana_data = None
+if not iana_data and Path("traffic_taffy/data/iana_tables.pkl").exists():
+    iana_data = pickle.load(Path.open("traffic_taffy/data/iana_tables.pkl", "rb"))
 
 
 class PCAPDissectorLevel(Enum):
@@ -57,6 +63,7 @@ class Dissection:
         self.maximum_count = maximum_count
         self.pcap_filter = pcap_filter
         self.ignore_list = ignore_list or []
+        self.iana_data = defaultdict(dict)
 
         self.parameters = [
             "pcap_file",
@@ -421,6 +428,8 @@ class Dissection:
                     )
                 else:
                     value = "0x" + value.hex()
+            elif value_type in Dissection.ENUM_TRANSLATORS:
+                value = str(Dissection.ENUM_TRANSLATORS[value_type](value_type, value))
             else:
                 value = str(value)
         except Exception:
@@ -447,6 +456,35 @@ class Dissection:
     def print_ip_address(value_type: str, value: bytes) -> str:
         """Convert binary bytes to IP addresses (v4 and v6)."""
         return ipaddress.ip_address(value)
+
+    UDP_PORTS: ClassVar[Dict[str, str]] = {
+        "53": "DNS",
+    }
+
+    IANA_TRANSLATORS: ClassVar[Dict[str, str]] = {
+        "Ethernet_IP_UDP_sport": "udp_ports",
+        "Ethernet_IP_UDP_dport": "udp_ports",
+    }
+
+    @staticmethod
+    def print_iana_values(value_type: str, value: bytes) -> str:
+        """Use IANA lookup tables for converting protocol enumerations to human readable types."""
+        table_name = Dissection.IANA_TRANSLATORS.get(value_type)
+
+        if not table_name:
+            return value
+
+        table = iana_data[table_name]
+        value = str(value)
+        if value not in table:
+            return value
+
+        return f"{value} ({table[value]})"
+
+    ENUM_TRANSLATORS: ClassVar[Dict[str, callable]] = {
+        "Ethernet_IP_UDP_sport": print_iana_values,
+        "Ethernet_IP_UDP_dport": print_iana_values,
+    }
 
     # has to go at the end to pick up the above function names
     DISPLAY_TRANSFORMERS: ClassVar[Dict[str, callable]] = {
