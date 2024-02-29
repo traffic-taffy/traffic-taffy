@@ -83,7 +83,9 @@ def main():
 
     base = Path(args.base_dir)
 
-    # load port numbers
+    #
+    # load UDP/TCP port numbers
+    #
     data = get_data(base, "service-names-port-numbers")
     records = data["record"]
     port_data = defaultdict(dict)
@@ -95,6 +97,9 @@ def main():
     for port_type in port_data:
         data[port_type + "_ports"] = port_data[port_type]
 
+    #
+    # save everything
+    #
     with open(args.output_file, "wb") as output_h:
         pickle.dump(data, output_h)
 
