@@ -83,6 +83,7 @@ def main() -> None:
         layers=args.layers,
         force_overwrite=args.force_overwrite,
         force_load=args.force_load,
+        merge_files=args.merge,
     )
     pc.graph_it()
 

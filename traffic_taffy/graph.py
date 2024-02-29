@@ -34,6 +34,7 @@ class PcapGraph(PcapGraphData):
         layers: List[str] | None = None,
         force_overwrite: bool = False,
         force_load: bool = False,
+        merge_files: bool = False,  # unused
     ):
         """Create an instance of a graphing object."""
         self.pcap_files = pcap_files
@@ -55,6 +56,7 @@ class PcapGraph(PcapGraphData):
         self.layers = layers
         self.force_overwrite = force_overwrite
         self.force_load = force_load
+        self.merge_files = merge_files
 
         super().__init__()
 
@@ -75,6 +77,7 @@ class PcapGraph(PcapGraphData):
             layers=self.layers,
             force_overwrite=self.force_overwrite,
             force_load=self.force_load,
+            merge_files=self.merge_files,
         )
         self.dissections = pdm.load_all()
         info("done reading pcap files")

@@ -180,6 +180,7 @@ class TaffyExplorer(QDialog, PcapGraphData):
             layers=self.args.layers,
             force_load=self.args.force_load,
             force_overwrite=self.args.force_overwrite,
+            merge_files=self.args.merge,
         )
 
         # create the graph data storage

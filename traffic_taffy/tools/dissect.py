@@ -68,6 +68,7 @@ def main() -> None:
         layers=args.layers,
         force_overwrite=args.force_overwrite,
         force_load=args.force_load,
+        merge_files=args.merge,
     )
     dissections = pdm.load_all(return_as_list=True, dont_fork=args.dont_fork)
 
