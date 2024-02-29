@@ -120,6 +120,16 @@ class PCAPDissectMany:
         # use all available resources
         with ProcessPoolExecutor() as executor:
             dissections = executor.map(self.load_pcap, self.pcap_files)
-            if return_as_list:  # convert from generator
+
+            # all loaded files should be merged as if they are one
+            if self.kwargs["merge_files"]:
+                dissection = next(dissections)
+                for to_be_merged in dissections:
+                    dissection.merge(to_be_merged)
+
+                dissections = [dissection]
+
+            elif return_as_list:  # convert from generator
                 dissections = list(dissections)
+
             return dissections

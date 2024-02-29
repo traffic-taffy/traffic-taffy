@@ -48,6 +48,7 @@ class PcapCompare:
         layers: List[str] | None = None,
         force_load: bool = False,
         force_overwrite: bool = False,
+        merge_files: bool = False,
     ) -> None:
         """Create a compare object."""
         self.pcap_files = pcap_files
@@ -63,6 +64,7 @@ class PcapCompare:
         self.layers = layers
         self.force_overwrite = force_overwrite
         self.force_load = force_load
+        self.merge_files = merge_files
 
     @property
     def pcap_files(self) -> List[str]:
@@ -188,6 +190,7 @@ class PcapCompare:
             layers=self.layers,
             force_load=self.force_load,
             force_overwrite=self.force_overwrite,
+            merge_files=self.merge_files,
         )
         return pdm.load_all()
 
@@ -200,7 +203,7 @@ class PcapCompare:
     def compare_all(self, dissections: List[Dissection]) -> List[Comparison]:
         """Compare all loaded pcaps."""
         reports = []
-        if len(self.pcap_files) > 1:
+        if isinstance(dissections, list) and len(dissections) > 1:
             # multiple file comparison
             reference = next(dissections)
             for other in dissections:
@@ -338,4 +341,5 @@ def get_comparison_args(args: Namespace) -> dict:
         "top_records": args.top_records,
         "reverse_sort": args.reverse_sort,
         "sort_by": args.sort_by,
+        "merge_files": args.merge,
     }

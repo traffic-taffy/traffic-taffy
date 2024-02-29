@@ -20,6 +20,7 @@ repository <https://github.com/traffic-taffy/traffic-taffy>`_.
    usagetips
    commandoptions
    tools/index
+   importantchanges
 
 Acknowledgments
 ===============

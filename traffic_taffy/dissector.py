@@ -28,6 +28,7 @@ class PCAPDissector:
         layers: List[str] | None = None,
         force_overwrite: bool = False,
         force_load: bool = False,
+        merge_files: bool = False,  # Note: unused for a single load
     ) -> None:
         """Create a dissector object."""
         if ignore_list is None:
@@ -254,6 +255,13 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         type=str,
         nargs="*",
         help="List of extra layers to load (eg: tls, http, etc)",
+    )
+
+    parser.add_argument(
+        "--merge",
+        "--merge-files",
+        action="store_true",
+        help="Dissect multiple files as one.  (compare by time)",
     )
 
     parser.add_argument(
