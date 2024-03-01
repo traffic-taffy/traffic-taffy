@@ -120,6 +120,13 @@ def main():
         icmp_types[record["value"]] = record["description"]
     iana_data["icmp_types"] = icmp_types
 
+    records = data["registry"][1]["registry"]
+    icmp_codes = {}
+    # TODO(hardaker): this has to be per-type so is not usable without a double-lookup
+    # for record in records:
+    #     icmp_types[record["value"]] = record["description"]
+    iana_data["icmp_codes"] = icmp_codes
+
     #
     # DNS information
     #
