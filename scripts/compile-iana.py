@@ -8,7 +8,7 @@ from pathlib import Path
 from collections import defaultdict
 import logging
 import xmltodict
-import pickle
+import msgpack
 
 # optionally use rich
 try:
@@ -44,7 +44,7 @@ def parse_args():
         "output_file",
         type=str,
         nargs="?",
-        default="traffic_taffy/data/iana_tables.pkl",
+        default="traffic_taffy/data/iana_tables.msgpak",
         help="Where to store the pickled data tables",
     )
 
@@ -146,7 +146,7 @@ def main():
     # save everything
     #
     with open(args.output_file, "wb") as output_h:
-        pickle.dump(iana_data, output_h)
+        msgpack.dump(iana_data, output_h)
 
 
 if __name__ == "__main__":

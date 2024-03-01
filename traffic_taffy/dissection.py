@@ -7,7 +7,6 @@ from logging import debug, info, error, warning
 from enum import Enum
 import msgpack
 import ipaddress
-import pickle
 from typing import List
 from copy import deepcopy
 from pathlib import Path
@@ -15,8 +14,8 @@ from traffic_taffy import __VERSION__ as VERSION
 
 # TODO(hardaker): fix using a global
 iana_data = None
-if not iana_data and Path("traffic_taffy/data/iana_tables.pkl").exists():
-    iana_data = pickle.load(Path.open("traffic_taffy/data/iana_tables.pkl", "rb"))
+if not iana_data and Path("traffic_taffy/data/iana_tables.msgpak").exists():
+    iana_data = msgpack.load(Path.open("traffic_taffy/data/iana_tables.msgpak", "rb"))
 
 
 class PCAPDissectorLevel(Enum):
