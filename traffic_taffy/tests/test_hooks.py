@@ -14,3 +14,17 @@ def test_register_and_call_hook():
 
     call_hooks("testhook")
     assert into_hook == 2
+
+
+def test_register_and_call_hook_with_args():
+    @register_hook("testhook_storage")
+    def hook_callback(storage, key, value):
+        storage[key] = value
+
+    the_storage = {}
+
+    call_hooks("testhook_storage", the_storage, "testkey", "testvalue")
+    assert the_storage == {"testkey": "testvalue"}
+
+    call_hooks("testhook_storage", the_storage, "otherkey", 4)
+    assert the_storage == {"testkey": "testvalue", "otherkey": 4}
