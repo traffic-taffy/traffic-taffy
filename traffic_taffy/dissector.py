@@ -10,6 +10,9 @@ from typing import List
 from rich import print
 
 from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
+from traffic_taffy.hooks import call_hooks
+
+POST_DISSECT_HOOK: str = "post_dissect"
 
 
 class PCAPDissector:
@@ -120,6 +123,8 @@ class PCAPDissector:
             engine = DissectionEngineDpkt(*args)
 
         self.dissection = engine.load()
+        call_hooks(POST_DISSECT_HOOK, dissection=self.dissection)
+
         if self.cache_results:
             self.dissection.save_to_cache()
         return self.dissection
