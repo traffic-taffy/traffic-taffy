@@ -59,7 +59,7 @@ Option                  Description
 ======================= ===============
 -F                      Output FSDB formatted data (tab-separated with a header)
 -s SORT_BY              Sort and limit output based on this column name (default: "delta %")
-  -x TOP_RECORDS        Show the top N records from each section
+-R TOP_RECORDS          Show the top N records from each section
 ======================= ===============
 
 taffy-graph output options

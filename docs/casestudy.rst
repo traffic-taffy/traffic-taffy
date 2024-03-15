@@ -85,7 +85,7 @@ just use that (-C) and do not have to specify these parameters again.
 
 ::
 
-   taffy-compare -C -c 10000 -x 5 -t 10 *.pcap.xz
+   taffy-compare -C -c 10000 -R 5 -t 10 *.pcap.xz
 
 The full output can be found
 `in this file <https://github.com/hardaker/traffic-taffy/raw/main/docs/case-study-output/initial-compare.txt>`_ , but we highly some of the
@@ -115,7 +115,7 @@ vs the one just within the attack
 (*20190907-064519-01587811.lax.pcap.xz*).
 
 ::
-   taffy-compare -C -c 10000 -x 5 -t 10 \
+   taffy-compare -C -c 10000 -R 5 -t 10 \
        20190907-064359-01587810.lax.pcap.xz \
        20190907-064519-01587811.lax.pcap.xz
 

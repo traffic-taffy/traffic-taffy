@@ -47,7 +47,7 @@ Argument Description
 ======== =============================
 -c 1000  Show only differences with at least 1000 counts
 -t 10    Show only differences with at least a 10% change:
--x 10    Show only the top 10 differences:
+-R 10    Show only the top 10 differences:
 -s right Optionally sort by the right column instead of the delta %
 ======== =============================
 
