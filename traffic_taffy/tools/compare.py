@@ -3,6 +3,7 @@
 import sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 import logging
+from logging import error
 from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
 
@@ -95,7 +96,8 @@ def main() -> None:
         # compare the pcaps
         try:
             reports = pc.compare()
-        except ValueError:
+        except ValueError as e:
+            error(e)
             sys.exit()
 
         if args.fsdb:
