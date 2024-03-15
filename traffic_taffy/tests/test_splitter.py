@@ -1,7 +1,7 @@
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.dissector import POST_DISSECT_HOOK
 from traffic_taffy.hooks import call_hooks
-import traffic_taffy.hooks.dnssplitter
+import traffic_taffy.hooks.psl
 
 
 def test_splitter_module():
@@ -12,7 +12,7 @@ def test_splitter_module():
     dissection.incr("foo_mname", "www.example.co.uk")
 
     # bogus to avoid ruff removing the import
-    traffic_taffy.hooks.dnssplitter.splitter = traffic_taffy.hooks.dnssplitter.splitter
+    traffic_taffy.hooks.psl.splitter = traffic_taffy.hooks.psl.splitter
 
     assert dissection.data[0] == {
         "foo": {"bar": 1},
