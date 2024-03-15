@@ -1,5 +1,7 @@
 """Performs generic dissection of a PCAP file."""
+import sys
 import logging
+from logging import error
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -70,7 +72,11 @@ def main() -> None:
         force_load=args.force_load,
         merge_files=args.merge,
     )
-    dissections = pdm.load_all(return_as_list=True, dont_fork=args.dont_fork)
+    try:
+        dissections = pdm.load_all(return_as_list=True, dont_fork=args.dont_fork)
+    except ValueError as e:
+        error(e)
+        sys.exit()
 
     # merge them into a single dissection
     dissection = dissections.pop(0)
