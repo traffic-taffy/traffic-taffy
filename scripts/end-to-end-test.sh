@@ -57,7 +57,10 @@ for level in $levels ; do
     p. compare -d $level -C --cs e2etest.$level test.pcap test.pcap
 
     # compare two files restricted comparison
-    p. compare -d $level -C --cs e2etest.$level -c 100 -x 10 -t 10 test.pcap test.pcap
+    p. compare -d $level -C --cs e2etest.$level -c 100 -R 10 -t 10 test.pcap test.pcap
+
+    # Add extra modules
+    p. compare -d $level -C --cs e2etest.$level -c 100 -R 10 -x ip2asn psl -t 10 test.pcap test.pcap
 
     # graphing
     p. graph -o test-outputs/test.$level.png  -d $level -C --cs e2etest.$level -m __TOTAL__ -m packet test.pcap
