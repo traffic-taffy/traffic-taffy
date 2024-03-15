@@ -353,8 +353,8 @@ def dissector_load_extra_modules(modules: List[str]) -> None:
     for module in modules:
         try:
             importlib.import_module(f"traffic_taffy.hooks.{module}")
-        except Exception:
-            error(f"failed to load module {module}")
+        except Exception as exp:
+            error(f"failed to load module {module}: {exp}")
 
 
 def check_dissector_level(level: int):
