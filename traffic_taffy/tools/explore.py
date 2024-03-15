@@ -10,7 +10,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
-    check_dissector_level,
+    dissector_handle_arguments,
 )
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.graphdata import PcapGraphData
@@ -639,7 +639,7 @@ def parse_args() -> Namespace:
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
 
-    check_dissector_level(args.dissection_level)
+    dissector_handle_arguments(args)
 
     return args
 

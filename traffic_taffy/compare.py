@@ -197,7 +197,7 @@ def compare_add_parseargs(
     )
 
     compare_parser.add_argument(
-        "-x",
+        "-R",
         "--top-records",
         default=None,
         type=int,

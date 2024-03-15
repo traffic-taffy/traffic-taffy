@@ -5,7 +5,7 @@ from traffic_taffy.graph import PcapGraph
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
-    check_dissector_level,
+    dissector_handle_arguments,
 )
 import logging
 
@@ -63,7 +63,7 @@ def main() -> None:
     """Run taffy-graph."""
     args = parse_args()
 
-    check_dissector_level(args.dissection_level)
+    dissector_handle_arguments(args)
 
     pc = PcapGraph(
         args.input_pcaps,

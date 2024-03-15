@@ -8,9 +8,9 @@ import pyfsdb
 
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import (
-    check_dissector_level,
     dissector_add_parseargs,
     limitor_add_parseargs,
+    dissector_handle_arguments,
 )
 
 
@@ -52,7 +52,7 @@ def main() -> None:
     """Export traffic-taffy data into an FSDB file."""
     args = parse_args()
 
-    check_dissector_level(args.dissection_level)
+    dissector_handle_arguments(args)
 
     pdm = PCAPDissectMany(
         args.input_pcaps,

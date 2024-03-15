@@ -10,7 +10,7 @@ from traffic_taffy.compare import compare_add_parseargs, get_comparison_args
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
-    check_dissector_level,
+    dissector_handle_arguments,
 )
 from traffic_taffy.compare import PcapCompare
 
@@ -50,7 +50,7 @@ def parse_args() -> Namespace:
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
 
-    check_dissector_level(args.dissection_level)
+    dissector_handle_arguments(args)
 
     return args
 
