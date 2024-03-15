@@ -10,13 +10,18 @@ def test_splitter_module():
     dissection.incr("foo_qname", "www.example.com")
     dissection.incr("foo_qname", "www.example.net")
     dissection.incr("foo_mname", "www.example.co.uk")
+    dissection.incr("foo_qname", "bogus.__doesntexist")
 
     # bogus to avoid ruff removing the import
     traffic_taffy.hooks.psl.splitter = traffic_taffy.hooks.psl.splitter
 
     assert dissection.data[0] == {
         "foo": {"bar": 1},
-        "foo_qname": {"www.example.com": 1, "www.example.net": 1},
+        "foo_qname": {
+            "www.example.com": 1,
+            "www.example.net": 1,
+            "bogus.__doesntexist": 1,
+        },
         "foo_mname": {"www.example.co.uk": 1},
     }
 
@@ -28,7 +33,11 @@ def test_splitter_module():
         "foo_mname_prefix": {"www": 1},
         "foo_mname_domain": {"example.co.uk": 1},
         "foo_mname_psl": {"co.uk": 1},
-        "foo_qname": {"www.example.com": 1, "www.example.net": 1},
+        "foo_qname": {
+            "www.example.com": 1,
+            "www.example.net": 1,
+            "bogus.__doesntexist": 1,
+        },
         "foo_qname_prefix": {"www": 2},
         "foo_qname_domain": {"example.com": 1, "example.net": 1},
         "foo_qname_psl": {"com": 1, "net": 1},

@@ -19,11 +19,14 @@ def split_dns_names(dissection: Dissection, **kwargs):
             if str(key).endswith("qname") or str(key).endswith("mname"):
                 for value in dissection.data[timestamp][key]:
                     count = dissection.data[timestamp][key][value]
+                    results = splitter.search_tree(value)
+                    if not results or not results[2]:
+                        continue
                     (
                         prefix,
                         registered_domain,
                         registration_point,
-                    ) = splitter.search_tree(value)
+                    ) = results
                     if registration_point:
                         dissection.data[timestamp][key + "_prefix"][prefix] += count
                         dissection.data[timestamp][key + "_domain"][
