@@ -4,6 +4,7 @@ from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
     check_dissector_level,
+    dissector_handle_arguments,
     PCAPDissector,
 )
 from traffic_taffy.dissectmany import PCAPDissectMany
@@ -53,6 +54,7 @@ def main() -> None:
 
     args = parse_args()
 
+    dissector_handle_arguments(args)
     check_dissector_level(args.dissection_level)
 
     # load all the files

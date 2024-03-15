@@ -16,7 +16,12 @@ def split_dns_names(dissection: Dissection, **kwargs):
         keys = list(dissection.data[timestamp].keys())
 
         for key in keys:
-            if str(key).endswith("qname") or str(key).endswith("mname"):
+            key = str(key)
+            if (
+                key.endswith("_qname")
+                or key.endswith("_mname")
+                or key.endswith("_rrname")
+            ):
                 for value in dissection.data[timestamp][key]:
                     count = dissection.data[timestamp][key][value]
                     results = splitter.search_tree(value)

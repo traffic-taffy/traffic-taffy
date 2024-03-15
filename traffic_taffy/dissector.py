@@ -6,6 +6,7 @@ import sys
 from collections import Counter, defaultdict
 from logging import error, warning
 from typing import List
+import importlib
 
 from rich import print
 
@@ -263,6 +264,15 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     parser.add_argument(
+        "-x",
+        "--modules",
+        default=None,
+        type=str,
+        nargs="*",
+        help="Extra processing modules to load (currently: psl) ",
+    )
+
+    parser.add_argument(
         "--merge",
         "--merge-files",
         action="store_true",
@@ -329,6 +339,17 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
     )
 
     return parser
+
+
+def dissector_handle_arguments(args) -> None:
+    """Loads extra modules"""
+    if not args.modules:
+        return
+    for module in args.modules:
+        try:
+            importlib.import_module(f"traffic_taffy.hooks.{module}")
+        except Exception:
+            error(f"failed to load module {module}")
 
 
 def check_dissector_level(level: int):
