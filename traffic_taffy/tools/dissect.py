@@ -3,7 +3,6 @@ import logging
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
-    check_dissector_level,
     dissector_handle_arguments,
     PCAPDissector,
 )
@@ -55,7 +54,6 @@ def main() -> None:
     args = parse_args()
 
     dissector_handle_arguments(args)
-    check_dissector_level(args.dissection_level)
 
     # load all the files
     pdm = PCAPDissectMany(

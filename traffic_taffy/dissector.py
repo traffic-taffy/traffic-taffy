@@ -342,10 +342,15 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
 
 
 def dissector_handle_arguments(args) -> None:
+    check_dissector_level(args.dissection_level)
+    dissector_load_extra_modules(args.modules)
+
+
+def dissector_load_extra_modules(modules: List[str]) -> None:
     """Loads extra modules"""
-    if not args.modules:
+    if not modules:
         return
-    for module in args.modules:
+    for module in modules:
         try:
             importlib.import_module(f"traffic_taffy.hooks.{module}")
         except Exception:
