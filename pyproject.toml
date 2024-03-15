@@ -28,6 +28,8 @@ dependencies = [
     "seaborn",
     "cryptography",
     "pyOpenSSL==22.1.0",
+    "dnssplitter",
+    "ip2asn",
 ]
 
 [project.scripts]
