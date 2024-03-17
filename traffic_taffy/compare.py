@@ -3,8 +3,9 @@
 from __future__ import annotations
 from logging import debug, error
 from typing import List, TYPE_CHECKING
-import datetime as dt
 from datetime import datetime
+import datetime as dt
+import itertools
 
 if TYPE_CHECKING:
     from argparse import ArgumentParser, Namespace
@@ -102,9 +103,22 @@ class PcapCompare:
     def compare_all(self, dissections: List[Dissection]) -> List[Comparison]:
         """Compare all loaded pcaps."""
         reports = []
-        if isinstance(dissections, list) and len(dissections) > 1:
+
+        # hack to figure out if there is at least two instances of a generator
+        # without actually extracting them all
+        # (since it could be memory expensive)
+        reference = next(dissections)
+        other = None
+        multiple = True
+        try:
+            other = next(dissections)
+            dissections = itertools.chain([other], dissections)
+        except Exception as e:
+            print(e)
+            multiple = False
+
+        if multiple:
             # multiple file comparison
-            reference = next(dissections)
             for other in dissections:
                 # compare the two global summaries
 
@@ -116,7 +130,7 @@ class PcapCompare:
                 reports.append(report)
         else:
             # deal with timestamps within a single file
-            reference = list(dissections)[0].data
+            reference = reference.data
             timestamps = list(reference.keys())
             if len(timestamps) <= 2:  # just 0-summary plus a single stamp
                 error(
