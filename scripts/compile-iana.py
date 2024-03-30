@@ -44,7 +44,7 @@ def parse_args():
         "output_file",
         type=str,
         nargs="?",
-        default="traffic_taffy/data/iana_tables.msgpak",
+        default="traffic_taffy/iana/tables.msgpak",
         help="Where to store the pickled data tables",
     )
 

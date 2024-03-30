@@ -11,11 +11,21 @@ from typing import List
 from copy import deepcopy
 from pathlib import Path
 from traffic_taffy import __VERSION__ as VERSION
+from io import BytesIO
+import pkgutil
 
-# TODO(hardaker): fix using a global
+# TODO(hardaker): fix to not use a global
+# note that this is designed to load only once before forking
 iana_data = None
-if not iana_data and Path("traffic_taffy/data/iana_tables.msgpak").exists():
-    iana_data = msgpack.load(Path.open("traffic_taffy/data/iana_tables.msgpak", "rb"))
+if not iana_data:
+    # try a local copy first
+    if Path("traffic_taffy/iana/tables.msgpak").exists():
+        iana_data = msgpack.load(Path.open("traffic_taffy/iana/tables.msgpak", "rb"))
+    else:
+        content = pkgutil.get_data("traffic_taffy.iana", "tables.msgpak")
+        if content:
+            content = BytesIO(content)
+            iana_data = msgpack.load(content)
 
 
 class PCAPDissectorLevel(Enum):
