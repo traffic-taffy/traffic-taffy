@@ -32,6 +32,9 @@ dependencies = [
     "ip2asn",
 ]
 
+[project.package_data]
+"traffic_taffy.iana" = ['tables.msgpak']
+
 [project.scripts]
 taffy-cache-info = "traffic_taffy.tools.cache_info:main"
 taffy-compare = "traffic_taffy.tools.compare:main"

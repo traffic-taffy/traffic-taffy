@@ -11,6 +11,23 @@ from typing import List
 from copy import deepcopy
 from pathlib import Path
 from traffic_taffy import __VERSION__ as VERSION
+from io import BytesIO
+import pkgutil
+
+# TODO(hardaker): fix to not use a global
+# note that this is designed to load only once before forking
+iana_data = None
+if not iana_data:
+    # try a local copy first
+    if Path("traffic_taffy/iana/tables.msgpakx").exists():
+        iana_data = msgpack.load(Path.open("traffic_taffy/iana/tables.msgpak", "rb"))
+    else:
+        content = pkgutil.get_data("traffic_taffy", "iana/tables.msgpak")
+        if content:
+            content = BytesIO(content)
+            iana_data = msgpack.load(content)
+        else:
+            warning("failed to load IANA data tables -- no enum expansion available")
 
 
 class PCAPDissectorLevel(Enum):
@@ -57,6 +74,7 @@ class Dissection:
         self.maximum_count = maximum_count
         self.pcap_filter = pcap_filter
         self.ignore_list = ignore_list or []
+        self.iana_data = defaultdict(dict)
 
         self.parameters = [
             "pcap_file",
@@ -421,6 +439,8 @@ class Dissection:
                     )
                 else:
                     value = "0x" + value.hex()
+            elif value_type in Dissection.ENUM_TRANSLATORS:
+                value = str(Dissection.ENUM_TRANSLATORS[value_type](value_type, value))
             else:
                 value = str(value)
         except Exception:
@@ -447,6 +467,79 @@ class Dissection:
     def print_ip_address(value_type: str, value: bytes) -> str:
         """Convert binary bytes to IP addresses (v4 and v6)."""
         return ipaddress.ip_address(value)
+
+    UDP_PORTS: ClassVar[Dict[str, str]] = {
+        "53": "DNS",
+    }
+
+    IANA_TRANSLATORS: ClassVar[Dict[str, str]] = {
+        "Ethernet_IP_proto": "protocols",
+        "Ethernet_IPv6_proto": "protocols",
+        "Ethernet_IP_UDP_sport": "udp_ports",
+        "Ethernet_IP_UDP_dport": "udp_ports",
+        "Ethernet_IP_TCP_sport": "tcp_ports",
+        "Ethernet_IP_TCP_dport": "tcp_ports",
+        "Ethernet_IPv6_UDP_sport": "udp_ports",
+        "Ethernet_IPv6_UDP_dport": "udp_ports",
+        "Ethernet_IPv6_TCP_sport": "tcp_ports",
+        "Ethernet_IPv6_TCP_dport": "tcp_ports",
+        "Ethernet_IP_ICMP_code": "icmp_codes",
+        "Ethernet_IP_ICMP_type": "icmp_types",
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_dport": "udp_ports",
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_sport": "udp_ports",
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_dport": "tcp_ports",
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_sport": "tcp_ports",
+        "Ethernet_IP_ICMP_IP in ICMP_protoc": "protocols",
+        "Ethernet_IP_UDP_DNS_qd_qclass": "dns_classes",
+        "Ethernet_IP_UDP_DNS_ns_rclass": "dns_classes",
+        "Ethernet_IP_UDP_DNS_an_rclass": "dns_classes",
+        "Ethernet_IP_UDP_DNS_qd_qtype": "dns_rrtypes",
+        "Ethernet_IP_UDP_DNS_ns_type": "dns_rrtypes",
+        "Ethernet_IP_UDP_DNS_an_type": "dns_rrtypes",
+        "Ethernet_IP_UDP_DNS_opcode": "dns_opcodes",
+    }
+
+    @staticmethod
+    def print_iana_values(value_type: str, value: bytes) -> str:
+        """Use IANA lookup tables for converting protocol enumerations to human readable types."""
+        table_name = Dissection.IANA_TRANSLATORS.get(value_type)
+
+        if not table_name:
+            return value
+
+        table = iana_data[table_name]
+        value = str(value)
+        if value not in table:
+            return value
+
+        return f"{value} ({table[value]})"
+
+    ENUM_TRANSLATORS: ClassVar[Dict[str, callable]] = {
+        "Ethernet_IP_proto": print_iana_values,
+        "Ethernet_IPv6_proto": print_iana_values,
+        "Ethernet_IP_UDP_sport": print_iana_values,
+        "Ethernet_IP_UDP_dport": print_iana_values,
+        "Ethernet_IP_TCP_sport": print_iana_values,
+        "Ethernet_IP_TCP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_sport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_TCP in ICMP_sport": print_iana_values,
+        "Ethernet_IP_ICMP_IP in ICMP_proto": print_iana_values,
+        "Ethernet_IPv6_UDP_sport": print_iana_values,
+        "Ethernet_IPv6_UDP_dport": print_iana_values,
+        "Ethernet_IPv6_TCP_sport": print_iana_values,
+        "Ethernet_IPv6_TCP_dport": print_iana_values,
+        "Ethernet_IP_ICMP_code": print_iana_values,
+        "Ethernet_IP_ICMP_type": print_iana_values,
+        "Ethernet_IP_UDP_DNS_qd_qclass": print_iana_values,
+        "Ethernet_IP_UDP_DNS_ns_rclass": print_iana_values,
+        "Ethernet_IP_UDP_DNS_an_rclass": print_iana_values,
+        "Ethernet_IP_UDP_DNS_qd_qtype": print_iana_values,
+        "Ethernet_IP_UDP_DNS_ns_type": print_iana_values,
+        "Ethernet_IP_UDP_DNS_an_type": print_iana_values,
+        "Ethernet_IP_UDP_DNS_opcode": print_iana_values,
+    }
 
     # has to go at the end to pick up the above function names
     DISPLAY_TRANSFORMERS: ClassVar[Dict[str, callable]] = {
