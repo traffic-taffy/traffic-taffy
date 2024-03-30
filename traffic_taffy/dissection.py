@@ -19,13 +19,15 @@ import pkgutil
 iana_data = None
 if not iana_data:
     # try a local copy first
-    if Path("traffic_taffy/iana/tables.msgpak").exists():
+    if Path("traffic_taffy/iana/tables.msgpakx").exists():
         iana_data = msgpack.load(Path.open("traffic_taffy/iana/tables.msgpak", "rb"))
     else:
-        content = pkgutil.get_data("traffic_taffy.iana", "tables.msgpak")
+        content = pkgutil.get_data("traffic_taffy", "iana/tables.msgpak")
         if content:
             content = BytesIO(content)
             iana_data = msgpack.load(content)
+        else:
+            warning("failed to load IANA data tables -- no enum expansion available")
 
 
 class PCAPDissectorLevel(Enum):
