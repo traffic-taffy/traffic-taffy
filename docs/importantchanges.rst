@@ -4,6 +4,9 @@ Significant Version Changes
 The following versions contained significant changes worthy of special
 callout:
 
+- 0.8.5
+    - Added support for reporting a number of IANA numeric->name translations
+
 - 0.8
     - Note that the -x switch to limit the list of results has been
       moved to -R.
