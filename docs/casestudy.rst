@@ -146,7 +146,7 @@ limiting the lengths shown to just those that crossed a minimum of
 
 ::
 
-   taffy-graph -C -m Ethernet.IP.len -o ip-len.png -c 10000 *.pcap.xz
+   taffy-graph -C -m Ethernet_IP_len -o ip-len.png -c 10000 *.pcap.xz
 
 .. image: images/ip-len.png
    :width: 600px
@@ -204,7 +204,7 @@ its profile:
 
 ::
 
-   taffy-graph -C -m Ethernet.IP.UDP.DNS.qd.qname -M www.example.com -o example-com-traffic.png *.pcap.xz
+   taffy-graph -C -m Ethernet_IP_UDP_DNS_qd_qname -M www.example.com -o example-com-traffic.png *.pcap.xz
 
 Which produces the following graph:
 
@@ -228,7 +228,7 @@ not specify a specific value to plot in order to see both values:
 
 ::
 
-   taffy-graph -C -m Ethernet.IP.UDP.DNS.tc -o dns-TC-bit.png -p *.pcap.xz
+   taffy-graph -C -m Ethernet_IP_UDP_DNS_tc -o dns-TC-bit.png -p *.pcap.xz
 
 .. image:: images/DNS-TC-bit-graph.png
    :width: 600px
