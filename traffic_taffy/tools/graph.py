@@ -15,7 +15,7 @@ def parse_args() -> Namespace:
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
         description=__doc__,
-        epilog="Example Usage: taffy-graph -C -m TOTAL -M packet -o graph.png file.pcap",
+        epilog="Example Usage: taffy-graph -C -m __TOTAL__ -M packet -o graph.png file.pcap",
     )
 
     parser.add_argument(
