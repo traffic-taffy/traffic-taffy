@@ -497,6 +497,13 @@ class Dissection:
         "Ethernet_IP_UDP_DNS_ns_type": "dns_rrtypes",
         "Ethernet_IP_UDP_DNS_an_type": "dns_rrtypes",
         "Ethernet_IP_UDP_DNS_opcode": "dns_opcodes",
+        "Ethernet_IP_TCP_DNS_qd_qclass": "dns_classes",
+        "Ethernet_IP_TCP_DNS_ns_rclass": "dns_classes",
+        "Ethernet_IP_TCP_DNS_an_rclass": "dns_classes",
+        "Ethernet_IP_TCP_DNS_qd_qtype": "dns_rrtypes",
+        "Ethernet_IP_TCP_DNS_ns_type": "dns_rrtypes",
+        "Ethernet_IP_TCP_DNS_an_type": "dns_rrtypes",
+        "Ethernet_IP_TCP_DNS_opcode": "dns_opcodes",
     }
 
     @staticmethod
@@ -539,6 +546,13 @@ class Dissection:
         "Ethernet_IP_UDP_DNS_ns_type": print_iana_values,
         "Ethernet_IP_UDP_DNS_an_type": print_iana_values,
         "Ethernet_IP_UDP_DNS_opcode": print_iana_values,
+        "Ethernet_IP_TCP_DNS_qd_qclass": print_iana_values,
+        "Ethernet_IP_TCP_DNS_ns_rclass": print_iana_values,
+        "Ethernet_IP_TCP_DNS_an_rclass": print_iana_values,
+        "Ethernet_IP_TCP_DNS_qd_qtype": print_iana_values,
+        "Ethernet_IP_TCP_DNS_ns_type": print_iana_values,
+        "Ethernet_IP_TCP_DNS_an_type": print_iana_values,
+        "Ethernet_IP_TCP_DNS_opcode": print_iana_values,
     }
 
     # has to go at the end to pick up the above function names
