@@ -1,14 +1,15 @@
-from typing import TYPE_CHECKING
+"""traffic-taffy algorithm produce comparisons between different datasets."""
 
-if TYPE_CHECKING:
-    pass
+from logging import error
 
 
 class ComparisonAlgorithm:
-    def __init__(self):
-        pass
+    """A base class for all comparison algorithms."""
 
-    def compare_two_dissections(left_side: dict, right_side: dict) -> dict:
-        raise ValueError(
-            "code failure: base class compare_two_dissections should never be called"
-        )
+    def __init__(self):
+        """Construct a ComparisonAlgorithm."""
+
+    def compare_dissections(self, _left_side: dict, _right_side: dict) -> dict:
+        """Compare dissections base function just to warn things are not implemented."""
+        error("code failure: base class compare_two_dissections should never be called")
+        raise ValueError

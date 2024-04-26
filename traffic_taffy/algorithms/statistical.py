@@ -1,10 +1,10 @@
-from traffic_taffy.algorithms import ComparisonAlgorithm
+from traffic_taffy.algorithms.compareslices import ComparisonSlicesAlgorithm
 from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.report import Report
 
 
-class ComparisonStatistical(ComparisonAlgorithm):
+class ComparisonStatistical(ComparisonSlicesAlgorithm):
     def __init__(self):
         super().__init__()
 
