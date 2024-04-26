@@ -122,7 +122,7 @@ class PcapCompare:
             for other in dissections:
                 # compare the two global summaries
 
-                report = self.algorithm.compare_dissections(
+                report = self.algorithm.compare_two_dissections(
                     reference.data[0], other.data[0]
                 )
                 report.title = f"{reference.pcap_file} vs {other.pcap_file}"
@@ -158,7 +158,7 @@ class PcapCompare:
 
                 debug(f"comparing timestamps {time_left} and {time_right}")
 
-                report = self.algorithm.compare_dissections(
+                report = self.algorithm.compare_two_dissections(
                     reference[time_left],
                     reference[time_right],
                 )

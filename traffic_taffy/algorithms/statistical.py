@@ -8,7 +8,7 @@ class ComparisonStatistical(ComparisonAlgorithm):
     def __init__(self):
         super().__init__()
 
-    def compare_dissections(self, left_side: dict, right_side: dict) -> Comparison:
+    def compare_two_dissections(self, left_side: dict, right_side: dict) -> Comparison:
         """Compare two dissections."""
         report = {}
 

@@ -8,7 +8,7 @@ class ComparisonAlgorithm:
     def __init__(self):
         pass
 
-    def compare_dissections(left_side: dict, right_side: dict) -> dict:
+    def compare_two_dissections(left_side: dict, right_side: dict) -> dict:
         raise ValueError(
-            "code failure: base class compare_dissections should never be called"
+            "code failure: base class compare_two_dissections should never be called"
         )
