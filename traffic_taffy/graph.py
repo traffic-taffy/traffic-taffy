@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pandas as pd
 from logging import debug, info
 from typing import List
 
@@ -82,8 +83,11 @@ class PcapGraph(PcapGraphData):
         self.dissections = pdm.load_all()
         info("done reading pcap files")
 
-    def create_graph(self) -> None:
+    def create_graph(self, options: dict | None = None) -> None:
         """Create the graph itself and save it."""
+        if not options:
+            options = {}
+
         df = self.get_dataframe(merge=True, calculate_load_fraction=self.by_percentage)
 
         hue_variable = "index"
@@ -91,20 +95,29 @@ class PcapGraph(PcapGraphData):
             hue_variable = None
 
         if self.by_percentage:
-            df["load_fraction"]
             y_column = "load_fraction"
         else:
             y_column = "count"
 
+        # reindex the dataframe
+        import pdb
+
+        pdb.set_trace()
+        freq = str(self.bin_size or 1) + "s"
+        df = df.set_index("time")
+        df.index = df.index.to_period(freq=freq)
+        timeindex = pd.period_range(min(df.index), max(df.index), freq=freq)
+        df = df.reindex(timeindex)  # , fill_value=0
+
         ax = sns.relplot(
             data=df,
             kind="line",
-            x="time",
+            x="index",
             y=y_column,
             hue=hue_variable,
             aspect=1.77,
         )
-        ax.set(xlabel="time", ylabel=y_column)
+        ax.set(xlabel="time", ylabel=options.get("ylabel", y_column))
         plt.xticks(rotation=45)
 
         info(f"saving graph to {self.output_file}")
