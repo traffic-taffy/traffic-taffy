@@ -8,9 +8,17 @@ from traffic_taffy.dissection import Dissection
 class PcapGraphData:
     """A base class for storing/transforming data (frequently to be graphed)."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        match_string: str = None,
+        match_value: str = None,
+        minimum_count: int = None,
+    ):
         """Create an instance of a PcapGraphData."""
         self.dissections = []
+        self.match_string = match_string
+        self.match_value = match_value
+        self.minimum_count = minimum_count
 
     @property
     def dissections(self) -> list:

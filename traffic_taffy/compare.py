@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from typing import List, TYPE_CHECKING
+from logging import error
 
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
+from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
 
 
 class PcapCompare:
@@ -34,6 +36,7 @@ class PcapCompare:
         force_load: bool = False,
         force_overwrite: bool = False,
         merge_files: bool = False,
+        algorithm: str = "statistical",
     ) -> None:
         """Create a compare object."""
         self.pcap_files = pcap_files
@@ -51,7 +54,13 @@ class PcapCompare:
         self.force_load = force_load
         self.merge_files = merge_files
 
-        self.algorithm = ComparisonStatistical()
+        if algorithm == "statistical":
+            self.algorithm = ComparisonStatistical()
+        elif algorithm == "correlation":
+            self.algorithm = ComparisonSeriesAlgorithm()
+        else:
+            error(f"unknown algorithm: {algorithm}")
+            raise ValueError()
 
     @property
     def pcap_files(self) -> List[str]:
@@ -98,6 +107,7 @@ class PcapCompare:
 
     def compare_all(self, dissections: List[Dissection]) -> List[Comparison]:
         """Compare all loaded pcaps."""
+
         self.reports = self.algorithm.compare_dissections(dissections)
         return self.reports
 
@@ -148,6 +158,14 @@ def compare_add_parseargs(
         help="Sort report entries by this column",
     )
 
+    compare_parser.add_argument(
+        "-A",
+        "--algorithm",
+        default="statistical",
+        type=str,
+        help="The algorithm to apply for data comparison (statistical, correlation)",
+    )
+
     # compare_parser.add_argument(
     #     "-T",
     #     "--between-times",
@@ -168,4 +186,5 @@ def get_comparison_args(args: Namespace) -> dict:
         "reverse_sort": args.reverse_sort,
         "sort_by": args.sort_by,
         "merge_files": args.merge,
+        "algorithm": args.algorithm,
     }
