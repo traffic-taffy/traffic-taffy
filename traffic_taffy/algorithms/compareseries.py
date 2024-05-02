@@ -18,7 +18,13 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
     def __init__(self):
         """Create a ComparisonAlgorithm."""
 
-    def compare_two_series(self, _column_one: list, _column_two: list) -> dict:
+    def compare_two_series(
+        self,
+        _column_one: str,
+        _column_one_series: list,
+        _column_two: str,
+        _column_two_series: list,
+    ) -> dict:
         """Error catching base class function for comparing two columnar series."""
         error("code failure: base class compare_two_series should never be called")
         raise ValueError
@@ -43,7 +49,13 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         # data.normalize_bins() ?
         df = data.get_dataframe()
 
-        for column1 in df:
-            for column2 in df:  # TODO(hardaker): n^2 is bad
-                self.compare_two_series(df[column1], df[column2])
+        indexes = df["index"].unique()
+        for column1 in indexes:
+            series1 = df[df["index"] == column1]
+            for column2 in indexes:  # TODO(hardaker): n^2 is bad
+                if column1 == column2:
+                    continue
+
+                series2 = df[df["index"] == column2]
+                self.compare_two_series(column1, series1, column2, series2)
         return reports
