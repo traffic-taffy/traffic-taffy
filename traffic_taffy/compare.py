@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
-from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
+from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
 
 
 class PcapCompare:
@@ -57,7 +57,7 @@ class PcapCompare:
         if algorithm == "statistical":
             self.algorithm = ComparisonStatistical()
         elif algorithm == "correlation":
-            self.algorithm = ComparisonSeriesAlgorithm()
+            self.algorithm = CompareCorrelation()
         else:
             error(f"unknown algorithm: {algorithm}")
             raise ValueError()

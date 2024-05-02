@@ -20,10 +20,10 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
 
     def compare_two_series(
         self,
-        _column_one: str,
-        _column_one_series: list,
-        _column_two: str,
-        _column_two_series: list,
+        _column_left: str,
+        _series_left: list,
+        _column_right: str,
+        _series_right: list,
     ) -> dict:
         """Error catching base class function for comparing two columnar series."""
         error("code failure: base class compare_two_series should never be called")
@@ -50,12 +50,22 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         df = data.get_dataframe()
 
         indexes = df["index"].unique()
-        for column1 in indexes:
-            series1 = df[df["index"] == column1]
-            for column2 in indexes:  # TODO(hardaker): n^2 is bad
-                if column1 == column2:
+        for column_left in indexes:
+            series_left = df[df["index"] == column_left]
+            series_left = series_left.set_index("time")
+            series_left = series_left["count"]
+            series_left.name = "left"
+
+            for column_right in indexes:  # TODO(hardaker): n^2 is bad
+                if column_left == column_right:
                     continue
 
-                series2 = df[df["index"] == column2]
-                self.compare_two_series(column1, series1, column2, series2)
+                series_right = df[df["index"] == column_right]
+                series_right = series_right.set_index("time")
+                series_right = series_right["count"]
+                series_right.name = "right"
+
+                self.compare_two_series(
+                    column_left, series_left, column_right, series_right
+                )
         return reports
