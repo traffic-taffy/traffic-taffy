@@ -7,7 +7,7 @@ import itertools
 import datetime
 import datetime as dt
 
-from logging import debug, error
+from logging import debug, error, exception
 
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
@@ -40,8 +40,8 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
         try:
             other = next(dissections)
             dissections = itertools.chain([other], dissections)
-        except Exception as e:
-            error(e)
+        except Exception:
+            exception("failed to create a chain of dissections")
             multiple = False
 
         if multiple:
@@ -57,7 +57,7 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
             # deal with timestamps within a single file
             reference = reference.data
             timestamps = list(reference.keys())
-            if len(timestamps) <= 2:  # just 0-summary plus a single stamp
+            if len(timestamps) == 1:  # just 0-summary plus a single stamp
                 error(
                     "the requested pcap data was not long enough to compare against itself"
                 )
