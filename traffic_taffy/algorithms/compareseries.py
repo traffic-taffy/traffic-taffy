@@ -10,6 +10,7 @@ from logging import error
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
     from traffic_taffy.report import Report
+    from pandas import DataFrame
 
 
 class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
@@ -31,7 +32,6 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
 
     def compare_dissections(self, dissections: List[Dissection]) -> List[Report]:
         """Compare all the column series."""
-        reports = []
         # hack to figure out if there is at least two instances of a generator
         # without actually extracting them all
         # (since it could be memory expensive)
@@ -48,6 +48,14 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         data.dissections = [dissection]
         # data.normalize_bins() ?
         df = data.get_dataframe()
+        df.fillna(0)
+
+        return self.compare_series(df)
+
+    def compare_series(self, df: DataFrame) -> List[Report]:
+        """Compares the series found in a dataframe, two at a time."""
+
+        reports = []
 
         indexes = df["index"].unique()
         for column_left in indexes:
