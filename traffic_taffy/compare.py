@@ -18,8 +18,6 @@ from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
 class PcapCompare:
     """Take a set of PCAPs to then perform various comparisons upon."""
 
-    REPORT_VERSION: int = 2
-
     def __init__(
         self,
         pcap_files: List[str],
