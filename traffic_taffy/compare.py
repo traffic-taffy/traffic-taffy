@@ -35,6 +35,7 @@ class PcapCompare:
         force_overwrite: bool = False,
         merge_files: bool = False,
         algorithm: str = "statistical",
+        filter_arguments: dict | None = None,
     ) -> None:
         """Create a compare object."""
         self.pcap_files = pcap_files
@@ -51,11 +52,18 @@ class PcapCompare:
         self.force_overwrite = force_overwrite
         self.force_load = force_load
         self.merge_files = merge_files
+        self.filter_arguments = filter_arguments
 
         if algorithm == "statistical":
             self.algorithm = ComparisonStatistical()
         elif algorithm == "correlation":
-            self.algorithm = CompareCorrelation()
+            self.algorithm = CompareCorrelation(
+                timestamps=None,
+                match_string=self.filter_arguments["match_string"],
+                match_value=self.filter_arguments["match_value"],
+                minimum_count=self.filter_arguments["minimum_count"],
+                make_printable=True,
+            )
         else:
             error(f"unknown algorithm: {algorithm}")
             raise ValueError()
@@ -178,6 +186,7 @@ def get_comparison_args(args: Namespace) -> dict:
         "print_threshold": float(args.print_threshold) / 100.0,
         "minimum_count": args.minimum_count,
         "match_string": args.match_string,
+        "match_value": args.match_value,
         "only_positive": args.only_positive,
         "only_negative": args.only_negative,
         "top_records": args.top_records,

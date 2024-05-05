@@ -16,8 +16,20 @@ if TYPE_CHECKING:
 class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
     """A base class for algorithms that compare left/right slices."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        timestamps: List[int] | None = None,
+        match_string: str | None = None,
+        match_value: str | None = None,
+        minimum_count: int | None = None,
+        make_printable: bool = False,
+    ):
         """Create a ComparisonAlgorithm."""
+        self.timestamps = timestamps
+        self.match_string = match_string
+        self.match_value = match_value
+        self.minimum_count = minimum_count
+        self.make_printable = make_printable
 
     def compare_two_series(
         self,
@@ -43,12 +55,19 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         for to_be_merged in dissections:
             dissection.merge(to_be_merged)
 
-        # TODO(hardaker): Do time binning filling with zeros
+        # filter downward
+        dissection = dissection.filter(
+            self.timestamps,
+            self.match_string,
+            self.match_value,
+            self.minimum_count,
+            self.make_printable,
+        )
+
         data = PcapGraphData()
         data.dissections = [dissection]
         # data.normalize_bins() ?
         df = data.get_dataframe()
-        df.fillna(0)
 
         return self.compare_series(df)
 
@@ -58,13 +77,14 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         reports = []
 
         indexes = df["index"].unique()
-        for column_left in indexes:
+        for num, column_left in enumerate(indexes):
             series_left = df[df["index"] == column_left]
             series_left = series_left.set_index("time")
             series_left = series_left["count"]
             series_left.name = "left"
 
-            for column_right in indexes:  # TODO(hardaker): n^2 is bad
+            # TODO(hardaker): n^2 is bad
+            for column_right in indexes[num + 1 :]:
                 if column_left == column_right:
                     continue
 

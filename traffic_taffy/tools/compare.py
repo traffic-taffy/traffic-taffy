@@ -92,6 +92,7 @@ def main() -> None:
             force_overwrite=args.force_overwrite,
             merge_files=args.merge,
             algorithm=args.algorithm,
+            filter_arguments=get_comparison_args(args),
         )
 
         # compare the pcaps

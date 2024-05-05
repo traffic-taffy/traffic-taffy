@@ -370,6 +370,40 @@ class Dissection:
 
         return contents
 
+    def filter(
+        self: Dissection,
+        timestamps: List[int] | None = None,
+        match_string: str | None = None,
+        match_value: str | None = None,
+        minimum_count: int | None = None,
+        make_printable: bool = False,
+    ) -> None:
+        """Creates a new dissection that has been filtered based on passed criteria."""
+        debug(
+            f"filtering dissection with: {timestamps=}, {match_string=} {match_value=}, {minimum_count=}, {make_printable=}"
+        )
+        new_dissection: Dissection = Dissection(
+            self.pcap_file,
+            self.pcap_filter,
+            self.maximum_count,
+            self.bin_size,
+            self.dissector_level,
+            self.cache_file_suffix,
+            self.ignore_list,
+        )
+
+        for timestamp, key, subkey, value in self.find_data(
+            timestamps=timestamps,
+            match_string=match_string,
+            match_value=match_value,
+            minimum_count=minimum_count,
+            make_printable=make_printable,
+        ):
+            new_dissection.data[timestamp][key][subkey] = value
+
+        debug("  done filtering")
+        return new_dissection
+
     def find_data(
         self: Dissection,
         timestamps: List[int] | None = None,
