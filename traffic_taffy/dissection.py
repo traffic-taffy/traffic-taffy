@@ -61,8 +61,8 @@ class Dissection:
         dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
         cache_file_suffix: str = "taffy",
         ignore_list: list | None = None,
-        *args: list,
-        **kwargs: dict,
+        *_args: list,
+        **_kwargs: dict,
     ) -> Dissection:
         """Create a Dissection instance."""
         self.pcap_file = pcap_file
