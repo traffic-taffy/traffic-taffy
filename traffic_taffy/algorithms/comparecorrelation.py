@@ -3,6 +3,7 @@
 from __future__ import annotations
 from typing import List, TYPE_CHECKING
 import pandas as pd
+import numpy
 
 from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
 from logging import debug, warning, info
@@ -26,11 +27,24 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
+        method: str = "spearman",
     ):
-        """Create a CompareCorrelation instance."""
+        """Create a CompareCorrelation instance.
+
+        Valid methods: kendall, pearson, spearman, corrcoef
+
+        speed-wise; pearson < spearman < corrcoef < kendall
+
+        accuracy-wise:
+            corrcoef: not great (uses numpy.corrcoef)
+            pearson: better but, not good
+            spearman: best
+            kendall: best
+        """
         super().__init__(
             timestamps, match_string, match_value, minimum_count, make_printable
         )
+        self.method = method
 
     def compare_series(
         self, df: DataFrame, indexes: ndarray | None = None
@@ -70,7 +84,21 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
         # TODO(hardaker): df.corr() returns different numbers here
         # than inside compare_two_series!!
-        results = df.corr(method="kendall")
+
+        if self.method == "corrcoef":
+            np_array = df.to_numpy()
+            results = numpy.corrcoef(np_array)
+            for numx, column_left in enumerate(indexes):
+                for numy, column_right in enumerate(indexes[numx + 1 :]):
+                    value = results[numx][numy]
+                    if value > 0.8:
+                        print(
+                            f"{column_left:<30} similar to {column_right:<30}: {value}"
+                        )
+            return []
+
+        # default to using the datafram corr method instead
+        results = df.corr(method=self.method)
 
         for num, column_left in enumerate(indexes):
             for column_right in indexes[num + 1 :]:
@@ -97,7 +125,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         # results = scipy.stats.kendalltau(both['left'], both['right'])
         # value = results.statistic
 
-        results = both.corr(method="kendall")
+        results = both.corr(method=self.method)
         value = results["left"][1]
         if value > 0.8:
             # if results['left'][1] == 1.0:
