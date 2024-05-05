@@ -73,6 +73,10 @@ ignore = ["E501", "I001", "PLR0913", "ANN101", "ANN204",
 "BLE001",
 # allow for loop variable overrides
 "PLW2901",
+# disable "no blank line before class"
+"D203",
+# disable multi-line-summary-second-line
+"D213",
 ]
 fixable = ["ALL"]  # gulp
 # select = ["ALL"]
