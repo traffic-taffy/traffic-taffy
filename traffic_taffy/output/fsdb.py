@@ -7,6 +7,8 @@ from traffic_taffy.output import Output
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.comparison import Comparison
 
+import dataclasses
+
 
 class Fsdb(Output):
     """An FSDB report generator."""
@@ -17,20 +19,25 @@ class Fsdb(Output):
         self.console = None
         self.have_done_header = False
         self.in_report = None
+        self.fsdb = None
+
+    def init_fsdb(self, firstreport):
+        self.fields = dataclasses.fields(firstreport)
+        self.columns = []
+        self.converters = []
+
+        for field in self.fields:
+            self.columns.append(field.name)
+            self.converters.append(field.type)
 
         self.fsdb = pyfsdb.Fsdb(out_file_handle=sys.stdout)
+
         self.fsdb.out_column_names = [
             "report",
             "Key",
             "subkey",
-            "left",
-            "right",
-            "delta",
-            "left_fraction",
-            "right_fraction",
-            "delta_fraction",
-        ]
-        self.fsdb.converters = [str, str, str, int, int, int, float, float, float]
+        ] + self.columns
+        self.fsdb.converters = [str, str, str] + self.converters
 
     def output_start(self, report: Comparison) -> None:
         """Print the header about columns being displayed."""
@@ -39,17 +46,15 @@ class Fsdb(Output):
 
     def output_record(self, key: str, subkey: Any, data: dict) -> None:
         """Print a report to the console."""
+        if self.fsdb is None:
+            self.init_fsdb(data)
+
         subkey = Dissection.make_printable(key, subkey)
         self.fsdb.append(
             [
                 self.in_report,
                 key,
                 subkey,
-                data.left_count,
-                data.right_count,
-                data.delta_absolute,
-                data.left_percentage,
-                data.right_percentage,
-                data.delta_percentage,
             ]
+            + [getattr(data, field.name) for field in dataclasses.fields(data)]
         )
