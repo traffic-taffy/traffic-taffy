@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
     from traffic_taffy.report import Report
     from pandas import DataFrame
+    from numpy import ndarray
 
 
 class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
@@ -71,12 +72,16 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
 
         return self.compare_series(df)
 
-    def compare_series(self, df: DataFrame) -> List[Report]:
+    def compare_series(
+        self, df: DataFrame, indexes: ndarray | None = None
+    ) -> List[Report]:
         """Compares the series found in a dataframe, two at a time."""
 
         reports = []
 
-        indexes = df["index"].unique()
+        if indexes is None:
+            indexes = df["index"].unique()
+
         for num, column_left in enumerate(indexes):
             series_left = df[df["index"] == column_left]
             series_left = series_left.set_index("time")

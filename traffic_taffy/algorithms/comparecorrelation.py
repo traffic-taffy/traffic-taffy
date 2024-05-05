@@ -1,16 +1,23 @@
 """Compares datasets using DataFrame's correlation."""
 
 from __future__ import annotations
-from typing import List
+from typing import List, TYPE_CHECKING
 import pandas as pd
 
 from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
-from logging import debug
+from logging import debug, warning, info
 from rich import print
+
+if TYPE_CHECKING:
+    from traffic_taffy.report import Report
+    from pandas import DataFrame
+    from numpy import ndarray
 
 
 class CompareCorrelation(ComparisonSeriesAlgorithm):
     """Compare series using the pandas correlation."""
+
+    MAX_PIVOT = 1000
 
     def __init__(
         self,
@@ -25,6 +32,54 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             timestamps, match_string, match_value, minimum_count, make_printable
         )
 
+    def compare_series(
+        self, df: DataFrame, indexes: ndarray | None = None
+    ) -> List[Report]:
+        """Compare a bunch of series using correlation.
+
+        This tries to do a comparison in a faster path if the number
+        of keys are reasonable (for if not a pivot will consume all
+        available memory)
+        """
+
+        indexes = df["index"].unique()
+        num_indexes = len(indexes)
+        if num_indexes > self.MAX_PIVOT:
+            # we assume this is arbitrarily too large
+            # use the slower parent version instead
+            warning(
+                f"too many indexes ({num_indexes} > {self.MAX_PIVOT}) == using slower routine to conserve memory"
+            )
+            return super().compare_series(df, indexes)
+
+        info(f"Studying correlation of {num_indexes} indexes")
+
+        df = df.set_index("time")
+        for key in ["subkey", "index", "filename"]:
+            del df[key]
+        df = df.pivot(columns=["key"], values="count")
+        df.fillna(0, inplace=True)
+
+        # indexes have changed
+        indexes = df.columns.to_list()
+
+        # use pandas internal kendall
+        # TODO(hardaker): numpy.corrcoef is multi-core but is pearsons
+        # TODO(hardaker): scipy.stat.kendalltau is kendall,
+        #                 but can only do one at a time
+
+        # TODO(hardaker): df.corr() returns different numbers here
+        # than inside compare_two_series!!
+        results = df.corr(method="kendall")
+
+        for num, column_left in enumerate(indexes):
+            for column_right in indexes[num + 1 :]:
+                if results[column_left][column_right] > 0.8:
+                    print(
+                        f"{column_left:<30} similar to {column_right:<30}: {results[column_left][column_right]}"
+                    )
+        return []
+
     def compare_two_series(
         self,
         column_left: str,
@@ -36,15 +91,19 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         debug(f"correlation comparing {column_left} and {column_right}")
         both = pd.concat([series_left, series_right], axis=1)
         both.fillna(0, inplace=True)
+
+        # Note actually faster -- about the same as df.corr
+        # import scipy
+        # results = scipy.stats.kendalltau(both['left'], both['right'])
+        # value = results.statistic
+
         results = both.corr(method="kendall")
-        if results["left"][1] > 0.8:
+        value = results["left"][1]
+        if value > 0.8:
             # if results['left'][1] == 1.0:
             #     import pdb ; pdb.set_trace()
-            print(
-                f"{column_left:<30} similar to {column_right:<30}: {results['left'][1]}"
-            )
-            print(both)
+            print(f"{column_left:<30} similar to {column_right:<30}: {value}")
         else:
             debug(
-                f"{column_left} not similar to {column_right} with correlation {results['left'][1]}"
+                f"{column_left} not similar to {column_right} with correlation {value}"
             )
