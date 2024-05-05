@@ -10,7 +10,7 @@ from logging import debug, warning, info
 from rich import print
 
 if TYPE_CHECKING:
-    from traffic_taffy.report import Report
+    from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
     from pandas import DataFrame
     from numpy import ndarray
 
@@ -48,7 +48,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
     def compare_series(
         self, df: DataFrame, indexes: ndarray | None = None
-    ) -> List[Report]:
+    ) -> List[CompareSeriesReport]:
         """Compare a bunch of series using correlation.
 
         This tries to do a comparison in a faster path if the number

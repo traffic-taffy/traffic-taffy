@@ -6,7 +6,7 @@ from logging import error
 
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
-    from traffic_taffy.report import Report
+    from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
 
 
 class ComparisonAlgorithm:
@@ -15,7 +15,9 @@ class ComparisonAlgorithm:
     def __init__(self):
         """Construct a ComparisonAlgorithm."""
 
-    def compare_dissections(self, _dissections: List[Dissection]) -> List[Report]:
+    def compare_dissections(
+        self, _dissections: List[Dissection]
+    ) -> List[CompareSeriesReport]:
         """Compare dissections base function just to warn things are not implemented."""
         error("code failure: base class compare_two_dissections should never be called")
         raise ValueError

@@ -9,7 +9,7 @@ from logging import error
 
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
-    from traffic_taffy.report import Report
+    from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
     from pandas import DataFrame
     from numpy import ndarray
 
@@ -43,7 +43,9 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         error("code failure: base class compare_two_series should never be called")
         raise ValueError
 
-    def compare_dissections(self, dissections: List[Dissection]) -> List[Report]:
+    def compare_dissections(
+        self, dissections: List[Dissection]
+    ) -> List[CompareSeriesReport]:
         """Compare all the column series."""
         # hack to figure out if there is at least two instances of a generator
         # without actually extracting them all
@@ -74,7 +76,7 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
 
     def compare_series(
         self, df: DataFrame, indexes: ndarray | None = None
-    ) -> List[Report]:
+    ) -> List[CompareSeriesReport]:
         """Compares the series found in a dataframe, two at a time."""
 
         reports = []

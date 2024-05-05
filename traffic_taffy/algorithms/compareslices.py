@@ -11,7 +11,7 @@ from logging import debug, error, exception
 
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
-    from traffic_taffy.report import Report
+    from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
 
 
 class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
@@ -27,7 +27,9 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
         error("code failure: base class compare_two_dissections should never be called")
         raise ValueError
 
-    def compare_dissections(self, dissections: List[Dissection]) -> List[Report]:
+    def compare_dissections(
+        self, dissections: List[Dissection]
+    ) -> List[CompareSeriesReport]:
         """Compare all the dissections in slices."""
         reports = []
         # hack to figure out if there is at least two instances of a generator
