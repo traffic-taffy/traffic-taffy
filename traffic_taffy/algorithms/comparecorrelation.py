@@ -68,11 +68,11 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
         info(f"Studying correlation of {num_indexes} indexes")
 
-        df = df.set_index("time")
         for key in ["subkey", "index", "filename"]:
             del df[key]
-        df = df.pivot(columns=["key"], values="count")
-        df.fillna(0, inplace=True)
+        df = df.pivot_table(
+            columns=["key"], index=["time"], values="count", fill_value=0
+        )
 
         # indexes have changed
         indexes = df.columns.to_list()
