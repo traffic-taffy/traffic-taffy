@@ -7,6 +7,8 @@ from rich.console import Console as RichConsole
 from traffic_taffy.output import Output
 from traffic_taffy.dissection import Dissection
 
+import dataclasses
+
 if TYPE_CHECKING:
     from traffic_taffy.comparison import Comparison
 
@@ -63,6 +65,7 @@ class Console(Output):
 
     def output_record(self, key: str, subkey: Any, data: Dict[str, Any]) -> None:
         """Print a report to the console."""
+
         delta_percentage: float = data.delta_percentage
 
         # apply some fancy styling
@@ -79,9 +82,19 @@ class Console(Output):
 
         # construct the output line with styling
         subkey = Dissection.make_printable(key, subkey)
-        line = f"  {style}{subkey:<50}{endstyle}"
-        line += f" {data.left_count:>8} {data.right_count:>8} {data.delta_absolute:>8}"
-        line += f" {100*data.left_percentage:>7.2f} {100*data.right_percentage:>7.2f}  {100*delta_percentage:>7.2f}"
+
+        line = data.format_string
+
+        field_values = {
+            field.name: getattr(data, field.name) for field in dataclasses.fields(data)
+        }
+
+        line = line.format(
+            style=style,
+            endstyle=endstyle,
+            subkey=subkey,
+            **field_values,
+        )
 
         # print it to the rich console
         self.console.print(line)
