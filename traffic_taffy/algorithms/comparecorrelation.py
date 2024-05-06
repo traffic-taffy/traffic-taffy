@@ -3,14 +3,15 @@
 from __future__ import annotations
 from typing import List, TYPE_CHECKING
 import pandas as pd
-import numpy
+import numpy as np
 
-from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
 from logging import debug, warning, info
 from rich import print
 
+from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
+from traffic_taffy.reports.correlationreport import CorrelationReport
+
 if TYPE_CHECKING:
-    from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
     from pandas import DataFrame
     from numpy import ndarray
 
@@ -36,7 +37,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         speed-wise; pearson < spearman < corrcoef < kendall
 
         accuracy-wise:
-            corrcoef: not great (uses numpy.corrcoef)
+            corrcoef: not great (uses np.corrcoef)
             pearson: better but, not good
             spearman: best
             kendall: best
@@ -48,14 +49,13 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
     def compare_series(
         self, df: DataFrame, indexes: ndarray | None = None
-    ) -> List[CompareSeriesReport]:
+    ) -> List[CorrelationReport]:
         """Compare a bunch of series using correlation.
 
         This tries to do a comparison in a faster path if the number
         of keys are reasonable (for if not a pivot will consume all
         available memory)
         """
-
         indexes = df["index"].unique()
         num_indexes = len(indexes)
         if num_indexes > self.MAX_PIVOT:
@@ -78,16 +78,18 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         indexes = df.columns.to_list()
 
         # use pandas internal kendall
-        # TODO(hardaker): numpy.corrcoef is multi-core but is pearsons
+        # TODO(hardaker): np.corrcoef is multi-core but is pearsons
         # TODO(hardaker): scipy.stat.kendalltau is kendall,
         #                 but can only do one at a time
 
         # TODO(hardaker): df.corr() returns different numbers here
         # than inside compare_two_series!!
 
+        reports: List[CorrelationReport] = []
+
         if self.method == "corrcoef":
             np_array = df.to_numpy()
-            results = numpy.corrcoef(np_array)
+            results = np.corrcoef(np_array)
             for numx, column_left in enumerate(indexes):
                 for numy, column_right in enumerate(indexes[numx + 1 :]):
                     value = results[numx][numy]
@@ -95,18 +97,24 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
                         print(
                             f"{column_left:<30} similar to {column_right:<30}: {value}"
                         )
-            return []
+            return reports
 
         # default to using the datafram corr method instead
         results = df.corr(method=self.method)
 
         for num, column_left in enumerate(indexes):
             for column_right in indexes[num + 1 :]:
-                if results[column_left][column_right] > 0.8:
-                    print(
-                        f"{column_left:<30} similar to {column_right:<30}: {results[column_left][column_right]}"
+                value = results[column_left][column_right]
+                if value > 0.8:
+                    print(f"{column_left:<30} similar to {column_right:<30}: {value}")
+                    reports.append(
+                        CorrelationReport(
+                            column_left,
+                            column_right,
+                            value,
+                        )
                     )
-        return []
+        return reports
 
     def compare_two_series(
         self,
