@@ -29,6 +29,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         minimum_count: int | None = None,
         make_printable: bool = False,
         method: str = "spearman",
+        minimum_value: float = 0.8,
     ):
         """Create a CompareCorrelation instance.
 
@@ -46,6 +47,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             timestamps, match_string, match_value, minimum_count, make_printable
         )
         self.method = method
+        self.minimum_value = minimum_value
 
     def compare_series(
         self, df: DataFrame, indexes: ndarray | None = None
@@ -93,7 +95,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             for numx, column_left in enumerate(indexes):
                 for numy, column_right in enumerate(indexes[numx + 1 :]):
                     value = results[numx][numy]
-                    if value > 0.8:
+                    if value > self.minimum_value:
                         print(
                             f"{column_left:<30} similar to {column_right:<30}: {value}"
                         )
@@ -105,7 +107,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         for num, column_left in enumerate(indexes):
             for column_right in indexes[num + 1 :]:
                 value = results[column_left][column_right]
-                if value > 0.8:
+                if value > self.minimum_value:
                     print(f"{column_left:<30} similar to {column_right:<30}: {value}")
                     reports.append(
                         CorrelationReport(
@@ -135,7 +137,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
         results = both.corr(method=self.method)
         value = results["left"][1]
-        if value > 0.8:
+        if value > self.minimum_value:
             # if results['left'][1] == 1.0:
             #     import pdb ; pdb.set_trace()
             print(f"{column_left:<30} similar to {column_right:<30}: {value}")
