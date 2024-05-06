@@ -10,6 +10,7 @@ from rich import print
 
 from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
 from traffic_taffy.reports.correlationreport import CorrelationReport
+from traffic_taffy.comparison import Comparison, OrganizedReports
 
 if TYPE_CHECKING:
     from pandas import DataFrame
@@ -87,7 +88,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         # TODO(hardaker): df.corr() returns different numbers here
         # than inside compare_two_series!!
 
-        reports: List[CorrelationReport] = []
+        reports: OrganizedReports = {}
 
         if self.method == "corrcoef":
             np_array = df.to_numpy()
@@ -109,14 +110,12 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
                 value = results[column_left][column_right]
                 if value > self.minimum_value:
                     print(f"{column_left:<30} similar to {column_right:<30}: {value}")
-                    reports.append(
-                        CorrelationReport(
-                            column_left,
-                            column_right,
-                            value,
-                        )
+                    if column_left not in reports:
+                        reports[column_left] = {}
+                    reports[column_left][column_right] = CorrelationReport(
+                        value,
                     )
-        return reports
+        return [Comparison(reports, "Correlation Report", "correlation")]
 
     def compare_two_series(
         self,

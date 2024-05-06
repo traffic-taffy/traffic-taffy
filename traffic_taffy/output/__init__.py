@@ -33,11 +33,11 @@ class Output:
     def output_options(self, new_output_options: dict) -> None:
         self._output_options = new_output_options
 
-    def output(self, report: Comparison | None = None) -> None:
-        """Dump a report to the output stream."""
-        if not report:
-            report = self.report
-        contents = report.contents
+    def output(self, comparison: Comparison | None = None) -> None:
+        """Dump a comparison to the output stream."""
+        if not comparison:
+            comparison = self.report
+        contents = comparison.contents
 
         first_of_anything: bool = True
 
@@ -72,19 +72,20 @@ class Output:
 
             # TODO(hardaker): we don't do match_value here?
 
+            sort_by = comparison.sort_by
             record_count = 0
             for subkey, data in sorted(
                 contents[key].items(),
                 key=lambda x: getattr(x[1], sort_by),
                 reverse=sort_order,
             ):
-                if not self.filter_check(data):
+                if not data.filter_check(self.output_options):
                     continue
 
                 # print the header
                 if not reported:
                     if first_of_anything:
-                        self.output_start(report)
+                        self.output_start(comparison, contents[key][subkey])
                         first_of_anything = False
 
                     self.output_new_section(key)
@@ -106,44 +107,3 @@ class Output:
     def output_close(self) -> None:
         """Close the output stream."""
         return
-
-    def filter_check(self, data: dict) -> bool:
-        """Return true if we should include it."""
-        delta: float = data.delta_percentage
-        total: int = data.total
-
-        if self.output_options["only_positive"] and delta <= 0:
-            return False
-
-        if self.output_options["only_negative"] and delta >= 0:
-            return False
-
-        if (
-            not self.output_options["print_threshold"]
-            and not self.output_options["minimum_count"]
-        ):
-            # always print
-            return True
-
-        if (
-            self.output_options["print_threshold"]
-            and not self.output_options["minimum_count"]
-        ):
-            # check output_options["print_threshold"] as a fraction
-            if abs(delta) > self.output_options["print_threshold"]:
-                return True
-        elif (
-            not self.output_options["print_threshold"]
-            and self.output_options["minimum_count"]
-        ):
-            # just check output_options["minimum_count"]
-            if total > self.output_options["minimum_count"]:
-                return True
-        elif (
-            total > self.output_options["minimum_count"]
-            and abs(delta) > self.output_options["print_threshold"]
-        ):
-            # require both
-            return True
-
-        return False

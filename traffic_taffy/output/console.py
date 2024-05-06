@@ -11,6 +11,7 @@ import dataclasses
 
 if TYPE_CHECKING:
     from traffic_taffy.comparison import Comparison
+    from traffic_taffy.reports import Report
 
 
 class Console(Output):
@@ -31,12 +32,12 @@ class Console(Output):
         if not self.console:
             self.console = RichConsole()
 
-    def output_start(self, report: Comparison) -> None:
+    def output_start(self, comparison: Comparison, report: Report) -> None:
         """Print the header about columns being displayed."""
         # This should match the spacing in print_contents()
         self.init_console()
 
-        self.console.print(f"======== {report.title}")
+        self.console.print(f"======== {comparison.title}")
         if self.have_done_header:
             return
 
@@ -45,17 +46,15 @@ class Console(Output):
         style = ""
         subkey = "Value"
         endstyle = ""
-        left_count = "Left"
-        right_count = "Right"
-        actual_delta = "Delta"
 
-        left_percent = "Left %"
-        right_percent = "Right %"
-        percent_delta = "Delta-%"
+        field_values = {field.name: field.name for field in dataclasses.fields(report)}
 
-        line = f"  {style}{subkey:<50}{endstyle}"
-        line += f" {left_count:>8} {right_count:>8} {actual_delta:>8}"
-        line += f" {left_percent:>8} {right_percent:>8}  {percent_delta:>7}"
+        line = report.header_string.format(
+            style=style,
+            endstyle=endstyle,
+            subkey=subkey,
+            **field_values,
+        )
 
         self.console.print(line)
 
@@ -66,30 +65,30 @@ class Console(Output):
     def output_record(self, key: str, subkey: Any, data: Dict[str, Any]) -> None:
         """Print a report to the console."""
 
-        delta_percentage: float = data.delta_percentage
-
-        # apply some fancy styling
         style = ""
-        if delta_percentage < -Console.BOLD_LIMIT:
-            style = "[bold red]"
-        elif delta_percentage < Console.POSITIVE:
-            style = "[red]"
-        elif delta_percentage > Console.BOLD_LIMIT:
-            style = "[bold green]"
-        elif delta_percentage > Console.POSITIVE:
-            style = "[green]"
-        endstyle = style.replace("[", "[/")
+        endstyle = ""
+        if getattr(data, "delta_percentage", None):
+            delta_percentage: float = data.delta_percentage
+
+            # apply some styling depending on range
+            if delta_percentage < -Console.BOLD_LIMIT:
+                style = "[bold red]"
+            elif delta_percentage < Console.POSITIVE:
+                style = "[red]"
+            elif delta_percentage > Console.BOLD_LIMIT:
+                style = "[bold green]"
+            elif delta_percentage > Console.POSITIVE:
+                style = "[green]"
+            endstyle = style.replace("[", "[/")
 
         # construct the output line with styling
         subkey = Dissection.make_printable(key, subkey)
-
-        line = data.format_string
 
         field_values = {
             field.name: getattr(data, field.name) for field in dataclasses.fields(data)
         }
 
-        line = line.format(
+        line = data.format_string.format(
             style=style,
             endstyle=endstyle,
             subkey=subkey,

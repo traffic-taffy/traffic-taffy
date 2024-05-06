@@ -15,11 +15,17 @@ OrganizedReports = Dict[str, Dict[Any, Report]]
 class Comparison:
     """A simple data storage class to hold comparison data."""
 
-    def __init__(self, contents: OrganizedReports, title: str = ""):
+    def __init__(
+        self,
+        contents: OrganizedReports,
+        title: str = "",
+        sort_by: str = "delta_percentage",
+    ):
         """Create a Comparison class from contents."""
         self.contents: OrganizedReports = contents
         self.title: str = title
         self.printing_arguments: Dict[str, Any] = {}
+        self.sort_by = sort_by
 
     # title
     @property
