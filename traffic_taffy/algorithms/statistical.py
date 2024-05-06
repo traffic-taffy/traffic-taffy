@@ -1,7 +1,7 @@
 from traffic_taffy.algorithms.compareslices import ComparisonSlicesAlgorithm
 from traffic_taffy.comparison import Comparison
 from traffic_taffy.dissection import Dissection
-from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
+from traffic_taffy.reports.compareslicesreport import CompareSlicesReport
 
 
 class ComparisonStatistical(ComparisonSlicesAlgorithm):
@@ -46,7 +46,7 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                     new_left_count += 1
 
                 delta_absolute = right_count - left_count
-                report[key][subkey] = CompareSeriesReport(
+                report[key][subkey] = CompareSlicesReport(
                     delta_percentage=delta_percentage,
                     delta_absolute=delta_absolute,
                     total=total,
@@ -67,7 +67,7 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                     right_percentage = right_side[key][subkey] / right_side_total
                     new_right_count += 1  # this value wasn't in the left
 
-                    report[key][subkey] = CompareSeriesReport(
+                    report[key][subkey] = CompareSlicesReport(
                         delta_percentage=delta_percentage,
                         delta_absolute=right_count,
                         total=total,
@@ -87,7 +87,7 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
             else:
                 left_percent = new_left_count / left_side_total
 
-            report[key][Dissection.NEW_RIGHT_SUBKEY] = CompareSeriesReport(
+            report[key][Dissection.NEW_RIGHT_SUBKEY] = CompareSlicesReport(
                 delta_absolute=new_right_count - new_left_count,
                 total=new_left_count + new_right_count,
                 left_count=new_left_count,

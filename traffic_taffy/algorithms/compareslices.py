@@ -11,6 +11,7 @@ from logging import debug, error, exception
 
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
+    from traffic_taffy.comparison import Comparison
     from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
 
 
@@ -22,7 +23,7 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
 
     def compare_two_dissections(
         self, _left_side: Dissection, _right_side: Dissection
-    ) -> dict:
+    ) -> Comparison:
         """Error catching base class function for comparing two alogirthms."""
         error("code failure: base class compare_two_dissections should never be called")
         raise ValueError

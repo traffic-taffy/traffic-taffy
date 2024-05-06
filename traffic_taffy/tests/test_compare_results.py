@@ -1,5 +1,5 @@
 from collections import Counter
-from traffic_taffy.reports.compareseriesreport import CompareSeriesReport
+from traffic_taffy.reports.compareslicesreport import CompareSlicesReport
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
 
 
@@ -10,7 +10,7 @@ def test_compare_statistical_algorithm():
     # this should be positive when right_data is larger
     expected = {
         "src": {
-            "a": CompareSeriesReport(
+            "a": CompareSlicesReport(
                 total=20,
                 left_count=5,
                 right_count=15,
@@ -19,7 +19,7 @@ def test_compare_statistical_algorithm():
                 right_percentage=15.0 / 30.0,
                 delta_percentage=15.0 / 30.0 - 5.0 / 15.0,
             ),
-            "b": CompareSeriesReport(
+            "b": CompareSlicesReport(
                 total=-10,  # only in 1
                 left_count=10,
                 right_count=0,
@@ -28,7 +28,7 @@ def test_compare_statistical_algorithm():
                 right_percentage=0.0,
                 delta_percentage=-1.0,
             ),
-            "c": CompareSeriesReport(
+            "c": CompareSlicesReport(
                 total=15,  # only in 2
                 left_count=0,
                 right_count=15,
@@ -37,7 +37,7 @@ def test_compare_statistical_algorithm():
                 right_percentage=15.0 / 30.0,
                 delta_percentage=1.0,
             ),
-            "__NEW_VALUES__": CompareSeriesReport(
+            "__NEW_VALUES__": CompareSlicesReport(
                 total=2,  # 1 on each side
                 left_count=1,  # b
                 right_count=1,  # c

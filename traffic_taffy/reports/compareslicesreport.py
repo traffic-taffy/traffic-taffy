@@ -7,7 +7,7 @@ from traffic_taffy.reports import Report
 
 
 @dataclass
-class CompareSeriesReport(Report):
+class CompareSlicesReport(Report):
     """Report for storing a comparison between two different dissections."""
 
     delta_percentage: float

@@ -1,4 +1,4 @@
-"""Compares datasets in time-slices rather than by series."""
+"""Compares datasets in time-series rather than by series."""
 
 from __future__ import annotations
 from typing import List, TYPE_CHECKING
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
-    """A base class for algorithms that compare left/right slices."""
+    """A base class for algorithms that compare left/right series."""
 
     def __init__(
         self,
