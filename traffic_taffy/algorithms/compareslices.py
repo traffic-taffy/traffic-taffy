@@ -32,7 +32,7 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
         self, dissections: List[Dissection]
     ) -> List[CompareSeriesReport]:
         """Compare all the dissections in slices."""
-        reports = []
+        comparisons = []
         # hack to figure out if there is at least two instances of a generator
         # without actually extracting them all
         # (since it could be memory expensive)
@@ -52,10 +52,12 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
             for other in dissections:
                 # compare the two global summaries
 
-                report = self.compare_two_dissections(reference.data[0], other.data[0])
-                report.title = f"{reference.pcap_file} vs {other.pcap_file}"
+                comparison = self.compare_two_dissections(
+                    reference.data[0], other.data[0]
+                )
+                comparison.title = f"{reference.pcap_file} vs {other.pcap_file}"
 
-                reports.append(report)
+                comparisons.append(comparison)
         else:
             # deal with timestamps within a single file
             reference = reference.data
@@ -85,7 +87,7 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
 
                 debug(f"comparing timestamps {time_left} and {time_right}")
 
-                report = self.compare_two_dissections(
+                comparison = self.compare_two_dissections(
                     reference[time_left],
                     reference[time_right],
                 )
@@ -97,12 +99,8 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
                     "%Y-%m-%d %H:%M:%S"
                 )
 
-                report.title = f"time {title_left} vs time {title_right}"
-                reports.append(report)
+                comparison.title = f"time {title_left} vs time {title_right}"
+                comparisons.append(comparison)
 
-                continue
-
-                # takes way too much memory to do it "right"
-                # reports.append(
-
-        return reports
+        # return our collected results
+        return comparisons
