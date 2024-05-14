@@ -136,11 +136,4 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
         results = both.corr(method=self.method)
         value = results["left"][1]
-        if value > self.minimum_value:
-            # if results['left'][1] == 1.0:
-            #     import pdb ; pdb.set_trace()
-            print(f"{column_left:<30} similar to {column_right:<30}: {value}")
-        else:
-            debug(
-                f"{column_left} not similar to {column_right} with correlation {value}"
-            )
+        debug(f"{column_left:<30} similar to {column_right:<30}: {value}")
