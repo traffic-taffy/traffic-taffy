@@ -67,6 +67,7 @@ def main() -> None:
         force_load=args.force_load,
         force_overwrite=args.force_overwrite,
         merge_files=args.merge,
+        match_expression=args.match_expression,
     )
 
     dissections = pdm.load_all(return_as_list=True)

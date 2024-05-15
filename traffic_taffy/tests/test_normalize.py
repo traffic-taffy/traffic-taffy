@@ -9,6 +9,7 @@ class ParentFaker(PcapGraphData):
         self.match_value = None
         self.minimum_count = 0
         self.bin_size = 1
+        self.match_expression = None
 
         super().__init__()
 

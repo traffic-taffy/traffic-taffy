@@ -13,12 +13,14 @@ class PcapGraphData:
         match_string: str = None,
         match_value: str = None,
         minimum_count: int = None,
+        match_expression: str = None,
     ):
         """Create an instance of a PcapGraphData."""
         self.dissections = []
         self.match_string = match_string
         self.match_value = match_value
         self.minimum_count = minimum_count
+        self.match_expression = match_expression
 
     @property
     def dissections(self) -> list:
@@ -29,7 +31,7 @@ class PcapGraphData:
     def dissections(self, newvalue: list) -> None:
         self._dissections = newvalue
 
-    def normalize_bins(self, dissection: Dissection) -> dict:
+    def normalize_bins(self, dissection: Dissection, minimalize: bool = False) -> dict:
         """Transform a dissection's list of data into a dictionary."""
         results: dict = {}
         time_keys: list = list(dissection.data.keys())
@@ -45,6 +47,7 @@ class PcapGraphData:
             match_value=self.match_value,
             minimum_count=self.minimum_count,
             make_printable=True,
+            match_expression=self.match_expression,
         ):
             index = key + "=" + subkey
             results["count"].append(int(value))

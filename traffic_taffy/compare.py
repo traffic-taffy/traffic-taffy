@@ -63,6 +63,7 @@ class PcapCompare:
                 match_value=self.filter_arguments["match_value"],
                 minimum_count=self.filter_arguments["minimum_count"],
                 make_printable=True,
+                match_expression=self.filter_arguments["match_expression"],
             )
         else:
             error(f"unknown algorithm: {algorithm}")
@@ -194,4 +195,5 @@ def get_comparison_args(args: Namespace) -> dict:
         "sort_by": args.sort_by,
         "merge_files": args.merge,
         "algorithm": args.algorithm,
+        "match_expression": args.match_expression,
     }

@@ -105,6 +105,7 @@ def main() -> None:
             match_string=args.match_string,
             match_value=args.match_value,
             minimum_count=args.minimum_count,
+            match_expression=args.match_expression,
         )
     else:
         pd.print(
@@ -112,6 +113,7 @@ def main() -> None:
             match_string=args.match_string,
             match_value=args.match_value,
             minimum_count=args.minimum_count,
+            match_expression=args.match_expression,
         )
 
 

@@ -136,6 +136,7 @@ class PCAPDissector:
         match_string: str | None = None,
         match_value: str | None = None,
         minimum_count: int | None = None,
+        match_expression: str | None = None,
     ) -> None:
         """Print the results to the console."""
         if timestamps is None:
@@ -146,6 +147,7 @@ class PCAPDissector:
             match_value=match_value,
             minimum_count=minimum_count,
             make_printable=True,
+            match_expression=match_expression,
         ):
             print(f"{key:<30} {subkey:<30} {value}")
 
@@ -155,6 +157,7 @@ class PCAPDissector:
         match_string: str | None = None,
         match_value: str | None = None,
         minimum_count: int | None = None,
+        match_expression: str | None = None,
     ) -> None:
         """Output the results in an FSDB file."""
         if timestamps is None:
@@ -172,6 +175,7 @@ class PCAPDissector:
             match_value=match_value,
             minimum_count=minimum_count,
             make_printable=True,
+            match_expression=match_expression,
         ):
             fh.append([key, subkey, value])
         fh.close()
@@ -328,6 +332,14 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
         type=str,
         nargs="*",
         help="Only report on data with this substring in the packet value field",
+    )
+
+    parser.add_argument(
+        "-E",
+        "--match-expression",
+        default=None,
+        type=str,
+        help="Match expression to be evaluated at runtime for returning data",
     )
 
     parser.add_argument(

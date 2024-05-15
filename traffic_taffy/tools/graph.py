@@ -84,6 +84,7 @@ def main() -> None:
         force_overwrite=args.force_overwrite,
         force_load=args.force_load,
         merge_files=args.merge,
+        match_expression=args.match_expression,
     )
     pc.graph_it()
 

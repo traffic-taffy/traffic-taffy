@@ -24,6 +24,7 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
+        match_expression: str | None = None,
     ):
         """Create a ComparisonAlgorithm."""
         self.timestamps = timestamps
@@ -31,6 +32,7 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         self.match_value = match_value
         self.minimum_count = minimum_count
         self.make_printable = make_printable
+        self.match_expression = (match_expression,)
 
     def compare_two_series(
         self,
@@ -63,6 +65,7 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
             self.match_value,
             self.minimum_count,
             self.make_printable,
+            self.match_expression,
         )
 
         data = PcapGraphData()

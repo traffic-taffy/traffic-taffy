@@ -36,12 +36,14 @@ class PcapGraph(PcapGraphData):
         force_overwrite: bool = False,
         force_load: bool = False,
         merge_files: bool = False,  # unused
+        match_expression: str | None = None,
     ):
         """Create an instance of a graphing object."""
         super().__init__(
             match_string=match_string,
             match_value=match_value,
             minimum_count=minimum_count,
+            match_expression=match_expression,
         )
 
         self.pcap_files = pcap_files

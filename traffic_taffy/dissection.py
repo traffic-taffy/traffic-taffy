@@ -377,6 +377,7 @@ class Dissection:
         match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
+        match_expression: str | None = None,
     ) -> None:
         """Creates a new dissection that has been filtered based on passed criteria."""
         debug(
@@ -398,6 +399,7 @@ class Dissection:
             match_value=match_value,
             minimum_count=minimum_count,
             make_printable=make_printable,
+            match_expression=match_expression,
         ):
             new_dissection.data[timestamp][key][subkey] = value
 
@@ -411,6 +413,7 @@ class Dissection:
         match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
+        match_expression: str | None = None,
     ) -> list:
         """Search through data for appropriate records."""
         data = self.data
@@ -420,6 +423,9 @@ class Dissection:
         if not timestamps:
             timestamps = data.keys()
 
+        match_eval_compiled = None
+        if match_expression:
+            match_eval_compiled = compile(f"{match_expression}", "<string>", "eval")
         # find timestamps/key values with at least one item above count
         # TODO(hardaker): we should really use pandas for this
         usable = defaultdict(set)
@@ -441,6 +447,8 @@ class Dissection:
 
         # TODO(hardaker): move the timestamp inside the other fors for faster
         # processing of skipped key/subkeys
+        globals = {}  # TODO(hardaker): maybe create some in the future
+
         for timestamp in timestamps:
             for key in sorted(data[timestamp]):
                 if key not in usable:
@@ -453,12 +461,30 @@ class Dissection:
                     if subkey not in usable[key]:
                         continue
 
+                    subkey_original = subkey
                     if make_printable:
                         subkey = Dissection.make_printable(key, subkey)
                         count = Dissection.make_printable(None, count)
 
                     if match_value and not any(x in subkey for x in match_value):
                         continue
+
+                    if match_eval_compiled:
+                        result = eval(
+                            match_eval_compiled,
+                            globals,
+                            {
+                                "timestamp": timestamp,
+                                "key": key,
+                                "subkey": subkey,
+                                "value": data[timestamp][key][subkey_original],
+                            },
+                        )
+
+                        # if the evaluation didn't return truthy,
+                        # ignore this entry
+                        if not result:
+                            continue
 
                     yield (timestamp, key, subkey, count)
 
