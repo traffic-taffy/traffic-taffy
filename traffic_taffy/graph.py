@@ -38,15 +38,18 @@ class PcapGraph(PcapGraphData):
         merge_files: bool = False,  # unused
     ):
         """Create an instance of a graphing object."""
+        super().__init__(
+            match_string=match_string,
+            match_value=match_value,
+            minimum_count=minimum_count,
+        )
+
         self.pcap_files = pcap_files
         self.output_file = output_file
         self.maximum_count = maximum_count
-        self.minimum_count = minimum_count
         self.bin_size = bin_size
         self.subsections = None
         self.pcap_filter = None
-        self.match_string = match_string
-        self.match_value = match_value
         self.cache_pcap_results = cache_pcap_results
         self.dissector_level = dissector_level
         self.interactive = interactive
@@ -58,8 +61,6 @@ class PcapGraph(PcapGraphData):
         self.force_overwrite = force_overwrite
         self.force_load = force_load
         self.merge_files = merge_files
-
-        super().__init__()
 
     def load_pcaps(self) -> None:
         """Load the pcap and counts things into bins."""
