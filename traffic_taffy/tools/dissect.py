@@ -9,7 +9,8 @@ from traffic_taffy.dissector import (
     PCAPDissector,
 )
 from traffic_taffy.dissectmany import PCAPDissectMany
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from rich_argparse import RichHelpFormatter
+from argparse import ArgumentParser, Namespace
 
 
 def main() -> None:
@@ -18,7 +19,7 @@ def main() -> None:
     def parse_args() -> Namespace:
         """Parse the command line arguments."""
         parser = ArgumentParser(
-            formatter_class=ArgumentDefaultsHelpFormatter,
+            formatter_class=RichHelpFormatter,
             description=__doc__,
             epilog="Example Usage: taffy-dissect -C -d 10 -n 10000 file.pcap",
         )

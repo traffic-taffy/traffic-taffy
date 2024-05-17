@@ -1,6 +1,7 @@
 """Read a PCAP file and graph it or parts of it."""
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from argparse import ArgumentParser, Namespace
+from rich_argparse import RichHelpFormatter
 from traffic_taffy.graph import PcapGraph
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -13,7 +14,7 @@ import logging
 def parse_args() -> Namespace:
     """Parse the command line arguments."""
     parser = ArgumentParser(
-        formatter_class=ArgumentDefaultsHelpFormatter,
+        formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-graph -C -m __TOTAL__ -M packet -o graph.png file.pcap",
     )

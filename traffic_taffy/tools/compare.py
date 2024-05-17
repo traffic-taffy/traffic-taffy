@@ -1,7 +1,8 @@
 """Takes a set of pcap files to compare and creates a report."""
 
 import sys
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from argparse import ArgumentParser, Namespace
+from rich_argparse import RichHelpFormatter
 import logging
 from logging import error
 from traffic_taffy.output.console import Console
@@ -19,7 +20,7 @@ from traffic_taffy.compare import PcapCompare
 def parse_args() -> Namespace:
     """Parse the command line arguments."""
     parser = ArgumentParser(
-        formatter_class=ArgumentDefaultsHelpFormatter,
+        formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-compare -C file1.pcap file2.pcap",
     )

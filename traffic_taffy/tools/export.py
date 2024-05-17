@@ -2,7 +2,8 @@
 
 import logging
 import sys
-from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser, FileType, Namespace
+from argparse import ArgumentParser, FileType, Namespace
+from rich_argparse import RichHelpFormatter
 
 import pyfsdb
 
@@ -17,7 +18,7 @@ from traffic_taffy.dissector import (
 def parse_args() -> Namespace:
     """Parse the command line arguments for taffy-export."""
     parser = ArgumentParser(
-        formatter_class=ArgumentDefaultsHelpFormatter,
+        formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-export -C -m IP.UDP.sport file.pcap",
     )

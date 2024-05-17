@@ -1,6 +1,7 @@
 """Loads the cached data for a file to display the results about it."""
 
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, Namespace
+from argparse import ArgumentParser, Namespace
+from rich_argparse import RichHelpFormatter
 from pathlib import Path
 from rich import print
 import logging
@@ -10,7 +11,7 @@ import msgpack
 def parse_args() -> Namespace:
     """Parse the command line arguments."""
     parser = ArgumentParser(
-        formatter_class=ArgumentDefaultsHelpFormatter,
+        formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-cache-info something.taffy",
     )
