@@ -24,6 +24,7 @@ dependencies = [
     "pyfsdb",
     "PyQt6-Charts",
     "rich",
+    "rich_argparse",
     "scapy",
     "seaborn",
     "cryptography",
