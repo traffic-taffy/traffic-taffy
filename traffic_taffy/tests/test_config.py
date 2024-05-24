@@ -36,6 +36,20 @@ def test_namespace_loading():
     assert cfg["test_arg_two"]["b"] == "world"
 
 
+def test_as_namespace():
+    contents = StringIO(TESTCONFIG)
+
+    cfg = Config()
+    cfg.load_stream(contents)
+    assert cfg["name"] == "foo"
+    assert cfg["arry"][0] == 1  # truly sic!
+
+    args = cfg.as_namespace()
+
+    assert args.name == "foo"
+    assert args.arry[0] == 1
+
+
 def test_namespace_loading_and_mapping():
     cfg = Config()
 

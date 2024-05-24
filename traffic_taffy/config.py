@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 from enum import Enum
-from typing import TextIO, Dict, List, Any, TYPE_CHECKING
+from typing import TextIO, Dict, List, Any
 from pathlib import Path
 from logging import error
-
-if TYPE_CHECKING:
-    from argparse import Namespace
+from argparse import Namespace
 
 
 class ConfigStyles(Enum):
@@ -82,3 +80,11 @@ class Config(dict):
                     raise ValueError
 
                 self.load_file(filename)
+
+    def as_namespace(self) -> Namespace:
+        """Convert the configuration (back) into a argparse Namespace."""
+        namespace = Namespace()
+        for item, value in self.items():
+            setattr(namespace, item, value)
+
+        return namespace
