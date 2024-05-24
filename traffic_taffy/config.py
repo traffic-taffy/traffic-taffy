@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 from enum import Enum
-from typing import TextIO, Dict, Any, TYPE_CHECKING
-from path import Path
+from typing import TextIO, Dict, List, Any, TYPE_CHECKING
+from pathlib import Path
+from logging import error
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -19,6 +20,8 @@ class ConfigStyles(Enum):
 
 class Config(dict):
     """A generic configuration storage class."""
+
+    default_config_option_names = ["--config"]
 
     def __init__(self):
         """Create an configuration object to store collected data in."""
@@ -50,3 +53,32 @@ class Config(dict):
         if mapping:
             values = {mapping.get(key, key): value for key, value in values.items()}
         self.update(values)
+
+    def configfile_from_arguments(
+        self,
+        argv: List[str],
+        config_option_names: str | List[str] = default_config_option_names,
+    ) -> None:
+        """Scan an list of arguments for configuration file(s) and load them."""
+        if isinstance(config_option_names, str):
+            config_option_names = [config_option_names]
+
+        for n, item in enumerate(argv):
+            if item in config_option_names:
+                if len(argv) == n:
+                    error(f"no argument supplied after '{item}'")
+                    raise ValueError
+
+                if argv[n + 1].startswith("-"):
+                    error(f"The argument after '{item}' seems to be another argument")
+                    raise ValueError
+
+                filename = argv[n + 1]
+
+                if not Path(filename).is_file():
+                    error(
+                        f"The filename after '{item}' does not exist or is not a file"
+                    )
+                    raise ValueError
+
+                self.load_file(filename)
