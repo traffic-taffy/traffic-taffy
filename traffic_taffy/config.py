@@ -54,7 +54,7 @@ class Config(dict):
             values = {mapping.get(key, key): value for key, value in values.items()}
         self.update(values)
 
-    def configfile_from_arguments(
+    def read_configfile_from_arguments(
         self,
         argv: List[str],
         config_option_names: str | List[str] = default_config_option_names,
