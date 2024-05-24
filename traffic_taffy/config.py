@@ -8,6 +8,7 @@ from argparse import Namespace
 class ConfigStyles(Enum):
     YAML = "yaml"
     TOML = "toml"
+    # TODO(hardaker): support "any" at some point to determine type at run-time
 
 
 class Config(dict):
@@ -28,6 +29,10 @@ class Config(dict):
         # TODO(hardaker): support TOML
 
         self.update(contents)
+
+    def load_file(self, config_file: str, style: ConfigStyles = ConfigStyles.YAML):
+        """Load a configuration file from a filename"""
+        self.load_stream(open(config_file))
 
     def load_namespace(
         self, namespace: Namespace, mapping: Dict[str, Any] | None = None
