@@ -115,6 +115,7 @@ def test_expected_full_usage():
         )
         parser.add_argument("-r", "--reference", default=cfg["reference"], type=str)
         parser.add_argument("-c", "--config", type=str)
+        parser.add_argument("--only-unused-argument", "--", type=str)
 
         args = parser.parse_args(passed_arguments)
         cfg.load_namespace(args)
@@ -129,5 +130,6 @@ def test_expected_full_usage():
                 "options": [1, 2, 3],  # note: from config
                 "question": "What do you get when you multiply six by seven?",  # note: from cli
                 "reference": "The guide",  # note: from cli
+                "only_unused_argument": None,
             }
         )
