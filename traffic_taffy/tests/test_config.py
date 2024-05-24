@@ -31,3 +31,20 @@ def test_namespace_loading():
 
     assert cfg["test_arg_one"] == 12
     assert cfg["test_arg_two"]["b"] == "world"
+
+
+def test_namespace_loading_and_mapping():
+    cfg = Config()
+
+    arguments: Namespace = Namespace()
+    arguments.test_arg_one = 12
+    arguments.test_arg_two = {"a": "hello", "b": "world"}
+
+    remap: dict = {"test_arg_one": "new_arg_one"}
+
+    cfg.load_namespace(arguments, mapping=remap)
+
+    assert cfg["new_arg_one"] == 12
+    assert cfg["test_arg_two"]["b"] == "world"
+
+    assert "test_arg_one" not in cfg
