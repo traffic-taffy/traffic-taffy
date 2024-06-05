@@ -31,6 +31,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         make_printable: bool = False,
         method: str = "spearman",
         minimum_value: float = 0.8,
+        match_expression: str | None = None,
     ):
         """Create a CompareCorrelation instance.
 
@@ -45,7 +46,12 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             kendall: best
         """
         super().__init__(
-            timestamps, match_string, match_value, minimum_count, make_printable
+            timestamps,
+            match_string,
+            match_value,
+            minimum_count,
+            make_printable,
+            match_expression,
         )
         self.method = method
         self.minimum_value = minimum_value

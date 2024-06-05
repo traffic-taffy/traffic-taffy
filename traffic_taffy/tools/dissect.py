@@ -9,6 +9,7 @@ from traffic_taffy.dissector import (
     PCAPDissector,
 )
 from traffic_taffy.dissectmany import PCAPDissectMany
+from traffic_taffy.config import Config
 from rich_argparse import RichHelpFormatter
 from argparse import ArgumentParser, Namespace
 
@@ -18,10 +19,28 @@ def main() -> None:
 
     def parse_args() -> Namespace:
         """Parse the command line arguments."""
+
+        config: Config = Config()
+        config.update(
+            {
+                "log_level": "info",
+            }
+        )
+
+        config.read_configfile_from_arguments(sys.argv, ["-y", "--config"])
+
         parser = ArgumentParser(
             formatter_class=RichHelpFormatter,
             description=__doc__,
             epilog="Example Usage: taffy-dissect -C -d 10 -n 10000 file.pcap",
+        )
+
+        parser.add_argument(
+            "-y",
+            "--config",
+            default=None,
+            type=str,
+            help="Configuration file (YAML) to load.",
         )
 
         parser.add_argument(
@@ -44,7 +63,7 @@ def main() -> None:
             help="Do not fork into multiple processes per file (still fork per file)",
         )
 
-        dissector_add_parseargs(parser)
+        dissector_add_parseargs(parser, config)
         limitor_add_parseargs(parser)
 
         parser.add_argument("input_pcaps", type=str, help="input pcap file", nargs="*")
@@ -52,26 +71,19 @@ def main() -> None:
         args = parser.parse_args()
         log_level = args.log_level.upper()
         logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
-        return args
 
-    args = parse_args()
+        config.load_namespace(args)
+        return config
+
+    config = parse_args()
+    args = config.as_namespace()
 
     dissector_handle_arguments(args)
 
     # load all the files
     pdm = PCAPDissectMany(
         args.input_pcaps,
-        bin_size=args.bin_size,
-        dissector_level=args.dissection_level,
-        maximum_count=args.packet_count,
-        cache_results=args.cache_pcap_results,
-        cache_file_suffix=args.cache_file_suffix,
-        ignore_list=args.ignore_list,
-        pcap_filter=args.filter,
-        layers=args.layers,
-        force_overwrite=args.force_overwrite,
-        force_load=args.force_load,
-        merge_files=args.merge,
+        config,
     )
     try:
         dissections = pdm.load_all(return_as_list=True, dont_fork=args.dont_fork)
@@ -84,19 +96,7 @@ def main() -> None:
     dissection.merge_all(dissections)
 
     # put the dissection into a dissector for reporting
-    pd = PCAPDissector(
-        args.input_pcaps[0],
-        bin_size=args.bin_size,
-        dissector_level=args.dissection_level,
-        maximum_count=args.packet_count,
-        cache_results=args.cache_pcap_results,
-        cache_file_suffix=args.cache_file_suffix,
-        ignore_list=args.ignore_list,
-        pcap_filter=args.filter,
-        layers=args.layers,
-        force_overwrite=args.force_overwrite,
-        force_load=args.force_load,
-    )
+    pd = PCAPDissector(args.input_pcaps, config)
     pd.dissection = dissection
 
     # output as requested
