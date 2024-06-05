@@ -19,9 +19,10 @@ class ConfigStyles(Enum):
 class Config(dict):
     """A generic configuration storage class."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Create an configuration object to store collected data in."""
         self._config_option_names = ["--config"]
+        super().__init__(*args, **kwargs)
 
     @property
     def config_option_names(self) -> List[str]:
