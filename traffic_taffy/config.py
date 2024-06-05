@@ -46,7 +46,7 @@ class Config(dict):
     def load_namespace(
         self, namespace: Namespace, mapping: Dict[str, Any] | None = None
     ) -> None:
-        """Load the contents of a namespace into configuration."""
+        """Load the contents of an argparse Namespace into configuration."""
         values = vars(namespace)
         if mapping:
             values = {mapping.get(key, key): value for key, value in values.items()}
@@ -58,6 +58,7 @@ class Config(dict):
         config_option_names: str | List[str] = default_config_option_names,
     ) -> None:
         """Scan an list of arguments for configuration file(s) and load them."""
+        # TODO(hardaker): convert this to argparse's parse known feature
         if isinstance(config_option_names, str):
             config_option_names = [config_option_names]
 
