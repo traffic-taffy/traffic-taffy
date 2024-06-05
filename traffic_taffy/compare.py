@@ -7,10 +7,10 @@ from logging import error
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
     from traffic_taffy.comparison import Comparison
+    from traffic_taffy.config import Config
     from argparse import ArgumentParser, Namespace
 
 from traffic_taffy.dissectmany import PCAPDissectMany
-from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
 from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
 
@@ -21,38 +21,29 @@ class PcapCompare:
     def __init__(
         self,
         pcap_files: List[str],
-        maximum_count: int = 0,  # where 0 == all
-        deep: bool = True,
-        pcap_filter: str | None = None,
-        cache_results: bool = False,
-        cache_file_suffix: str = "taffy",
-        bin_size: int | None = None,
-        dissection_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
-        between_times: List[int] | None = None,
-        ignore_list: List[str] | None = None,
-        layers: List[str] | None = None,
-        force_load: bool = False,
-        force_overwrite: bool = False,
-        merge_files: bool = False,
-        algorithm: str = "statistical",
-        filter_arguments: dict | None = None,
+        config: Config,
     ) -> None:
         """Create a compare object."""
+        self.config = config
         self.pcap_files = pcap_files
-        self.deep = deep
-        self.maximum_count = maximum_count
-        self.pcap_filter = pcap_filter
-        self.cache_results = cache_results
-        self.dissection_level = dissection_level
-        self.between_times = between_times
-        self.bin_size = bin_size
-        self.cache_file_suffix = cache_file_suffix
-        self.ignore_list = ignore_list or []
-        self.layers = layers
-        self.force_overwrite = force_overwrite
-        self.force_load = force_load
-        self.merge_files = merge_files
-        self.filter_arguments = filter_arguments
+        self.deep = config.get("deep", True)
+        self.maximum_count = config["packet_count"]
+        self.pcap_filter = config["filter"]
+        self.cache_results = config["cache_pcap_results"]
+        self.dissection_level = config["dissection_level"]
+        # self.between_times = config["between_times"]
+        self.bin_size = config["bin_size"]
+        self.cache_file_suffix = config["cache_file_suffix"]
+        if self.cache_file_suffix[0] != ".":
+            self.cache_file_suffix = "." + self.cache_file_suffix
+        self.ignore_list = config["ignore_list"]
+        self.layers = config["layers"]
+        self.force_overwrite = config["force_overwrite"]
+        self.force_load = config["force_load"]
+        self.merge_files = config["merge"]
+        self.filter_arguments = config["filter_arguments"]
+
+        algorithm = config["algorithm"]
 
         algorithm_arguments = {
             "timestamps": None,
@@ -93,28 +84,18 @@ class PcapCompare:
     def reports(self, newvalue: List[dict]) -> None:
         self._reports = newvalue
 
-    def load_pcaps(self) -> None:
+    def load_pcaps(self, config: Config) -> None:
         """Load all pcaps into memory and dissect them."""
-        # load the first as a reference pcap
+        # load the first as a reference pap
         pdm = PCAPDissectMany(
             self.pcap_files,
-            bin_size=self.bin_size,
-            maximum_count=self.maximum_count,
-            pcap_filter=self.pcap_filter,
-            cache_results=self.cache_results,
-            cache_file_suffix=self.cache_file_suffix,
-            dissector_level=self.dissection_level,
-            ignore_list=self.ignore_list,
-            layers=self.layers,
-            force_load=self.force_load,
-            force_overwrite=self.force_overwrite,
-            merge_files=self.merge_files,
+            config,
         )
         return pdm.load_all()
 
     def compare(self) -> List[Comparison]:
         """Compare each pcap as requested."""
-        dissections = self.load_pcaps()
+        dissections = self.load_pcaps(self.config)
         self.compare_all(dissections)
         return self.reports
 
@@ -126,32 +107,49 @@ class PcapCompare:
 
 
 def compare_add_parseargs(
-    compare_parser: ArgumentParser, add_subgroup: bool = True
+    compare_parser: ArgumentParser, config: Config, add_subgroup: bool = True
 ) -> ArgumentParser:
     """Add common comparison arguments."""
+
+    config.setdefault("only_positive", False)
+    config.setdefault("only_negative", True)
+    config.setdefault("print_threshold", 0.0)
+    config.setdefault("top_records", None)
+    config.setdefault("reverse_sort", False)
+    config.setdefault("sort_by", "delta%")
+    config.setdefault("algorithm", "statistical")
+
     if add_subgroup:
         compare_parser = compare_parser.add_argument_group("Comparison result options")
 
     compare_parser.add_argument(
         "-t",
         "--print-threshold",
-        default=0.0,
+        default=config["print_threshold"],
         type=float,
         help="Don't print results with abs(percent) less than this threshold",
     )
 
     compare_parser.add_argument(
-        "-P", "--only-positive", action="store_true", help="Only show positive entries"
+        "-P",
+        "--only-positive",
+        action="store_true",
+        help="Only show positive entries",
+        default=config["only_positive"],
     )
 
     compare_parser.add_argument(
-        "-N", "--only-negative", action="store_true", help="Only show negative entries"
+        "-N",
+        "--only-negative",
+        action="store_true",
+        help="Only show negative entries",
+        default=config["only_negative"],
     )
 
     compare_parser.add_argument(
         "-R",
         "--top-records",
-        default=None,
+        default=config["top_records"],
         type=int,
         help="Show the top N records from each section.",
     )
@@ -160,13 +158,14 @@ def compare_add_parseargs(
         "-r",
         "--reverse_sort",
         action="store_true",
+        default=config["reverse_sort"],
         help="Reverse the sort order of reports",
     )
 
     compare_parser.add_argument(
         "-s",
         "--sort-by",
-        default="delta%",
+        default=config["sort_by"],
         type=str,
         help="Sort report entries by this column",
     )
@@ -174,7 +173,7 @@ def compare_add_parseargs(
     compare_parser.add_argument(
         "-A",
         "--algorithm",
-        default="statistical",
+        default=config["algorithm"],
         type=str,
         help="The algorithm to apply for data comparison (statistical, correlation)",
     )

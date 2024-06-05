@@ -7,6 +7,7 @@ import logging
 from logging import error
 from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
+from traffic_taffy.config import Config
 
 from traffic_taffy.compare import compare_add_parseargs, get_comparison_args
 from traffic_taffy.dissector import (
@@ -19,10 +20,25 @@ from traffic_taffy.compare import PcapCompare
 
 def parse_args() -> Namespace:
     """Parse the command line arguments."""
+
+    config: Config = Config()
+    config.config_option_names = ["-y", "--config"]
+    config["log_veles"] = "info"
+
+    config.read_configfile_from_arguments(sys.argv)
+
     parser = ArgumentParser(
         formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-compare -C file1.pcap file2.pcap",
+    )
+
+    parser.add_argument(
+        "-y",
+        "--config",
+        default=None,
+        type=str,
+        help="Configuration file (YAML) to load.",
     )
 
     output_options = parser.add_argument_group("Output format")
@@ -33,9 +49,9 @@ def parse_args() -> Namespace:
         help="Print results in an FSDB formatted output",
     )
 
-    limitor_parser = limitor_add_parseargs(parser)
-    compare_add_parseargs(limitor_parser, add_subgroup=False)
-    dissector_add_parseargs(parser)
+    limitor_parser = limitor_add_parseargs(parser, config)
+    compare_add_parseargs(limitor_parser, config, add_subgroup=False)
+    dissector_add_parseargs(parser, config)
 
     debugging_group = parser.add_argument_group("Debugging options")
 
@@ -54,15 +70,17 @@ def parse_args() -> Namespace:
 
     dissector_handle_arguments(args)
 
-    return args
+    config.load_namespace(args)
+    return config
 
 
 def main() -> None:
     """Run taffy-compare."""
-    args = parse_args()
+    config = parse_args()
+    args = config.as_namespace()
 
     # setup output options
-    printing_arguments = get_comparison_args(args)
+    config["filter_arguments"] = get_comparison_args(args)
 
     # get our files to compare (maybe just one)
     left = args.pcap_files.pop(0)
@@ -80,20 +98,7 @@ def main() -> None:
 
         pc = PcapCompare(
             files,
-            cache_results=args.cache_pcap_results,
-            cache_file_suffix=args.cache_file_suffix,
-            maximum_count=printing_arguments["maximum_count"],
-            dissection_level=args.dissection_level,
-            # between_times=args.between_times,  # TODO(hardaker): TBD
-            bin_size=args.bin_size,
-            ignore_list=args.ignore_list,
-            pcap_filter=args.filter,
-            layers=args.layers,
-            force_load=args.force_load,
-            force_overwrite=args.force_overwrite,
-            merge_files=args.merge,
-            algorithm=args.algorithm,
-            filter_arguments=get_comparison_args(args),
+            config,
         )
 
         # compare the pcaps
@@ -104,9 +109,9 @@ def main() -> None:
             sys.exit()
 
         if args.fsdb:
-            output = Fsdb(None, printing_arguments)
+            output = Fsdb(None, config["filter_arguments"])
         else:
-            output = Console(None, printing_arguments)
+            output = Console(None, config["filter_arguments"])
 
         for report in reports:
             # output results to the console

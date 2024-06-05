@@ -331,14 +331,19 @@ def dissector_add_parseargs(
     return parser
 
 
-def limitor_add_parseargs(parser, add_subgroup: bool = True):
+def limitor_add_parseargs(parser, config: Config, add_subgroup: bool = True):
     if add_subgroup:
         parser = parser.add_argument_group("Limiting options")
+
+    config.setdefault("match_string", None)
+    config.setdefault("match_value", None)
+    config.setdefault("match_expression", None)
+    config.setdefault("minimum_count", None)
 
     parser.add_argument(
         "-m",
         "--match-string",
-        default=None,
+        default=config["match_string"],
         type=str,
         help="Only report on data with this substring in the header",
     )
@@ -346,7 +351,7 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-M",
         "--match-value",
-        default=None,
+        default=config["match_value"],
         type=str,
         nargs="*",
         help="Only report on data with this substring in the packet value field",
@@ -355,7 +360,7 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-E",
         "--match-expression",
-        default=None,
+        default=config["match_expression"],
         type=str,
         help="Match expression to be evaluated at runtime for returning data",
     )
@@ -363,7 +368,7 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-c",
         "--minimum-count",
-        default=None,
+        default=config["minimum_count"],
         type=float,
         help="Don't include results without this high of a record count",
     )

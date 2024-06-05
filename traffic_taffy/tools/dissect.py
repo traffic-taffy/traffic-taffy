@@ -61,7 +61,7 @@ def main() -> None:
         )
 
         dissector_add_parseargs(parser, config)
-        limitor_add_parseargs(parser)
+        limitor_add_parseargs(parser, config)
 
         parser.add_argument("input_pcaps", type=str, help="input pcap file", nargs="*")
 

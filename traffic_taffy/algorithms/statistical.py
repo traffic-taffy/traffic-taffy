@@ -5,8 +5,8 @@ from traffic_taffy.reports.compareslicesreport import CompareSlicesReport
 
 
 class ComparisonStatistical(ComparisonSlicesAlgorithm):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def compare_two_dissections(self, left_side: dict, right_side: dict) -> Comparison:
         """Compare two dissections."""
