@@ -21,13 +21,10 @@ def main() -> None:
         """Parse the command line arguments."""
 
         config: Config = Config()
-        config.update(
-            {
-                "log_level": "info",
-            }
-        )
+        config.config_option_names = ["-y", "--config"]
+        config["log_veles"] = "info"
 
-        config.read_configfile_from_arguments(sys.argv, ["-y", "--config"])
+        config.read_configfile_from_arguments(sys.argv)
 
         parser = ArgumentParser(
             formatter_class=RichHelpFormatter,
