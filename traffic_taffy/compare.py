@@ -54,16 +54,22 @@ class PcapCompare:
         self.merge_files = merge_files
         self.filter_arguments = filter_arguments
 
+        algorithm_arguments = {
+            "timestamps": None,
+            "match_string": self.filter_arguments["match_string"],
+            "match_value": self.filter_arguments["match_value"],
+            "minimum_count": self.filter_arguments["minimum_count"],
+            "make_printable": True,
+            "match_expression": self.filter_arguments["match_expression"],
+        }
+
         if algorithm == "statistical":
-            self.algorithm = ComparisonStatistical()
+            self.algorithm = ComparisonStatistical(
+                **algorithm_arguments,
+            )
         elif algorithm == "correlation":
             self.algorithm = CompareCorrelation(
-                timestamps=None,
-                match_string=self.filter_arguments["match_string"],
-                match_value=self.filter_arguments["match_value"],
-                minimum_count=self.filter_arguments["minimum_count"],
-                make_printable=True,
-                match_expression=self.filter_arguments["match_expression"],
+                **algorithm_arguments,
             )
         else:
             error(f"unknown algorithm: {algorithm}")

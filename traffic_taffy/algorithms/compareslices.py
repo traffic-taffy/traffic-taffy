@@ -17,8 +17,22 @@ if TYPE_CHECKING:
 class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
     """A base class for algorithms that compare left/right slices."""
 
-    def __init__(self):
+    def __init__(
+        self,
+        timestamps: List[int] | None = None,
+        match_string: str | None = None,
+        match_value: str | None = None,
+        minimum_count: int | None = None,
+        make_printable: bool = False,
+        match_expression: str | None = None,
+    ):
         """Create a ComparisonAlgorithm."""
+        self.timestamps = timestamps
+        self.match_string = match_string
+        self.match_value = match_value
+        self.minimum_count = minimum_count
+        self.make_printable = make_printable
+        self.match_expression = (match_expression,)
 
     def compare_two_dissections(
         self, _left_side: Dissection, _right_side: Dissection
@@ -76,11 +90,11 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
                 time_right = timestamps[timestamp]
 
                 # see if we were asked to only use particular time ranges
-                if self.between_times and (
-                    time_left < self.between_times[0]
-                    or time_right > self.between_times[1]
-                ):
-                    continue
+                # if self.between_times and (
+                #     time_left < self.between_times[0]
+                #     or time_right > self.between_times[1]
+                # ):
+                #     continue
 
                 debug(f"comparing timestamps {time_left} and {time_right}")
 

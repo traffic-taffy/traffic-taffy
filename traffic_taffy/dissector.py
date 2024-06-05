@@ -7,11 +7,16 @@ from collections import Counter, defaultdict
 from logging import error, warning
 from typing import List
 import importlib
+from typing import TYPE_CHECKING
 
 from rich import print
 
 from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
 from traffic_taffy.hooks import call_hooks
+
+if TYPE_CHECKING:
+    from traffic_taffy.config import Config
+    from argparse import Parser
 
 POST_DISSECT_HOOK: str = "post_dissect"
 
@@ -22,36 +27,28 @@ class PCAPDissector:
     def __init__(
         self,
         pcap_file: str,
-        bin_size: int = 0,
-        maximum_count: int = 0,
-        dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.DETAILED,
-        pcap_filter: str | None = None,
-        cache_results: bool = False,
-        cache_file_suffix: str = "taffy",
-        ignore_list: list | None = None,
-        layers: List[str] | None = None,
-        force_overwrite: bool = False,
-        force_load: bool = False,
-        merge_files: bool = False,  # Note: unused for a single load
+        config: Config,
     ) -> None:
         """Create a dissector object."""
-        if ignore_list is None:
-            ignore_list = []
         self.pcap_file = pcap_file
-        self.dissector_level = dissector_level
-        self.pcap_filter = pcap_filter
-        self.maximum_count = maximum_count
-        self.cache_results = cache_results
-        self.bin_size = bin_size
-        if cache_file_suffix[0] != ".":
-            cache_file_suffix = "." + cache_file_suffix
-        self.cache_file_suffix = cache_file_suffix
-        self.ignore_list = ignore_list
-        self.layers = layers
-        self.force_overwrite = force_overwrite
-        self.force_load = force_load
 
-        if dissector_level == PCAPDissectorLevel.COUNT_ONLY and bin_size == 0:
+        self.config = config
+        self.dissector_level = config["dissection_level"]
+        self.pcap_filter = config["filter"]
+        self.maximum_count = config["packet_count"]
+        self.cache_results = config["cache_pcap_results"]
+        self.bin_size = config["bin_size"]
+        self.cache_file_suffix = config["cache_file_suffix"]
+        if self.cache_file_suffix[0] != ".":
+            self.cache_file_suffix = "." + self.cache_file_suffix
+        self.ignore_list = config["ignore_list"]
+        if self.ignore_list is None:
+            self.ignore_list = []
+        self.layers = config["layers"]
+        self.force_overwrite = config["force_overwrite"]
+        self.force_load = config["force_load"]
+
+        if self.dissector_level == PCAPDissectorLevel.COUNT_ONLY and self.bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
 
     @property
@@ -79,6 +76,7 @@ class PCAPDissector:
     def load_from_cache(
         self: PCAPDissector, force_overwrite: bool = False, force_load: bool = False
     ) -> Dissection:
+        """Load dissector contents from a cached file."""
         if self.cache_results:
             args = self.dissection_args()
             self.dissection = Dissection(*args)
@@ -181,22 +179,27 @@ class PCAPDissector:
         fh.close()
 
 
-def dissector_add_parseargs(parser, add_subgroup: bool = True):
+def dissector_add_parseargs(
+    parser: Parser, config: Config, add_subgroup: bool = True
+) -> None:
+    """Add arguments related to disection."""
     if add_subgroup:
         parser = parser.add_argument_group("Parsing Options")
 
-    parser.add_argument(
-        "-d",
-        "--dissection-level",
-        default=PCAPDissectorLevel.THROUGH_IP.value,
-        type=int,
-        help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
-    )
-
-    parser.add_argument(
-        "-I",
-        "--ignore-list",
-        default=[
+    config.setdefault("dissection_level", PCAPDissectorLevel.THROUGH_IP.value)
+    config.setdefault("packet_count", 0)
+    config.setdefault("bin_size", None)
+    config.setdefault("filter", None)
+    config.setdefault("layers", [])
+    config.setdefault("modules", None)
+    config.setdefault("merge", False)
+    config.setdefault("cache_pcap_results", False)
+    config.setdefault("force_overwrite", False)
+    config.setdefault("force_load", False)
+    config.setdefault("cache_file_suffix", "taffy")
+    config.setdefault(
+        "ignore_list",
+        [
             "Ethernet_IP_TCP_seq",
             "Ethernet_IP_TCP_ack",
             "Ethernet_IPv6_TCP_seq",
@@ -230,6 +233,20 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
             "Ethernet_IP_TCP_Encrypted Content_load",
             "Ethernet_IP_TCP_TLS_TLS_Raw_load",
         ],
+    )
+
+    parser.add_argument(
+        "-d",
+        "--dissection-level",
+        default=config["dissection_level"],
+        type=int,
+        help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
+    )
+
+    parser.add_argument(
+        "-I",
+        "--ignore-list",
+        default=config["ignore_list"],
         nargs="*",
         type=str,
         help="A list of (unlikely to be useful) packet fields to ignore",
@@ -238,7 +255,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-n",
         "--packet-count",
-        default=0,
+        default=config["packet_count"],
         type=int,
         help="Maximum number of packets to analyze",
     )
@@ -246,6 +263,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-b",
         "--bin-size",
+        default=config["bin_size"],
         type=int,
         help="Bin results into this many seconds",
     )
@@ -253,7 +271,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-F",
         "--filter",
-        default=None,
+        default=config["filter"],
         type=str,
         help="filter to apply to the pcap file when processing",
     )
@@ -261,7 +279,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-L",
         "--layers",
-        default=[],
+        default=config["layers"],
         type=str,
         nargs="*",
         help="List of extra layers to load (eg: tls, http, etc)",
@@ -270,7 +288,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
     parser.add_argument(
         "-x",
         "--modules",
-        default=None,
+        default=config["modules"],
         type=str,
         nargs="*",
         help="Extra processing modules to load (currently: psl) ",
@@ -294,7 +312,7 @@ def dissector_add_parseargs(parser, add_subgroup: bool = True):
         "--cache-file-suffix",
         "--cs",
         type=str,
-        default="taffy",
+        default=config["cache_file_suffix"],
         help="The suffix file to use when creating cache files",
     )
 
@@ -354,12 +372,13 @@ def limitor_add_parseargs(parser, add_subgroup: bool = True):
 
 
 def dissector_handle_arguments(args) -> None:
+    """Handle checking and loading arguments."""
     check_dissector_level(args.dissection_level)
     dissector_load_extra_modules(args.modules)
 
 
 def dissector_load_extra_modules(modules: List[str]) -> None:
-    """Loads extra modules"""
+    """Load extra modules."""
     if not modules:
         return
     for module in modules:
@@ -369,7 +388,7 @@ def dissector_load_extra_modules(modules: List[str]) -> None:
             error(f"failed to load module {module}: {exp}")
 
 
-def check_dissector_level(level: int):
+def check_dissector_level(level: int) -> bool:
     """Check that the dissector level is legal."""
     current_dissection_levels = [
         PCAPDissectorLevel.COUNT_ONLY.value,

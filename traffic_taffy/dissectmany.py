@@ -13,19 +13,23 @@ from traffic_taffy.dissector import PCAPDissector
 if TYPE_CHECKING:
     from io import BufferedIOBase
     from traffic_taffy.dissection import Dissection
+    from traffic_taffy.config import Config
 
 
 class PCAPDissectMany:
     """A class for dissecting a number of PCAP files."""
 
-    def __init__(self, pcap_files: List[str], *args: list, **kwargs: dict):
+    def __init__(
+        self, pcap_files: List[str], config: Config, *args: list, **kwargs: dict
+    ):
         """Create a PCAPDissectMany instance."""
         self.pcap_files = pcap_files
+        self.config = config
         self.args = args
         self.kwargs = kwargs
         self.futures = {}
 
-        self.maximum_cores = self.kwargs.get("maximum_cores")
+        self.maximum_cores = self.config.get("maximum_cores")
         if not self.maximum_cores:
             # since we're loading multiple files in parallel, reduce the
             # maximum number of cores available to the splitter
@@ -34,12 +38,13 @@ class PCAPDissectMany:
 
     def load_pcap_piece(self, pcap_io_buffer: BufferedIOBase) -> Dissection:
         """Load one piece of a pcap from a buffer."""
-        kwargs = copy.copy(self.kwargs)
+        config = copy.deepcopy(self.config)
         # force false for actually loading
-        kwargs["cache_results"] = False
+        config["cache_results"] = False
 
         pd = PCAPDissector(
             pcap_io_buffer,
+            config,
             *self.args,
             **self.kwargs,
         )
@@ -55,12 +60,11 @@ class PCAPDissectMany:
         """Load one pcap file."""
         pd = PCAPDissector(
             pcap_file,
-            *self.args,
-            **self.kwargs,
+            self.config,
         )
         dissection = pd.load_from_cache(
-            force_overwrite=self.kwargs.get("force_overwrite", False),
-            force_load=self.kwargs.get("force_load", False),
+            force_overwrite=self.config.get("force_overwrite", False),
+            force_load=self.config.get("force_load", False),
         )
         if dissection:
             return dissection
@@ -80,7 +84,7 @@ class PCAPDissectMany:
                 pcap_file,
                 split_size=split_size,
                 callback=self.load_pcap_piece,
-                maximum_count=self.kwargs.get("maximum_count", 0),
+                maximum_count=self.config.get("packet_count", 0),
                 maximum_cores=self.maximum_cores,
             )
             results = ps.split()
@@ -95,12 +99,12 @@ class PCAPDissectMany:
             # recalculate metadata now that merges have happened
             dissection.calculate_metadata()
 
-        if self.kwargs.get("cache_results"):
+        if self.config.get("cache_pcap_results"):
             # create a dissector just to save the cache
             # (we don't call load())
             dissection.pcap_file = pcap_file
             dissection.save_to_cache(
-                pcap_file + "." + self.kwargs.get("cache_file_suffix", "taffy")
+                pcap_file + "." + self.config.get("cache_file_suffix", "taffy")
             )
 
         return dissection
@@ -122,7 +126,7 @@ class PCAPDissectMany:
             dissections = executor.map(self.load_pcap, self.pcap_files)
 
             # all loaded files should be merged as if they are one
-            if self.kwargs["merge_files"]:
+            if self.config.get("merge", False):
                 dissection = next(dissections)
                 for to_be_merged in dissections:
                     dissection.merge(to_be_merged)
