@@ -19,7 +19,6 @@ class ConfigStyles(Enum):
 class Config(dict):
     """A generic configuration storage class."""
 
-
     def __init__(self):
         """Create an configuration object to store collected data in."""
         self._config_option_names = ["--config"]
@@ -70,6 +69,7 @@ class Config(dict):
     ) -> None:
         """Scan an list of arguments for configuration file(s) and load them."""
         # TODO(hardaker): convert this to argparse's parse known feature
+        # aka replace using stackoverflow answer to 3609852
         for n, item in enumerate(argv):
             if item in self.config_option_names:
                 if len(argv) == n:
