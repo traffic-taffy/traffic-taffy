@@ -19,10 +19,22 @@ class ConfigStyles(Enum):
 class Config(dict):
     """A generic configuration storage class."""
 
-    default_config_option_names = ["--config"]
 
     def __init__(self):
         """Create an configuration object to store collected data in."""
+        self._config_option_names = ["--config"]
+
+    @property
+    def config_option_names(self) -> List[str]:
+        """The list of configuration file arguments to use/look for."""
+        return self._config_option_names
+
+    @config_option_names.setter
+    def config_option_names(self, newlist: str | List[str]) -> None:
+        if isinstance(newlist, str):
+            newlist = [newlist]
+
+        self._config_option_names = newlist
 
     def load_stream(
         self, config_handle: TextIO, style: ConfigStyles = ConfigStyles.YAML
@@ -55,15 +67,11 @@ class Config(dict):
     def read_configfile_from_arguments(
         self,
         argv: List[str],
-        config_option_names: str | List[str] = default_config_option_names,
     ) -> None:
         """Scan an list of arguments for configuration file(s) and load them."""
         # TODO(hardaker): convert this to argparse's parse known feature
-        if isinstance(config_option_names, str):
-            config_option_names = [config_option_names]
-
         for n, item in enumerate(argv):
-            if item in config_option_names:
+            if item in self.config_option_names:
                 if len(argv) == n:
                     error(f"no argument supplied after '{item}'")
                     raise ValueError
