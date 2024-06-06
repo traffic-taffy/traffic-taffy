@@ -9,12 +9,24 @@ from pcap_parallel import PCAPParallel
 test_pkl = "/tmp/test.pcap.pkl"
 
 
+default_config = {
+    "dissection_level": 10,
+    "filter": None,
+    "packet_count": 0,
+    "cache_pcap_results": False,
+    "bin_size": 1,
+    "cache_file_suffix": "taffy",
+    "ignore_list": [],
+    "layers": [],
+    "force_overwrite": False,
+    "force_load": False,
+}
+
+
 def buffer_callback(pcap_io_buffer):
     pd = PCAPDissector(
         pcap_io_buffer,
-        bin_size=0,
-        dissector_level=10,
-        cache_results=False,
+        default_config,
     )
     pd.load()
     return pd.dissection.data
@@ -62,9 +74,7 @@ def test_pcap_splitter():
         # create a bogus dissector
         pd = PCAPDissector(
             None,
-            bin_size=0,
-            dissector_level=10,
-            cache_results=False,
+            default_config,
         )
         pd.dissection = dissection
         dissection.save(test_pkl)
@@ -75,10 +85,7 @@ def test_pcap_splitter():
         normal_start_time = time.time()
         pd = PCAPDissector(
             test_pcap,
-            bin_size=0,
-            dissector_level=10,
-            cache_results=False,
-            maximum_count=maximum_count,
+            default_config,
         )
         pd.load()
         data2 = pd.dissection.data
