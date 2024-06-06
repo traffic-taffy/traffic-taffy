@@ -7,6 +7,7 @@ from rich_argparse import RichHelpFormatter
 
 import pyfsdb
 
+from traffic_taffy.config import Config
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -17,10 +18,25 @@ from traffic_taffy.dissector import (
 
 def parse_args() -> Namespace:
     """Parse the command line arguments for taffy-export."""
+
+    config: Config = Config()
+    config.config_option_names = ["-y", "--config"]
+    config["log_level"] = "info"
+
+    config.read_configfile_from_arguments(sys.argv)
+
     parser = ArgumentParser(
         formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-export -C -m IP.UDP.sport file.pcap",
+    )
+
+    parser.add_argument(
+        "-y",
+        "--config",
+        default=None,
+        type=str,
+        help="Configuration file (YAML) to load.",
     )
 
     parser.add_argument(
@@ -30,8 +46,8 @@ def parse_args() -> Namespace:
         help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
-    dissector_add_parseargs(parser)
-    limitor_add_parseargs(parser)
+    dissector_add_parseargs(parser, config)
+    limitor_add_parseargs(parser, config)
 
     parser.add_argument(
         "-o",
@@ -46,29 +62,22 @@ def parse_args() -> Namespace:
     args = parser.parse_args()
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
-    return args
+
+    config.load_namespace(args)
+    return config
 
 
 def main() -> None:
     """Export traffic-taffy data into an FSDB file."""
-    args = parse_args()
+    config = parse_args()
+    args = config.as_namespace()
 
     dissector_handle_arguments(args)
 
+    del config["output_file"]  # this causes a pickling problem
     pdm = PCAPDissectMany(
         args.input_pcaps,
-        bin_size=args.bin_size,
-        dissector_level=args.dissection_level,
-        maximum_count=args.packet_count,
-        cache_results=args.cache_pcap_results,
-        cache_file_suffix=args.cache_file_suffix,
-        ignore_list=args.ignore_list,
-        pcap_filter=args.filter,
-        layers=args.layers,
-        force_load=args.force_load,
-        force_overwrite=args.force_overwrite,
-        merge_files=args.merge,
-        match_expression=args.match_expression,
+        config,
     )
 
     dissections = pdm.load_all(return_as_list=True)
