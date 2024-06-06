@@ -6,6 +6,7 @@ from typing import TextIO, Dict, List, Any
 from pathlib import Path
 from logging import error
 from argparse import Namespace
+from dotnest import DotNest
 
 
 class ConfigStyles(Enum):
@@ -71,6 +72,9 @@ class Config(dict):
         """Scan an list of arguments for configuration file(s) and load them."""
         # TODO(hardaker): convert this to argparse's parse known feature
         # aka replace using stackoverflow answer to 3609852
+
+        dn = DotNest(self)
+
         for n, item in enumerate(argv):
             if item in self.config_option_names:
                 if len(argv) == n:
@@ -82,6 +86,13 @@ class Config(dict):
                     raise ValueError
 
                 filename = argv[n + 1]
+
+                if "=" in filename:
+                    (left, right) = filename.split("=")
+                    left = left.strip()
+                    right = right.strip()
+                    dn.set(left, right)
+                    continue
 
                 if not Path(filename).is_file():
                     error(

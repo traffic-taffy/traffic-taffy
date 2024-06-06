@@ -31,6 +31,7 @@ dependencies = [
     "pyOpenSSL==22.1.0",
     "dnssplitter",
     "ip2asn",
+    "dotnest"
 ]
 
 [project.package_data]
