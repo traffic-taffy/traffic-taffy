@@ -1,18 +1,31 @@
 """Read a PCAP file and graph it or parts of it."""
 
+import sys
+import logging
 from argparse import ArgumentParser, Namespace
 from rich_argparse import RichHelpFormatter
+
 from traffic_taffy.graph import PcapGraph
+from traffic_taffy.config import Config
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
     dissector_handle_arguments,
 )
-import logging
 
 
 def parse_args() -> Namespace:
     """Parse the command line arguments."""
+
+    config: Config = Config()
+    config.config_option_names = ["-y", "--config"]
+    config["log_level"] = "info"
+    config["output_file"] = None
+    config["by_percentage"] = False
+    config["interactive"] = False
+
+    config.read_configfile_from_arguments(sys.argv)
+
     parser = ArgumentParser(
         formatter_class=RichHelpFormatter,
         description=__doc__,
@@ -42,14 +55,22 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-y",
+        "--config",
+        default=None,
+        type=str,
+        help="Configuration file (YAML) to load.",
+    )
+
+    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
         help="Define verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
-    dissector_add_parseargs(parser)
-    limitor_add_parseargs(parser)
+    dissector_add_parseargs(parser, config)
+    limitor_add_parseargs(parser, config)
 
     parser.add_argument("input_pcaps", type=str, help="PCAP file to graph", nargs="+")
 
@@ -57,35 +78,22 @@ def parse_args() -> Namespace:
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
     logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
-    return args
+
+    dissector_handle_arguments(args)
+    config.load_namespace(args)
+
+    return config
 
 
 def main() -> None:
     """Run taffy-graph."""
-    args = parse_args()
-
-    dissector_handle_arguments(args)
+    config = parse_args()
+    args = config.as_namespace()
 
     pc = PcapGraph(
         args.input_pcaps,
         args.output_file,
-        maximum_count=args.packet_count,
-        minimum_count=args.minimum_count,
-        bin_size=args.bin_size,
-        match_string=args.match_string,
-        match_value=args.match_value,
-        cache_pcap_results=args.cache_pcap_results,
-        dissector_level=args.dissection_level,
-        interactive=args.interactive,
-        by_percentage=args.by_percentage,
-        ignore_list=args.ignore_list,
-        pcap_filter=args.filter,
-        cache_file_suffix=args.cache_file_suffix,
-        layers=args.layers,
-        force_overwrite=args.force_overwrite,
-        force_load=args.force_load,
-        merge_files=args.merge,
-        match_expression=args.match_expression,
+        config,
     )
     pc.graph_it()
 

@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import seaborn as sns
 import matplotlib.pyplot as plt
-import pandas as pd
 from logging import debug, info
-from typing import List
 
-from traffic_taffy.dissector import PCAPDissectorLevel
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.graphdata import PcapGraphData
+from traffic_taffy.config import Config
 
 
 class PcapGraph(PcapGraphData):
@@ -20,49 +18,33 @@ class PcapGraph(PcapGraphData):
         self,
         pcap_files: str,
         output_file: str,
-        maximum_count: int | None = None,
-        minimum_count: int | None = None,
-        bin_size: int | None = None,
-        match_string: str | None = None,
-        match_value: str | None = None,
-        cache_pcap_results: bool = False,
-        dissector_level: PCAPDissectorLevel = PCAPDissectorLevel.COUNT_ONLY,
-        interactive: bool = False,
-        ignore_list: List[str] | None = None,
-        by_percentage: bool = False,
-        pcap_filter: str | None = None,
-        cache_file_suffix: str = "taffy",
-        layers: List[str] | None = None,
-        force_overwrite: bool = False,
-        force_load: bool = False,
-        merge_files: bool = False,  # unused
-        match_expression: str | None = None,
+        config: Config,
     ):
         """Create an instance of a graphing object."""
+        self.config = config
+
         super().__init__(
-            match_string=match_string,
-            match_value=match_value,
-            minimum_count=minimum_count,
-            match_expression=match_expression,
+            match_string=config["match_string"],
+            match_value=config["match_value"],
+            minimum_count=config["minimum_count"],
+            match_expression=config["match_expression"],
         )
 
         self.pcap_files = pcap_files
         self.output_file = output_file
-        self.maximum_count = maximum_count
-        self.bin_size = bin_size
-        self.subsections = None
-        self.pcap_filter = None
-        self.cache_pcap_results = cache_pcap_results
-        self.dissector_level = dissector_level
-        self.interactive = interactive
-        self.ignore_list = ignore_list or []
-        self.by_percentage = by_percentage
-        self.pcap_filter = pcap_filter
-        self.cache_file_suffix = cache_file_suffix
-        self.layers = layers
-        self.force_overwrite = force_overwrite
-        self.force_load = force_load
-        self.merge_files = merge_files
+        self.maximum_count = config["packet_count"]
+        self.bin_size = config["bin_size"]
+        self.pcap_filter = config["filter"]
+        self.cache_pcap_results = config["cache_pcap_results"]
+        self.dissector_level = config["dissection_level"]
+        self.interactive = config["interactive"]
+        self.ignore_list = config["ignore_list"]
+        self.by_percentage = config["by_percentage"]
+        self.cache_file_suffix = config["cache_file_suffix"]
+        self.layers = config["layers"]
+        self.force_overwrite = config["force_overwrite"]
+        self.force_load = config["force_load"]
+        self.merge_files = config["merge"]
 
     def load_pcaps(self) -> None:
         """Load the pcap and counts things into bins."""
@@ -71,17 +53,7 @@ class PcapGraph(PcapGraphData):
         info("reading pcap files")
         pdm = PCAPDissectMany(
             self.pcap_files,
-            bin_size=self.bin_size,
-            maximum_count=self.maximum_count,
-            dissector_level=self.dissector_level,
-            pcap_filter=self.pcap_filter,
-            cache_results=self.cache_pcap_results,
-            ignore_list=self.ignore_list,
-            cache_file_suffix=self.cache_file_suffix,
-            layers=self.layers,
-            force_overwrite=self.force_overwrite,
-            force_load=self.force_load,
-            merge_files=self.merge_files,
+            self.config,
         )
         self.dissections = pdm.load_all()
         info("done reading pcap files")
@@ -102,15 +74,11 @@ class PcapGraph(PcapGraphData):
         else:
             y_column = "count"
 
-        # reindex the dataframe
-        import pdb
-
-        pdb.set_trace()
-        freq = str(self.bin_size or 1) + "s"
+        str(self.bin_size or 1) + "s"
         df = df.set_index("time")
-        df.index = df.index.to_period(freq=freq)
-        timeindex = pd.period_range(min(df.index), max(df.index), freq=freq)
-        df = df.reindex(timeindex)  # , fill_value=0
+        # df.index = df.index.to_period(freq=freq)
+        # timeindex = pd.period_range(min(df.index), max(df.index), freq=freq)
+        # df = df.reindex(timeindex)  # , fill_value=0
 
         ax = sns.relplot(
             data=df,

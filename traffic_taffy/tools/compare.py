@@ -23,7 +23,7 @@ def parse_args() -> Namespace:
 
     config: Config = Config()
     config.config_option_names = ["-y", "--config"]
-    config["log_veles"] = "info"
+    config["log_level"] = "info"
 
     config.read_configfile_from_arguments(sys.argv)
 
