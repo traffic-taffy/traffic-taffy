@@ -50,6 +50,21 @@ def test_compare_statistical_algorithm():
     }
 
     algorithm = ComparisonStatistical()  # bogus file names
-    report = algorithm.compare_dissections(left_data[0], right_data[0])
 
-    assert report.contents == expected
+    class FakeDissection:
+        def __init__(self, data):
+            self._data = data
+
+        @property
+        def data(self):
+            return self._data
+
+        @property
+        def pcap_file(self):
+            return "bogus"
+
+    left = FakeDissection(left_data)
+    right = FakeDissection(right_data)
+
+    report = algorithm.compare_dissections(iter([left, right]))
+    assert report[0].contents == expected
