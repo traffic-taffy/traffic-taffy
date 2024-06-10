@@ -73,7 +73,7 @@ class Config(dict):
         # TODO(hardaker): convert this to argparse's parse known feature
         # aka replace using stackoverflow answer to 3609852
 
-        dn = DotNest(self)
+        dn = DotNest(self, allow_creation=True)
 
         for n, item in enumerate(argv):
             if item in self.config_option_names:
