@@ -30,7 +30,6 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         match_value: str | None = None,
         minimum_count: int | None = None,
         make_printable: bool = False,
-        method: str = "spearman",
         match_expression: str | None = None,
     ):
         """Create a CompareCorrelation instance.
@@ -53,7 +52,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             make_printable,
             match_expression,
         )
-        self.method = method
+        self.method = None
 
     def compare_series(
         self, df: DataFrame, indexes: ndarray | None = None
@@ -66,9 +65,10 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         """
 
         config = TaffyConfig()
-        minimum_value = float(
-            config.get("correlation", {}).get("minimum_correlation", 0.8)
-        )
+        our_section = config.get("correlation", {})
+        minimum_value = float(our_section.get("minimum_correlation", 0.8))
+        method = our_section.get("correlation_method", "spearman")
+        self.method = method
 
         indexes = df["index"].unique()
         num_indexes = len(indexes)
@@ -101,7 +101,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
         reports: OrganizedReports = {}
 
-        if self.method == "corrcoef":
+        if method == "corrcoef":
             np_array = df.to_numpy()
             results = np.corrcoef(np_array)
             for numx, column_left in enumerate(indexes):
@@ -114,7 +114,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             return reports
 
         # default to using the datafram corr method instead
-        results = df.corr(method=self.method)
+        results = df.corr(method=method)
 
         for num, column_left in enumerate(indexes):
             for column_right in indexes[num + 1 :]:
