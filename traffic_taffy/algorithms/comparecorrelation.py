@@ -11,6 +11,7 @@ from rich import print
 from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
 from traffic_taffy.reports.correlationreport import CorrelationReport
 from traffic_taffy.comparison import Comparison, OrganizedReports
+from traffic_taffy.taffy_config import TaffyConfig
 
 if TYPE_CHECKING:
     from pandas import DataFrame
@@ -30,7 +31,6 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         minimum_count: int | None = None,
         make_printable: bool = False,
         method: str = "spearman",
-        minimum_value: float = 0.8,
         match_expression: str | None = None,
     ):
         """Create a CompareCorrelation instance.
@@ -54,7 +54,6 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             match_expression,
         )
         self.method = method
-        self.minimum_value = minimum_value
 
     def compare_series(
         self, df: DataFrame, indexes: ndarray | None = None
@@ -65,6 +64,12 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         of keys are reasonable (for if not a pivot will consume all
         available memory)
         """
+
+        config = TaffyConfig()
+        minimum_value = float(
+            config.get("correlation", {}).get("minimum_correlation", 0.8)
+        )
+
         indexes = df["index"].unique()
         num_indexes = len(indexes)
         if num_indexes > self.MAX_PIVOT:
@@ -102,7 +107,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             for numx, column_left in enumerate(indexes):
                 for numy, column_right in enumerate(indexes[numx + 1 :]):
                     value = results[numx][numy]
-                    if value > self.minimum_value:
+                    if value > minimum_value:
                         print(
                             f"{column_left:<30} similar to {column_right:<30}: {value}"
                         )
@@ -114,7 +119,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         for num, column_left in enumerate(indexes):
             for column_right in indexes[num + 1 :]:
                 value = results[column_left][column_right]
-                if value > self.minimum_value:
+                if value > minimum_value:
                     print(f"{column_left:<30} similar to {column_right:<30}: {value}")
                     if column_left not in reports:
                         reports[column_left] = {}
