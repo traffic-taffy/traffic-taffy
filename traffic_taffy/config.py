@@ -23,6 +23,7 @@ class Config(dict):
     def __init__(self, *args, **kwargs):
         """Create an configuration object to store collected data in."""
         self._config_option_names = ["--config"]
+        self.dotnest = DotNest(self, allow_creation=True)
         super().__init__(*args, **kwargs)
 
     @property
@@ -73,8 +74,6 @@ class Config(dict):
         # TODO(hardaker): convert this to argparse's parse known feature
         # aka replace using stackoverflow answer to 3609852
 
-        dn = DotNest(self, allow_creation=True)
-
         for n, item in enumerate(argv):
             if item in self.config_option_names:
                 if len(argv) == n:
@@ -91,7 +90,7 @@ class Config(dict):
                     (left, right) = filename.split("=")
                     left = left.strip()
                     right = right.strip()
-                    dn.set(left, right)
+                    self.set_value(left, right)
                     continue
 
                 if not Path(filename).is_file():
@@ -115,3 +114,9 @@ class Config(dict):
         import yaml
 
         print(yaml.dump(self))
+
+    def set_dotnest(self, parameter: str, value: Any):
+        self.dotnest.set(parameter, value)
+
+    def get_dotnest(self, parameter):
+        self.dotnest.get(parameter)
