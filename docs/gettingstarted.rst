@@ -19,11 +19,12 @@ Example usage
 
 Suppose you have two pcap files (*file1.pcap* and *file2.pcap*), one
 captured during "normal times" and another when some anomaly has
-caused a spike.  The following example command line uses the
-*taffy-compare* utility to show the top 10 differences (*-R 10*) per
-packet section in the new traffic with at least 1000 records (*-c
-100*) in the packet section.  For speed of analysis, we use a maximum
-of 10000 records per pcap file (*-n 10000*)
+caused a spike.  The following example command line uses: the
+*taffy-compare* utility to show:
+
+- the top 10 differences (*-R 10*) per packet section
+- with at least 100 records (*-c 100*)
+- using a maximum of 10000 records per pcap file (*-n 10000*)
 
 ::
 
