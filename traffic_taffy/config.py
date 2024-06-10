@@ -109,3 +109,9 @@ class Config(dict):
             setattr(namespace, item, value)
 
         return namespace
+
+    def dump(self):
+        """Dumps the current configuration into a YAML format."""
+        import yaml
+
+        print(yaml.dump(self))

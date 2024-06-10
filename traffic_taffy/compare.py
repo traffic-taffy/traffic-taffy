@@ -7,12 +7,12 @@ from logging import error
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
     from traffic_taffy.comparison import Comparison
-    from traffic_taffy.taffy_config import TaffyConfig
     from argparse import ArgumentParser, Namespace
 
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
 from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
+from traffic_taffy.taffy_config import TaffyConfig
 
 
 class PcapCompare:
@@ -107,9 +107,14 @@ class PcapCompare:
 
 
 def compare_add_parseargs(
-    compare_parser: ArgumentParser, config: TaffyConfig, add_subgroup: bool = True
+    compare_parser: ArgumentParser,
+    config: TaffyConfig | None = None,
+    add_subgroup: bool = True,
 ) -> ArgumentParser:
     """Add common comparison arguments."""
+
+    if not config:
+        config = TaffyConfig()
 
     config.setdefault("only_positive", False)
     config.setdefault("only_negative", True)

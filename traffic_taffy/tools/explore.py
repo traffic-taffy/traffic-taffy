@@ -621,7 +621,7 @@ def parse_args() -> Namespace:
     )
 
     limitor_parser = limitor_add_parseargs(parser)
-    compare_add_parseargs(limitor_parser, False)
+    compare_add_parseargs(limitor_parser, add_subgroup=False)
 
     dissector_add_parseargs(parser)
 
