@@ -15,7 +15,7 @@ from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
 from traffic_taffy.hooks import call_hooks
 
 if TYPE_CHECKING:
-    from traffic_taffy.config import Config
+    from traffic_taffy.taffy_config import TaffyConfig
     from argparse import Parser
 
 POST_DISSECT_HOOK: str = "post_dissect"
@@ -27,7 +27,7 @@ class PCAPDissector:
     def __init__(
         self,
         pcap_file: str,
-        config: Config,
+        config: TaffyConfig,
     ) -> None:
         """Create a dissector object."""
         self.pcap_file = pcap_file
@@ -180,7 +180,7 @@ class PCAPDissector:
 
 
 def dissector_add_parseargs(
-    parser: Parser, config: Config, add_subgroup: bool = True
+    parser: Parser, config: TaffyConfig, add_subgroup: bool = True
 ) -> None:
     """Add arguments related to disection."""
     if add_subgroup:
@@ -331,7 +331,7 @@ def dissector_add_parseargs(
     return parser
 
 
-def limitor_add_parseargs(parser, config: Config, add_subgroup: bool = True):
+def limitor_add_parseargs(parser, config: TaffyConfig, add_subgroup: bool = True):
     if add_subgroup:
         parser = parser.add_argument_group("Limiting options")
 

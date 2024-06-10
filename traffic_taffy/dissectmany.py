@@ -13,14 +13,14 @@ from traffic_taffy.dissector import PCAPDissector
 if TYPE_CHECKING:
     from io import BufferedIOBase
     from traffic_taffy.dissection import Dissection
-    from traffic_taffy.config import Config
+    from traffic_taffy.taffy_config import TaffyConfig
 
 
 class PCAPDissectMany:
     """A class for dissecting a number of PCAP files."""
 
     def __init__(
-        self, pcap_files: List[str], config: Config, *args: list, **kwargs: dict
+        self, pcap_files: List[str], config: TaffyConfig, *args: list, **kwargs: dict
     ):
         """Create a PCAPDissectMany instance."""
         self.pcap_files = pcap_files

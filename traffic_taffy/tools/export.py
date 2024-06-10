@@ -7,7 +7,7 @@ from rich_argparse import RichHelpFormatter
 
 import pyfsdb
 
-from traffic_taffy.config import Config
+from traffic_taffy.taffy_config import TaffyConfig
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -19,7 +19,7 @@ from traffic_taffy.dissector import (
 def parse_args() -> Namespace:
     """Parse the command line arguments for taffy-export."""
 
-    config: Config = Config()
+    config: TaffyConfig = TaffyConfig()
     config.config_option_names = ["-y", "--config"]
     config["log_level"] = "info"
 

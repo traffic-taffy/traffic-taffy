@@ -7,7 +7,7 @@ import logging
 from logging import error
 from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
-from traffic_taffy.config import Config
+from traffic_taffy.taffy_config import TaffyConfig
 
 from traffic_taffy.compare import compare_add_parseargs, get_comparison_args
 from traffic_taffy.dissector import (
@@ -21,7 +21,7 @@ from traffic_taffy.compare import PcapCompare
 def parse_args() -> Namespace:
     """Parse the command line arguments."""
 
-    config: Config = Config()
+    config: TaffyConfig = TaffyConfig()
     config.config_option_names = ["-y", "--config"]
     config["log_level"] = "info"
 

@@ -7,7 +7,7 @@ from logging import error
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
     from traffic_taffy.comparison import Comparison
-    from traffic_taffy.config import Config
+    from traffic_taffy.taffy_config import TaffyConfig
     from argparse import ArgumentParser, Namespace
 
 from traffic_taffy.dissectmany import PCAPDissectMany
@@ -21,7 +21,7 @@ class PcapCompare:
     def __init__(
         self,
         pcap_files: List[str],
-        config: Config,
+        config: TaffyConfig,
     ) -> None:
         """Create a compare object."""
         self.config = config
@@ -84,7 +84,7 @@ class PcapCompare:
     def reports(self, newvalue: List[dict]) -> None:
         self._reports = newvalue
 
-    def load_pcaps(self, config: Config) -> None:
+    def load_pcaps(self, config: TaffyConfig) -> None:
         """Load all pcaps into memory and dissect them."""
         # load the first as a reference pap
         pdm = PCAPDissectMany(
@@ -107,7 +107,7 @@ class PcapCompare:
 
 
 def compare_add_parseargs(
-    compare_parser: ArgumentParser, config: Config, add_subgroup: bool = True
+    compare_parser: ArgumentParser, config: TaffyConfig, add_subgroup: bool = True
 ) -> ArgumentParser:
     """Add common comparison arguments."""
 

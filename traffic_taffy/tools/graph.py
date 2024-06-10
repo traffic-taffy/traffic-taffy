@@ -6,7 +6,7 @@ from argparse import ArgumentParser, Namespace
 from rich_argparse import RichHelpFormatter
 
 from traffic_taffy.graph import PcapGraph
-from traffic_taffy.config import Config
+from traffic_taffy.taffy_config import TaffyConfig
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -17,7 +17,7 @@ from traffic_taffy.dissector import (
 def parse_args() -> Namespace:
     """Parse the command line arguments."""
 
-    config: Config = Config()
+    config: TaffyConfig = TaffyConfig()
     config.config_option_names = ["-y", "--config"]
     config["log_level"] = "info"
     config["output_file"] = None

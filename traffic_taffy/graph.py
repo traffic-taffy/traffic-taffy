@@ -8,7 +8,7 @@ from logging import debug, info
 
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.graphdata import PcapGraphData
-from traffic_taffy.config import Config
+from traffic_taffy.taffy_config import TaffyConfig
 
 
 class PcapGraph(PcapGraphData):
@@ -18,7 +18,7 @@ class PcapGraph(PcapGraphData):
         self,
         pcap_files: str,
         output_file: str,
-        config: Config,
+        config: TaffyConfig(),
     ):
         """Create an instance of a graphing object."""
         self.config = config
