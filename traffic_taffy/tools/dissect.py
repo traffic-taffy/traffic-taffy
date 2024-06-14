@@ -96,9 +96,6 @@ def main() -> None:
     pd = PCAPDissector(args.input_pcaps, config)
     pd.dissection = dissection
 
-    import pdb
-
-    pdb.set_trace()
     # output as requested
     if args.fsdb:
         pd.print_to_fsdb(
