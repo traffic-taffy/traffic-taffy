@@ -13,12 +13,66 @@ from rich import print
 
 from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
 from traffic_taffy.hooks import call_hooks
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 
 if TYPE_CHECKING:
     from argparse import Parser
 
 POST_DISSECT_HOOK: str = "post_dissect"
+
+taffy_default("dissection.dissection_level", PCAPDissectorLevel.THROUGH_IP.value)
+taffy_default("dissection.packet_count", 0)
+taffy_default("dissection.bin_size", None)
+taffy_default("dissection.filter", None)
+taffy_default("dissection.layers", [])
+taffy_default("dissection.modules", None)
+taffy_default("dissection.merge", False)
+taffy_default("dissection.cache_pcap_results", False)
+taffy_default("dissection.force_overwrite", False)
+taffy_default("dissection.force_load", False)
+taffy_default("dissection.cache_file_suffix", "taffy")
+taffy_default(
+    "dissection.ignore_list",
+    [
+        "Ethernet_IP_TCP_seq",
+        "Ethernet_IP_TCP_ack",
+        "Ethernet_IPv6_TCP_seq",
+        "Ethernet_IPv6_TCP_ack",
+        "Ethernet_IPv6_TCP_Raw_load",
+        "Ethernet_IP_UDP_Raw_load",
+        "Ethernet_IP_UDP_DNS_id",
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_chksum",
+        "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_Raw_load",
+        "Ethernet_IP_ICMP_IP in ICMP_chksum",
+        "Ethernet_IP_ICMP_IP in ICMP_id",
+        "Ethernet_IP_TCP_DNS_id",
+        "Ethernet_IPv6_UDP_DNS_id",
+        "Ethernet_IPv6_TCP_DNS_id",
+        "Ethernet_IP_id",
+        "Ethernet_IP_chksum",
+        "Ethernet_IP_UDP_chksum",
+        "Ethernet_IP_TCP_chksum",
+        "Ethernet_IP_TCP_window",
+        "Ethernet_IP_TCP_Raw_load",
+        "Ethernet_IP_UDP_Raw_load",
+        "Ethernet_IPv6_UDP_chksum",
+        "Ethernet_IPv6_fl",
+        "Ethernet_IP_ICMP_chksum",
+        "Ethernet_IP_ICMP_id",
+        "Ethernet_IP_ICMP_seq",
+        "Ethernet_IP_TCP_Padding_load",
+        "Ethernet_IP_TCP_window",
+        "Ethernet_IPv6_TCP_chksum",
+        "Ethernet_IPv6_plen",
+        "Ethernet_IP_TCP_Encrypted Content_load",
+        "Ethernet_IP_TCP_TLS_TLS_Raw_load",
+    ],
+)
+
+taffy_default("dissection.match_string", None)
+taffy_default("dissection.match_value", None)
+taffy_default("dissection.match_expression", None)
+taffy_default("dissection.minimum_count", None)
 
 
 class PCAPDissector:
@@ -27,26 +81,30 @@ class PCAPDissector:
     def __init__(
         self,
         pcap_file: str,
-        config: TaffyConfig,
+        config: TaffyConfig | None = None,
     ) -> None:
         """Create a dissector object."""
         self.pcap_file = pcap_file
-
         self.config = config
-        self.dissector_level = config["dissection_level"]
-        self.pcap_filter = config["filter"]
-        self.maximum_count = config["packet_count"]
-        self.cache_results = config["cache_pcap_results"]
-        self.bin_size = config["bin_size"]
-        self.cache_file_suffix = config["cache_file_suffix"]
+        if not self.config:
+            config = TaffyConfig()
+
+        dissection_config = config["dissection"]
+
+        self.dissector_level = dissection_config["dissection_level"]
+        self.pcap_filter = dissection_config["filter"]
+        self.maximum_count = dissection_config["packet_count"]
+        self.cache_results = dissection_config["cache_pcap_results"]
+        self.bin_size = dissection_config["bin_size"]
+        self.cache_file_suffix = dissection_config["cache_file_suffix"]
         if self.cache_file_suffix[0] != ".":
             self.cache_file_suffix = "." + self.cache_file_suffix
-        self.ignore_list = config["ignore_list"]
+        self.ignore_list = dissection_config["ignore_list"]
         if self.ignore_list is None:
             self.ignore_list = []
-        self.layers = config["layers"]
-        self.force_overwrite = config["force_overwrite"]
-        self.force_load = config["force_load"]
+        self.layers = dissection_config["layers"]
+        self.force_overwrite = dissection_config["force_overwrite"]
+        self.force_load = dissection_config["force_load"]
 
         if self.dissector_level == PCAPDissectorLevel.COUNT_ONLY and self.bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
@@ -189,59 +247,11 @@ def dissector_add_parseargs(
     if not config:
         config = TaffyConfig()
 
-    config.setdefault("dissection_level", PCAPDissectorLevel.THROUGH_IP.value)
-    config.setdefault("packet_count", 0)
-    config.setdefault("bin_size", None)
-    config.setdefault("filter", None)
-    config.setdefault("layers", [])
-    config.setdefault("modules", None)
-    config.setdefault("merge", False)
-    config.setdefault("cache_pcap_results", False)
-    config.setdefault("force_overwrite", False)
-    config.setdefault("force_load", False)
-    config.setdefault("cache_file_suffix", "taffy")
-    config.setdefault(
-        "ignore_list",
-        [
-            "Ethernet_IP_TCP_seq",
-            "Ethernet_IP_TCP_ack",
-            "Ethernet_IPv6_TCP_seq",
-            "Ethernet_IPv6_TCP_ack",
-            "Ethernet_IPv6_TCP_Raw_load",
-            "Ethernet_IP_UDP_Raw_load",
-            "Ethernet_IP_UDP_DNS_id",
-            "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_chksum",
-            "Ethernet_IP_ICMP_IP in ICMP_UDP in ICMP_Raw_load",
-            "Ethernet_IP_ICMP_IP in ICMP_chksum",
-            "Ethernet_IP_ICMP_IP in ICMP_id",
-            "Ethernet_IP_TCP_DNS_id",
-            "Ethernet_IPv6_UDP_DNS_id",
-            "Ethernet_IPv6_TCP_DNS_id",
-            "Ethernet_IP_id",
-            "Ethernet_IP_chksum",
-            "Ethernet_IP_UDP_chksum",
-            "Ethernet_IP_TCP_chksum",
-            "Ethernet_IP_TCP_window",
-            "Ethernet_IP_TCP_Raw_load",
-            "Ethernet_IP_UDP_Raw_load",
-            "Ethernet_IPv6_UDP_chksum",
-            "Ethernet_IPv6_fl",
-            "Ethernet_IP_ICMP_chksum",
-            "Ethernet_IP_ICMP_id",
-            "Ethernet_IP_ICMP_seq",
-            "Ethernet_IP_TCP_Padding_load",
-            "Ethernet_IP_TCP_window",
-            "Ethernet_IPv6_TCP_chksum",
-            "Ethernet_IPv6_plen",
-            "Ethernet_IP_TCP_Encrypted Content_load",
-            "Ethernet_IP_TCP_TLS_TLS_Raw_load",
-        ],
-    )
-
+    dissection_config = config["dissection"]
     parser.add_argument(
         "-d",
         "--dissection-level",
-        default=config["dissection_level"],
+        default=dissection_config["dissection_level"],
         type=int,
         help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
     )
@@ -249,7 +259,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-I",
         "--ignore-list",
-        default=config["ignore_list"],
+        default=dissection_config["ignore_list"],
         nargs="*",
         type=str,
         help="A list of (unlikely to be useful) packet fields to ignore",
@@ -258,7 +268,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-n",
         "--packet-count",
-        default=config["packet_count"],
+        default=dissection_config["packet_count"],
         type=int,
         help="Maximum number of packets to analyze",
     )
@@ -266,7 +276,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-b",
         "--bin-size",
-        default=config["bin_size"],
+        default=dissection_config["bin_size"],
         type=int,
         help="Bin results into this many seconds",
     )
@@ -274,7 +284,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-F",
         "--filter",
-        default=config["filter"],
+        default=dissection_config["filter"],
         type=str,
         help="filter to apply to the pcap file when processing",
     )
@@ -282,7 +292,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-L",
         "--layers",
-        default=config["layers"],
+        default=dissection_config["layers"],
         type=str,
         nargs="*",
         help="List of extra layers to load (eg: tls, http, etc)",
@@ -291,7 +301,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-x",
         "--modules",
-        default=config["modules"],
+        default=dissection_config["modules"],
         type=str,
         nargs="*",
         help="Extra processing modules to load (currently: psl) ",
@@ -315,7 +325,7 @@ def dissector_add_parseargs(
         "--cache-file-suffix",
         "--cs",
         type=str,
-        default=config["cache_file_suffix"],
+        default=dissection_config["cache_file_suffix"],
         help="The suffix file to use when creating cache files",
     )
 
@@ -343,15 +353,11 @@ def limitor_add_parseargs(
     if not config:
         config = TaffyConfig()
 
-    config.setdefault("match_string", None)
-    config.setdefault("match_value", None)
-    config.setdefault("match_expression", None)
-    config.setdefault("minimum_count", None)
-
+    dissection_config = config["dissection"]
     parser.add_argument(
         "-m",
         "--match-string",
-        default=config["match_string"],
+        default=dissection_config["match_string"],
         type=str,
         help="Only report on data with this substring in the header",
     )
@@ -359,7 +365,7 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-M",
         "--match-value",
-        default=config["match_value"],
+        default=dissection_config["match_value"],
         type=str,
         nargs="*",
         help="Only report on data with this substring in the packet value field",
@@ -368,7 +374,7 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-E",
         "--match-expression",
-        default=config["match_expression"],
+        default=dissection_config["match_expression"],
         type=str,
         help="Match expression to be evaluated at runtime for returning data",
     )
@@ -376,7 +382,7 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-c",
         "--minimum-count",
-        default=config["minimum_count"],
+        default=dissection_config["minimum_count"],
         type=float,
         help="Don't include results without this high of a record count",
     )

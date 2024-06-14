@@ -27,7 +27,7 @@ def taffy_default(parameter: str, value: Any) -> bool:
         return True
 
     if value is None:
-        config.set_value(parameter, value)
+        config.set_dotnest(parameter, value)
         return True
 
     return False

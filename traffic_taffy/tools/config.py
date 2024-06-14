@@ -2,14 +2,6 @@
 import sys
 import logging
 import yaml
-from logging import error
-from traffic_taffy.dissector import (
-    dissector_add_parseargs,
-    limitor_add_parseargs,
-    dissector_handle_arguments,
-    PCAPDissector,
-)
-from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.taffy_config import TaffyConfig
 from rich_argparse import RichHelpFormatter
 from argparse import ArgumentParser, Namespace
@@ -56,7 +48,7 @@ def main() -> None:
         return config
 
     config = parse_args()
-    args = config.as_namespace()
+    config.as_namespace()
 
     print(yaml.dump(config))
 

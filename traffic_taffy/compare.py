@@ -12,7 +12,15 @@ if TYPE_CHECKING:
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
 from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, taffy_default
+
+taffy_default("compare.only_positive", False)
+taffy_default("compare.only_negative", True)
+taffy_default("compare.print_threshold", 0.0)
+taffy_default("compare.top_records", None)
+taffy_default("compare.reverse_sort", False)
+taffy_default("compare.sort_by", "delta%")
+taffy_default("compare.algorithm", "statistical")
 
 
 class PcapCompare:
@@ -21,10 +29,13 @@ class PcapCompare:
     def __init__(
         self,
         pcap_files: List[str],
-        config: TaffyConfig,
+        config: TaffyConfig | None = None,
     ) -> None:
         """Create a compare object."""
         self.config = config
+        if not self.config:
+            config = TaffyConfig()
+
         self.pcap_files = pcap_files
         self.deep = config.get("deep", True)
         self.maximum_count = config["packet_count"]
@@ -115,14 +126,7 @@ def compare_add_parseargs(
 
     if not config:
         config = TaffyConfig()
-
-    config.setdefault("only_positive", False)
-    config.setdefault("only_negative", True)
-    config.setdefault("print_threshold", 0.0)
-    config.setdefault("top_records", None)
-    config.setdefault("reverse_sort", False)
-    config.setdefault("sort_by", "delta%")
-    config.setdefault("algorithm", "statistical")
+    compare_config = config["compare"]
 
     if add_subgroup:
         compare_parser = compare_parser.add_argument_group("Comparison result options")
@@ -130,7 +134,7 @@ def compare_add_parseargs(
     compare_parser.add_argument(
         "-t",
         "--print-threshold",
-        default=config["print_threshold"],
+        default=compare_config["print_threshold"],
         type=float,
         help="Don't print results with abs(percent) less than this threshold",
     )
@@ -140,7 +144,7 @@ def compare_add_parseargs(
         "--only-positive",
         action="store_true",
         help="Only show positive entries",
-        default=config["only_positive"],
+        default=compare_config["only_positive"],
     )
 
     compare_parser.add_argument(
@@ -148,13 +152,13 @@ def compare_add_parseargs(
         "--only-negative",
         action="store_true",
         help="Only show negative entries",
-        default=config["only_negative"],
+        default=compare_config["only_negative"],
     )
 
     compare_parser.add_argument(
         "-R",
         "--top-records",
-        default=config["top_records"],
+        default=compare_config["top_records"],
         type=int,
         help="Show the top N records from each section.",
     )
@@ -163,14 +167,14 @@ def compare_add_parseargs(
         "-r",
         "--reverse_sort",
         action="store_true",
-        default=config["reverse_sort"],
+        default=compare_config["reverse_sort"],
         help="Reverse the sort order of reports",
     )
 
     compare_parser.add_argument(
         "-s",
         "--sort-by",
-        default=config["sort_by"],
+        default=compare_config["sort_by"],
         type=str,
         help="Sort report entries by this column",
     )
@@ -178,7 +182,7 @@ def compare_add_parseargs(
     compare_parser.add_argument(
         "-A",
         "--algorithm",
-        default=config["algorithm"],
+        default=compare_config["algorithm"],
         type=str,
         help="The algorithm to apply for data comparison (statistical, correlation)",
     )

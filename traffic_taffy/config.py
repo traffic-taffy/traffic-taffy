@@ -90,7 +90,7 @@ class Config(dict):
                     (left, right) = filename.split("=")
                     left = left.strip()
                     right = right.strip()
-                    self.set_value(left, right)
+                    self.set_dotnest(left, right)
                     continue
 
                 if not Path(filename).is_file():
