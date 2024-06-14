@@ -2,7 +2,7 @@
 import sys
 import logging
 import yaml
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from rich_argparse import RichHelpFormatter
 from argparse import ArgumentParser, Namespace
 
@@ -15,7 +15,7 @@ def main() -> None:
 
         config: TaffyConfig = TaffyConfig()
         config.config_option_names = ["-y", "--config"]
-        config["log_level"] = "info"
+        config[TT_CFG.LOG_LEVEL] = "info"
 
         config.read_configfile_from_arguments(sys.argv)
 
@@ -50,7 +50,7 @@ def main() -> None:
     config = parse_args()
     config.as_namespace()
 
-    print(yaml.dump(config))
+    print(yaml.dump(dict(config)))
 
 
 if __name__ == "__main__":
