@@ -14,6 +14,7 @@ from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
     dissector_handle_arguments,
+    TTD_CFG,
 )
 from traffic_taffy.compare import PcapCompare
 
@@ -23,7 +24,6 @@ def parse_args() -> Namespace:
 
     config: TaffyConfig = TaffyConfig()
     config.config_option_names = ["-y", "--config"]
-    config["log_level"] = "info"
 
     config.read_configfile_from_arguments(sys.argv)
 
@@ -80,7 +80,7 @@ def main() -> None:
     args = config.as_namespace()
 
     # setup output options
-    config["filter_arguments"] = get_comparison_args(args)
+    config[TTD_CFG.FILTER_ARGUMENTS] = get_comparison_args(args)
 
     # get our files to compare (maybe just one)
     left = args.pcap_files.pop(0)
@@ -109,9 +109,9 @@ def main() -> None:
             sys.exit()
 
         if args.fsdb:
-            output = Fsdb(None, config["filter_arguments"])
+            output = Fsdb(None, config[TTD_CFG.FILTER_ARGUMENTS])
         else:
-            output = Console(None, config["filter_arguments"])
+            output = Console(None, config[TTD_CFG.FILTER_ARGUMENTS])
 
         for report in reports:
             # output results to the console

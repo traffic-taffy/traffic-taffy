@@ -13,6 +13,18 @@ from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
 from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
+from traffic_taffy.dissector import TTD_CFG
+
+
+class TTC_CFG:
+    ONLY_POSITIVE: str = "only_positive"
+    ONLY_NEGATIVE: str = "only_negative"
+    PRINT_THRESHOLD: str = "print_threshold"
+    TOP_RECORDS: str = "top_records"
+    REVERSE_SORT: str = "reverse_sort"
+    SORT_BY: str = "sort_by"
+    ALGORITHM: str = "algorithm"
+
 
 taffy_default("compare.only_positive", False)
 taffy_default("compare.only_negative", True)
@@ -38,23 +50,23 @@ class PcapCompare:
 
         self.pcap_files = pcap_files
         self.deep = config.get("deep", True)
-        self.maximum_count = config["packet_count"]
-        self.pcap_filter = config["filter"]
-        self.cache_results = config["cache_pcap_results"]
-        self.dissection_level = config["dissection_level"]
-        # self.between_times = config["between_times"]
-        self.bin_size = config["bin_size"]
-        self.cache_file_suffix = config["cache_file_suffix"]
+        self.maximum_count = config[TTD_CFG.PACKET_COUNT]
+        self.pcap_filter = config[TTD_CFG.FILTER]
+        self.cache_results = config[TTD_CFG.CACHE_PCAP_RESULTS]
+        self.dissection_level = config[TTD_CFG.DISSECTION_LEVEL]
+        # self.between_times = config[TTC_CFG.BETWEEN_TIMES]
+        self.bin_size = config[TTD_CFG.BIN_SIZE]
+        self.cache_file_suffix = config[TTD_CFG.CACHE_FILE_SUFFIX]
         if self.cache_file_suffix[0] != ".":
             self.cache_file_suffix = "." + self.cache_file_suffix
-        self.ignore_list = config["ignore_list"]
-        self.layers = config["layers"]
-        self.force_overwrite = config["force_overwrite"]
-        self.force_load = config["force_load"]
-        self.merge_files = config["merge"]
-        self.filter_arguments = config["filter_arguments"]
+        self.ignore_list = config[TTD_CFG.IGNORE_LIST]
+        self.layers = config[TTD_CFG.LAYERS]
+        self.force_overwrite = config[TTD_CFG.FORCE_OVERWRITE]
+        self.force_load = config[TTD_CFG.FORCE_LOAD]
+        self.filter_arguments = config[TTD_CFG.FILTER_ARGUMENTS]
+        self.merge_files = config[TTD_CFG.MERGE]
 
-        algorithm = config["algorithm"]
+        algorithm = config[TTC_CFG.ALGORITHM]
 
         algorithm_arguments = {
             "timestamps": None,
@@ -134,7 +146,7 @@ def compare_add_parseargs(
     compare_parser.add_argument(
         "-t",
         "--print-threshold",
-        default=compare_config["print_threshold"],
+        default=compare_config[TTC_CFG.PRINT_THRESHOLD],
         type=float,
         help="Don't print results with abs(percent) less than this threshold",
     )
@@ -144,7 +156,7 @@ def compare_add_parseargs(
         "--only-positive",
         action="store_true",
         help="Only show positive entries",
-        default=compare_config["only_positive"],
+        default=compare_config[TTC_CFG.ONLY_POSITIVE],
     )
 
     compare_parser.add_argument(
@@ -152,13 +164,13 @@ def compare_add_parseargs(
         "--only-negative",
         action="store_true",
         help="Only show negative entries",
-        default=compare_config["only_negative"],
+        default=compare_config[TTC_CFG.ONLY_NEGATIVE],
     )
 
     compare_parser.add_argument(
         "-R",
         "--top-records",
-        default=compare_config["top_records"],
+        default=compare_config[TTC_CFG.TOP_RECORDS],
         type=int,
         help="Show the top N records from each section.",
     )
@@ -167,14 +179,14 @@ def compare_add_parseargs(
         "-r",
         "--reverse_sort",
         action="store_true",
-        default=compare_config["reverse_sort"],
+        default=compare_config[TTC_CFG.REVERSE_SORT],
         help="Reverse the sort order of reports",
     )
 
     compare_parser.add_argument(
         "-s",
         "--sort-by",
-        default=compare_config["sort_by"],
+        default=compare_config[TTC_CFG.SORT_BY],
         type=str,
         help="Sort report entries by this column",
     )
@@ -182,7 +194,7 @@ def compare_add_parseargs(
     compare_parser.add_argument(
         "-A",
         "--algorithm",
-        default=compare_config["algorithm"],
+        default=compare_config[TTC_CFG.ALGORITHM],
         type=str,
         help="The algorithm to apply for data comparison (statistical, correlation)",
     )

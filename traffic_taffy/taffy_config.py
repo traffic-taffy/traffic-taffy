@@ -10,6 +10,9 @@ class TT_CFG:
     CACHE_RESULTS: str = "cache_results"
 
 
+taffy_global_defaults = {"log_level": "info"}
+
+
 class TaffyConfig(object):
     """A global configuration storage class that can be easily accessed."""
 
@@ -18,6 +21,7 @@ class TaffyConfig(object):
     def __new__(class_obj, *args, **kwargs):
         if not isinstance(class_obj._instance, Config):
             class_obj._instance = Config(*args, **kwargs)
+            class_obj._instance.update(taffy_global_defaults)
         return class_obj._instance
 
 
