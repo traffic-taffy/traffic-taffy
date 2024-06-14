@@ -9,6 +9,13 @@ from logging import debug, info
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.dissector import TTD_CFG
+
+
+class TTG_CFG:
+    OUTPUT_FILE: str = "output_file"
+    BY_PERCENTAGE: str = "by_percentage"
+    INTERACTIVE: str = "interactive"
 
 
 class PcapGraph(PcapGraphData):
@@ -24,27 +31,28 @@ class PcapGraph(PcapGraphData):
         self.config = config
 
         super().__init__(
-            match_string=config["match_string"],
-            match_value=config["match_value"],
-            minimum_count=config["minimum_count"],
-            match_expression=config["match_expression"],
+            match_string=config[TTD_CFG.MATCH_STRING],
+            match_value=config[TTD_CFG.MATCH_VALUE],
+            minimum_count=config[TTD_CFG.MINIMUM_COUNT],
+            match_expression=config[TTD_CFG.MATCH_EXPRESSION],
         )
 
         self.pcap_files = pcap_files
         self.output_file = output_file
-        self.maximum_count = config["packet_count"]
-        self.bin_size = config["bin_size"]
-        self.pcap_filter = config["filter"]
-        self.cache_pcap_results = config["cache_pcap_results"]
-        self.dissector_level = config["dissection_level"]
-        self.interactive = config["interactive"]
-        self.ignore_list = config["ignore_list"]
-        self.by_percentage = config["by_percentage"]
-        self.cache_file_suffix = config["cache_file_suffix"]
-        self.layers = config["layers"]
-        self.force_overwrite = config["force_overwrite"]
-        self.force_load = config["force_load"]
-        self.merge_files = config["merge"]
+        self.maximum_count = config[TTD_CFG.PACKET_COUNT]
+        self.bin_size = config[TTD_CFG.BIN_SIZE]
+        self.pcap_filter = config[TTD_CFG.FILTER]
+        self.cache_pcap_results = config[TTD_CFG.CACHE_PCAP_RESULTS]
+        self.dissector_level = config[TTD_CFG.DISSECTION_LEVEL]
+        self.ignore_list = config[TTD_CFG.IGNORE_LIST]
+        self.cache_file_suffix = config[TTD_CFG.CACHE_FILE_SUFFIX]
+        self.layers = config[TTD_CFG.LAYERS]
+        self.force_overwrite = config[TTD_CFG.FORCE_OVERWRITE]
+        self.force_load = config[TTD_CFG.FORCE_LOAD]
+        self.merge_files = config[TTD_CFG.MERGE]
+
+        self.interactive = config[TTG_CFG.INTERACTIVE]
+        self.by_percentage = config[TTG_CFG.BY_PERCENTAGE]
 
     def load_pcaps(self) -> None:
         """Load the pcap and counts things into bins."""
