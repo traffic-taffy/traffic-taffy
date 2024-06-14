@@ -44,6 +44,7 @@ taffy-dissect = "traffic_taffy.tools.dissect:main"
 taffy-explorer = "traffic_taffy.tools.explorer:main"
 taffy-graph = "traffic_taffy.tools.graph:main"
 taffy-export = "traffic_taffy.tools.export:main"
+taffy-config = "traffic_taffy.tools.config:main"
 
 [project.urls]
 Homepage = "https://traffic-taffy.github.io/"
