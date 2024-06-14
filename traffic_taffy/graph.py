@@ -8,7 +8,7 @@ from logging import debug, info
 
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.graphdata import PcapGraphData
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 from traffic_taffy.dissector import TTD_CFG
 
 
@@ -17,6 +17,11 @@ class TTG_CFG:
     OUTPUT_FILE: str = "output_file"
     BY_PERCENTAGE: str = "by_percentage"
     INTERACTIVE: str = "interactive"
+
+
+taffy_default("graph.output_file", None)
+taffy_default("graph.by_percentage", False)
+taffy_default("graph.interactive", False)
 
 
 class PcapGraph(PcapGraphData):
@@ -54,8 +59,8 @@ class PcapGraph(PcapGraphData):
         self.force_load = dissector_config[TTD_CFG.FORCE_LOAD]
         self.merge_files = dissector_config[TTD_CFG.MERGE]
 
-        self.interactive = graph_config[TTG_CFG.KEY_GRAPH][TTG_CFG.INTERACTIVE]
-        self.by_percentage = graph_config[TTG_CFG.KEY_GRAPH][TTG_CFG.BY_PERCENTAGE]
+        self.interactive = graph_config[TTG_CFG.INTERACTIVE]
+        self.by_percentage = graph_config[TTG_CFG.BY_PERCENTAGE]
 
     def load_pcaps(self) -> None:
         """Load the pcap and counts things into bins."""

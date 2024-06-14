@@ -7,7 +7,6 @@ from rich_argparse import RichHelpFormatter
 
 from traffic_taffy.graph import PcapGraph
 from traffic_taffy.taffy_config import TaffyConfig
-from traffic_taffy.graph import TTG_CFG
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -20,9 +19,6 @@ def parse_args() -> Namespace:
 
     config: TaffyConfig = TaffyConfig()
     config.config_option_names = ["-y", "--config"]
-    config[TTG_CFG.OUTPUT_FILE] = None
-    config[TTG_CFG.BY_PERCENTAGE] = False
-    config[TTG_CFG.INTERACTIVE] = False
 
     config.read_configfile_from_arguments(sys.argv)
 
