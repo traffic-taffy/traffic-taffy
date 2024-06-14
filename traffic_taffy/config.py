@@ -38,6 +38,13 @@ class Config(dict):
 
         self._config_option_names = newlist
 
+    def deep_update(self, ref: dict, new_content: dict):
+        for key in new_content:
+            if key in ref and isinstance(ref[key], dict):
+                self.deep_update(ref[key], new_content[key])
+            else:
+                ref[key] = new_content[key]
+
     def load_stream(
         self, config_handle: TextIO, style: ConfigStyles = ConfigStyles.YAML
     ) -> None:
@@ -48,8 +55,7 @@ class Config(dict):
             contents = yaml.safe_load(config_handle)
 
         # TODO(hardaker): support TOML
-
-        self.update(contents)
+        self.deep_update(self, contents)
 
     def load_file(
         self, config_file: str, style: ConfigStyles = ConfigStyles.YAML

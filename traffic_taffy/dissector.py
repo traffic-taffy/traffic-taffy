@@ -7,7 +7,7 @@ from collections import Counter, defaultdict
 from logging import error, warning
 from typing import List
 import importlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from rich import print
 
@@ -20,10 +20,11 @@ if TYPE_CHECKING:
 
 
 class TTD_CFG:
+    KEY_DISSECTOR: str = "dissector"
+
     BIN_SIZE: str = "bin_size"
     CACHE_FILE_SUFFIX: str = "cache_file_suffix"
     CACHE_PCAP_RESULTS: str = "cache_pcap_results"
-    DISSECTION: str = "dissection"
     DISSECTION_LEVEL: str = "dissection_level"
     FILTER: str = "filter"
     FILTER_ARGUMENTS: str = "filter_arguments"
@@ -42,19 +43,24 @@ class TTD_CFG:
 
 POST_DISSECT_HOOK: str = "post_dissect"
 
-taffy_default("dissection.dissection_level", PCAPDissectorLevel.THROUGH_IP.value)
-taffy_default("dissection.packet_count", 0)
-taffy_default("dissection.bin_size", None)
-taffy_default("dissection.filter", None)
-taffy_default("dissection.layers", [])
-taffy_default("dissection.modules", None)
-taffy_default("dissection.merge", False)
-taffy_default("dissection.cache_pcap_results", False)
-taffy_default("dissection.force_overwrite", False)
-taffy_default("dissection.force_load", False)
-taffy_default("dissection.cache_file_suffix", "taffy")
-taffy_default(
-    "dissection.ignore_list",
+
+def dissector_default(name: str, value: Any) -> None:
+    taffy_default("dissector." + name, value)
+
+
+dissector_default("dissection_level", PCAPDissectorLevel.THROUGH_IP.value)
+dissector_default("packet_count", 0)
+dissector_default("bin_size", None)
+dissector_default("filter", None)
+dissector_default("layers", [])
+dissector_default("modules", None)
+dissector_default("merge", False)
+dissector_default("cache_pcap_results", False)
+dissector_default("force_overwrite", False)
+dissector_default("force_load", False)
+dissector_default("cache_file_suffix", "taffy")
+dissector_default(
+    "ignore_list",
     [
         "Ethernet_IP_TCP_seq",
         "Ethernet_IP_TCP_ack",
@@ -91,10 +97,10 @@ taffy_default(
     ],
 )
 
-taffy_default("dissection.match_string", None)
-taffy_default("dissection.match_value", None)
-taffy_default("dissection.match_expression", None)
-taffy_default("dissection.minimum_count", None)
+dissector_default("match_string", None)
+dissector_default("match_value", None)
+dissector_default("match_expression", None)
+dissector_default("minimum_count", None)
 
 
 class PCAPDissector:
@@ -111,7 +117,7 @@ class PCAPDissector:
         if not self.config:
             config = TaffyConfig()
 
-        dissection_config = config[TTD_CFG.DISSECTION]
+        dissection_config = config[TTD_CFG.KEY_DISSECTOR]
 
         self.dissector_level = dissection_config[TTD_CFG.DISSECTION_LEVEL]
         self.pcap_filter = dissection_config[TTD_CFG.FILTER]
@@ -269,7 +275,7 @@ def dissector_add_parseargs(
     if not config:
         config = TaffyConfig()
 
-    dissection_config = config[TTD_CFG.DISSECTION]
+    dissection_config = config[TTD_CFG.KEY_DISSECTOR]
     parser.add_argument(
         "-d",
         "--dissection-level",
@@ -375,7 +381,7 @@ def limitor_add_parseargs(
     if not config:
         config = TaffyConfig()
 
-    dissection_config = config[TTD_CFG.DISSECTION]
+    dissection_config = config[TTD_CFG.KEY_DISSECTOR]
     parser.add_argument(
         "-m",
         "--match-string",
