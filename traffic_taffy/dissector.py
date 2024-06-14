@@ -18,6 +18,26 @@ from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 if TYPE_CHECKING:
     from argparse import Parser
 
+
+class TTD_CFG:
+    BIN_SIZE: str = "bin_size"
+    CACHE_FILE_SUFFIX: str = "cache_file_suffix"
+    CACHE_PCAP_RESULTS: str = "cache_pcap_results"
+    DISSECTION: str = "dissection"
+    DISSECTION_LEVEL: str = "dissection_level"
+    FILTER: str = "filter"
+    FORCE_LOAD: str = "force_load"
+    FORCE_OVERWRITE: str = "force_overwrite"
+    IGNORE_LIST: str = "ignore_list"
+    LAYERS: str = "layers"
+    MATCH_EXPRESSION: str = "match_expression"
+    MATCH_STRING: str = "match_string"
+    MATCH_VALUE: str = "match_value"
+    MINIMUM_COUNT: str = "minimum_count"
+    MODULES: str = "modules"
+    PACKET_COUNT: str = "packet_count"
+
+
 POST_DISSECT_HOOK: str = "post_dissect"
 
 taffy_default("dissection.dissection_level", PCAPDissectorLevel.THROUGH_IP.value)
@@ -89,22 +109,22 @@ class PCAPDissector:
         if not self.config:
             config = TaffyConfig()
 
-        dissection_config = config["dissection"]
+        dissection_config = config[TTD_CFG.DISSECTION]
 
-        self.dissector_level = dissection_config["dissection_level"]
-        self.pcap_filter = dissection_config["filter"]
-        self.maximum_count = dissection_config["packet_count"]
-        self.cache_results = dissection_config["cache_pcap_results"]
-        self.bin_size = dissection_config["bin_size"]
-        self.cache_file_suffix = dissection_config["cache_file_suffix"]
+        self.dissector_level = dissection_config[TTD_CFG.DISSECTION_LEVEL]
+        self.pcap_filter = dissection_config[TTD_CFG.FILTER]
+        self.maximum_count = dissection_config[TTD_CFG.PACKET_COUNT]
+        self.cache_results = dissection_config[TTD_CFG.CACHE_PCAP_RESULTS]
+        self.bin_size = dissection_config[TTD_CFG.BIN_SIZE]
+        self.cache_file_suffix = dissection_config[TTD_CFG.CACHE_FILE_SUFFIX]
         if self.cache_file_suffix[0] != ".":
             self.cache_file_suffix = "." + self.cache_file_suffix
-        self.ignore_list = dissection_config["ignore_list"]
+        self.ignore_list = dissection_config[TTD_CFG.IGNORE_LIST]
         if self.ignore_list is None:
             self.ignore_list = []
-        self.layers = dissection_config["layers"]
-        self.force_overwrite = dissection_config["force_overwrite"]
-        self.force_load = dissection_config["force_load"]
+        self.layers = dissection_config[TTD_CFG.LAYERS]
+        self.force_overwrite = dissection_config[TTD_CFG.FORCE_OVERWRITE]
+        self.force_load = dissection_config[TTD_CFG.FORCE_LOAD]
 
         if self.dissector_level == PCAPDissectorLevel.COUNT_ONLY and self.bin_size == 0:
             warning("counting packets only with no binning is unlikely to be helpful")
@@ -247,11 +267,11 @@ def dissector_add_parseargs(
     if not config:
         config = TaffyConfig()
 
-    dissection_config = config["dissection"]
+    dissection_config = config[TTD_CFG.DISSECTION]
     parser.add_argument(
         "-d",
         "--dissection-level",
-        default=dissection_config["dissection_level"],
+        default=dissection_config[TTD_CFG.DISSECTION_LEVEL],
         type=int,
         help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
     )
@@ -259,7 +279,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-I",
         "--ignore-list",
-        default=dissection_config["ignore_list"],
+        default=dissection_config[TTD_CFG.IGNORE_LIST],
         nargs="*",
         type=str,
         help="A list of (unlikely to be useful) packet fields to ignore",
@@ -268,7 +288,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-n",
         "--packet-count",
-        default=dissection_config["packet_count"],
+        default=dissection_config[TTD_CFG.PACKET_COUNT],
         type=int,
         help="Maximum number of packets to analyze",
     )
@@ -276,7 +296,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-b",
         "--bin-size",
-        default=dissection_config["bin_size"],
+        default=dissection_config[TTD_CFG.BIN_SIZE],
         type=int,
         help="Bin results into this many seconds",
     )
@@ -284,7 +304,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-F",
         "--filter",
-        default=dissection_config["filter"],
+        default=dissection_config[TTD_CFG.FILTER],
         type=str,
         help="filter to apply to the pcap file when processing",
     )
@@ -292,7 +312,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-L",
         "--layers",
-        default=dissection_config["layers"],
+        default=dissection_config[TTD_CFG.LAYERS],
         type=str,
         nargs="*",
         help="List of extra layers to load (eg: tls, http, etc)",
@@ -301,7 +321,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-x",
         "--modules",
-        default=dissection_config["modules"],
+        default=dissection_config[TTD_CFG.MODULES],
         type=str,
         nargs="*",
         help="Extra processing modules to load (currently: psl) ",
@@ -325,7 +345,7 @@ def dissector_add_parseargs(
         "--cache-file-suffix",
         "--cs",
         type=str,
-        default=dissection_config["cache_file_suffix"],
+        default=dissection_config[TTD_CFG.CACHE_FILE_SUFFIX],
         help="The suffix file to use when creating cache files",
     )
 
@@ -353,11 +373,11 @@ def limitor_add_parseargs(
     if not config:
         config = TaffyConfig()
 
-    dissection_config = config["dissection"]
+    dissection_config = config[TTD_CFG.DISSECTION]
     parser.add_argument(
         "-m",
         "--match-string",
-        default=dissection_config["match_string"],
+        default=dissection_config[TTD_CFG.MATCH_STRING],
         type=str,
         help="Only report on data with this substring in the header",
     )
@@ -365,7 +385,7 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-M",
         "--match-value",
-        default=dissection_config["match_value"],
+        default=dissection_config[TTD_CFG.MATCH_VALUE],
         type=str,
         nargs="*",
         help="Only report on data with this substring in the packet value field",
@@ -374,7 +394,7 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-E",
         "--match-expression",
-        default=dissection_config["match_expression"],
+        default=dissection_config[TTD_CFG.MATCH_EXPRESSION],
         type=str,
         help="Match expression to be evaluated at runtime for returning data",
     )
@@ -382,7 +402,7 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-c",
         "--minimum-count",
-        default=dissection_config["minimum_count"],
+        default=dissection_config[TTD_CFG.MINIMUM_COUNT],
         type=float,
         help="Don't include results without this high of a record count",
     )

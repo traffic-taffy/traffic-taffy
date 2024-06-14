@@ -9,7 +9,7 @@ from traffic_taffy.dissector import (
     PCAPDissector,
 )
 from traffic_taffy.dissectmany import PCAPDissectMany
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from rich_argparse import RichHelpFormatter
 from argparse import ArgumentParser, Namespace
 
@@ -22,7 +22,7 @@ def main() -> None:
 
         config: TaffyConfig = TaffyConfig()
         config.config_option_names = ["-y", "--config"]
-        config["log_level"] = "info"
+        config[TT_CFG.LOG_LEVEL] = "info"
 
         config.read_configfile_from_arguments(sys.argv)
 
@@ -96,6 +96,9 @@ def main() -> None:
     pd = PCAPDissector(args.input_pcaps, config)
     pd.dissection = dissection
 
+    import pdb
+
+    pdb.set_trace()
     # output as requested
     if args.fsdb:
         pd.print_to_fsdb(
