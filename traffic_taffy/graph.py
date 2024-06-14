@@ -13,6 +13,7 @@ from traffic_taffy.dissector import TTD_CFG
 
 
 class TTG_CFG:
+    KEY_GRAPH: str = "graph"
     OUTPUT_FILE: str = "output_file"
     BY_PERCENTAGE: str = "by_percentage"
     INTERACTIVE: str = "interactive"
@@ -30,29 +31,31 @@ class PcapGraph(PcapGraphData):
         """Create an instance of a graphing object."""
         self.config = config
 
+        dissector_config = config[TTD_CFG.KEY_DISSECTOR]
+        graph_config = config[TTG_CFG.KEY_GRAPH]
         super().__init__(
-            match_string=config[TTD_CFG.MATCH_STRING],
-            match_value=config[TTD_CFG.MATCH_VALUE],
-            minimum_count=config[TTD_CFG.MINIMUM_COUNT],
-            match_expression=config[TTD_CFG.MATCH_EXPRESSION],
+            match_string=dissector_config[TTD_CFG.MATCH_STRING],
+            match_value=dissector_config[TTD_CFG.MATCH_VALUE],
+            minimum_count=dissector_config[TTD_CFG.MINIMUM_COUNT],
+            match_expression=dissector_config[TTD_CFG.MATCH_EXPRESSION],
         )
 
         self.pcap_files = pcap_files
         self.output_file = output_file
-        self.maximum_count = config[TTD_CFG.PACKET_COUNT]
-        self.bin_size = config[TTD_CFG.BIN_SIZE]
-        self.pcap_filter = config[TTD_CFG.FILTER]
-        self.cache_pcap_results = config[TTD_CFG.CACHE_PCAP_RESULTS]
-        self.dissector_level = config[TTD_CFG.DISSECTION_LEVEL]
-        self.ignore_list = config[TTD_CFG.IGNORE_LIST]
-        self.cache_file_suffix = config[TTD_CFG.CACHE_FILE_SUFFIX]
-        self.layers = config[TTD_CFG.LAYERS]
-        self.force_overwrite = config[TTD_CFG.FORCE_OVERWRITE]
-        self.force_load = config[TTD_CFG.FORCE_LOAD]
-        self.merge_files = config[TTD_CFG.MERGE]
+        self.maximum_count = dissector_config[TTD_CFG.PACKET_COUNT]
+        self.bin_size = dissector_config[TTD_CFG.BIN_SIZE]
+        self.pcap_filter = dissector_config[TTD_CFG.FILTER]
+        self.cache_pcap_results = dissector_config[TTD_CFG.CACHE_PCAP_RESULTS]
+        self.dissector_level = dissector_config[TTD_CFG.DISSECTION_LEVEL]
+        self.ignore_list = dissector_config[TTD_CFG.IGNORE_LIST]
+        self.cache_file_suffix = dissector_config[TTD_CFG.CACHE_FILE_SUFFIX]
+        self.layers = dissector_config[TTD_CFG.LAYERS]
+        self.force_overwrite = dissector_config[TTD_CFG.FORCE_OVERWRITE]
+        self.force_load = dissector_config[TTD_CFG.FORCE_LOAD]
+        self.merge_files = dissector_config[TTD_CFG.MERGE]
 
-        self.interactive = config[TTG_CFG.INTERACTIVE]
-        self.by_percentage = config[TTG_CFG.BY_PERCENTAGE]
+        self.interactive = graph_config[TTG_CFG.KEY_GRAPH][TTG_CFG.INTERACTIVE]
+        self.by_percentage = graph_config[TTG_CFG.KEY_GRAPH][TTG_CFG.BY_PERCENTAGE]
 
     def load_pcaps(self) -> None:
         """Load the pcap and counts things into bins."""

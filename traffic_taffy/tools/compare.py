@@ -80,7 +80,7 @@ def main() -> None:
     args = config.as_namespace()
 
     # setup output options
-    config[TTD_CFG.FILTER_ARGUMENTS] = get_comparison_args(args)
+    config[TTD_CFG.KEY_DISSECTOR][TTD_CFG.FILTER_ARGUMENTS] = get_comparison_args(args)
 
     # get our files to compare (maybe just one)
     left = args.pcap_files.pop(0)
@@ -109,9 +109,11 @@ def main() -> None:
             sys.exit()
 
         if args.fsdb:
-            output = Fsdb(None, config[TTD_CFG.FILTER_ARGUMENTS])
+            output = Fsdb(None, config[TTD_CFG.KEY_DISSECTOR][TTD_CFG.FILTER_ARGUMENTS])
         else:
-            output = Console(None, config[TTD_CFG.FILTER_ARGUMENTS])
+            output = Console(
+                None, config[TTD_CFG.KEY_DISSECTOR][TTD_CFG.FILTER_ARGUMENTS]
+            )
 
         for report in reports:
             # output results to the console

@@ -17,6 +17,7 @@ from traffic_taffy.dissector import TTD_CFG
 
 
 class TTC_CFG:
+    KEY_COMPARE: str = "compare"
     ONLY_POSITIVE: str = "only_positive"
     ONLY_NEGATIVE: str = "only_negative"
     PRINT_THRESHOLD: str = "print_threshold"
@@ -48,23 +49,26 @@ class PcapCompare:
         if not self.config:
             config = TaffyConfig()
 
+        dissector_config = config[TTD_CFG.KEY_DISSECTOR]
+        config[TTC_CFG.KEY_COMPARE]
+
         self.pcap_files = pcap_files
         self.deep = config.get("deep", True)
-        self.maximum_count = config[TTD_CFG.PACKET_COUNT]
-        self.pcap_filter = config[TTD_CFG.FILTER]
-        self.cache_results = config[TTD_CFG.CACHE_PCAP_RESULTS]
-        self.dissection_level = config[TTD_CFG.DISSECTION_LEVEL]
+        self.maximum_count = dissector_config[TTD_CFG.PACKET_COUNT]
+        self.pcap_filter = dissector_config[TTD_CFG.FILTER]
+        self.cache_results = dissector_config[TTD_CFG.CACHE_PCAP_RESULTS]
+        self.dissection_level = dissector_config[TTD_CFG.DISSECTION_LEVEL]
         # self.between_times = config[TTC_CFG.BETWEEN_TIMES]
-        self.bin_size = config[TTD_CFG.BIN_SIZE]
-        self.cache_file_suffix = config[TTD_CFG.CACHE_FILE_SUFFIX]
+        self.bin_size = dissector_config[TTD_CFG.BIN_SIZE]
+        self.cache_file_suffix = dissector_config[TTD_CFG.CACHE_FILE_SUFFIX]
         if self.cache_file_suffix[0] != ".":
             self.cache_file_suffix = "." + self.cache_file_suffix
-        self.ignore_list = config[TTD_CFG.IGNORE_LIST]
-        self.layers = config[TTD_CFG.LAYERS]
-        self.force_overwrite = config[TTD_CFG.FORCE_OVERWRITE]
-        self.force_load = config[TTD_CFG.FORCE_LOAD]
-        self.filter_arguments = config[TTD_CFG.FILTER_ARGUMENTS]
-        self.merge_files = config[TTD_CFG.MERGE]
+        self.ignore_list = dissector_config[TTD_CFG.IGNORE_LIST]
+        self.layers = dissector_config[TTD_CFG.LAYERS]
+        self.force_overwrite = dissector_config[TTD_CFG.FORCE_OVERWRITE]
+        self.force_load = dissector_config[TTD_CFG.FORCE_LOAD]
+        self.filter_arguments = dissector_config[TTD_CFG.FILTER_ARGUMENTS]
+        self.merge_files = dissector_config[TTD_CFG.MERGE]
 
         algorithm = config[TTC_CFG.ALGORITHM]
 
