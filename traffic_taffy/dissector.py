@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class TTD_CFG:
-    KEY_DISSECTOR: str = "dissector"
+    KEY_DISSECTOR: str = "dissect"
 
     BIN_SIZE: str = "bin_size"
     CACHE_FILE_SUFFIX: str = "cache_file_suffix"
@@ -45,7 +45,7 @@ POST_DISSECT_HOOK: str = "post_dissect"
 
 
 def dissector_default(name: str, value: Any) -> None:
-    taffy_default("dissector." + name, value)
+    taffy_default(TTD_CFG.KEY_DISSECTOR + "." + name, value)
 
 
 dissector_default("dissection_level", PCAPDissectorLevel.THROUGH_IP.value)
@@ -59,6 +59,12 @@ dissector_default("cache_pcap_results", False)
 dissector_default("force_overwrite", False)
 dissector_default("force_load", False)
 dissector_default("cache_file_suffix", "taffy")
+
+dissector_default("match_string", None)
+dissector_default("match_value", None)
+dissector_default("match_expression", None)
+dissector_default("minimum_count", None)
+
 dissector_default(
     "ignore_list",
     [
@@ -96,11 +102,6 @@ dissector_default(
         "Ethernet_IP_TCP_TLS_TLS_Raw_load",
     ],
 )
-
-dissector_default("match_string", None)
-dissector_default("match_value", None)
-dissector_default("match_expression", None)
-dissector_default("minimum_count", None)
 
 
 class PCAPDissector:
