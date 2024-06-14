@@ -7,7 +7,7 @@ from rich_argparse import RichHelpFormatter
 
 import pyfsdb
 
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -21,7 +21,7 @@ def parse_args() -> Namespace:
 
     config: TaffyConfig = TaffyConfig()
     config.config_option_names = ["-y", "--config"]
-    config["log_level"] = "info"
+    config[TT_CFG.LOG_LEVEL] = "info"
 
     config.read_configfile_from_arguments(sys.argv)
 
@@ -74,7 +74,7 @@ def main() -> None:
 
     dissector_handle_arguments(args)
 
-    del config["output_file"]  # this causes a pickling problem
+    del config["output_file"]  # this causes a msgpack problem
     pdm = PCAPDissectMany(
         args.input_pcaps,
         config,
