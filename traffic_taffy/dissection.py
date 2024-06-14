@@ -438,10 +438,8 @@ class Dissection:
                 # ensure at least one of the count valuse for the
                 # stream gets above minimum_count
                 for subkey, count in data[timestamp][key].items():
-                    if (
-                        not minimum_count
-                        or minimum_count
-                        and abs(count) > minimum_count
+                    if not minimum_count or (
+                        minimum_count and abs(count) >= minimum_count
                     ):
                         usable[key].add(subkey)
 
