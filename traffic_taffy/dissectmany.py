@@ -9,11 +9,12 @@ from pcap_parallel import PCAPParallel
 from typing import List, TYPE_CHECKING
 
 from traffic_taffy.dissector import PCAPDissector
+from traffic_taffy.taffy_config import TT_CFG
 
 if TYPE_CHECKING:
     from io import BufferedIOBase
     from traffic_taffy.dissection import Dissection
-    from traffic_taffy.taffy_config import TaffyConfig
+    from traffic_taffy.config import TaffyConfig
 
 
 class PCAPDissectMany:
@@ -40,7 +41,7 @@ class PCAPDissectMany:
         """Load one piece of a pcap from a buffer."""
         config = copy.deepcopy(self.config)
         # force false for actually loading
-        config["cache_results"] = False
+        config[TT_CFG.CACHE_RESULTS] = False
 
         pd = PCAPDissector(
             pcap_io_buffer,
