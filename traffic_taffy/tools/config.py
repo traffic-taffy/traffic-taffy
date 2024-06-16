@@ -6,6 +6,11 @@ from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from rich_argparse import RichHelpFormatter
 from argparse import ArgumentParser, Namespace
 
+# these force configuration token loading in a way ruff won't "fix"
+from traffic_taffy.dissector import TTD_CFG as TTD_CFG
+from traffic_taffy.compare import TTC_CFG as TTC_CFG
+from traffic_taffy.graph import TTG_CFG as TTG_CFG
+
 
 def main() -> None:
     """Dissect a pcap file and report contents."""
