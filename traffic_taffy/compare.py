@@ -1,7 +1,7 @@
 """The primary statistical packet comparison engine."""
 
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Any
 from logging import error
 
 if TYPE_CHECKING:
@@ -27,13 +27,17 @@ class TTC_CFG:
     ALGORITHM: str = "algorithm"
 
 
-taffy_default("compare.only_positive", False)
-taffy_default("compare.only_negative", True)
-taffy_default("compare.print_threshold", 0.0)
-taffy_default("compare.top_records", None)
-taffy_default("compare.reverse_sort", False)
-taffy_default("compare.sort_by", "delta%")
-taffy_default("compare.algorithm", "statistical")
+def compare_default(name: str, value: Any) -> None:
+    taffy_default(TTC_CFG.KEY_COMPARE + "." + name, value)
+
+
+compare_default("only_positive", False)
+compare_default("only_negative", True)
+compare_default("print_threshold", 0.0)
+compare_default("top_records", None)
+compare_default("reverse_sort", False)
+compare_default("sort_by", "delta%")
+compare_default("algorithm", "statistical")
 
 
 class PcapCompare:
@@ -50,13 +54,12 @@ class PcapCompare:
             config = TaffyConfig()
 
         dissector_config = config[TTD_CFG.KEY_DISSECTOR]
-        config[TTC_CFG.KEY_COMPARE]
+        compare_config = config[TTC_CFG.KEY_COMPARE]
+        config[pcap_files] = pcap_files
 
-        self.pcap_files = pcap_files
         self.deep = config.get("deep", True)
-        self.maximum_count = dissector_config[TTD_CFG.PACKET_COUNT]
-        self.pcap_filter = dissector_config[TTD_CFG.FILTER]
-        self.cache_results = dissector_config[TTD_CFG.CACHE_PCAP_RESULTS]
+        self.maximum_count = compare_config[TTD_CFG.PACKET_COUNT]
+        self.pcap_filter = dissector_config[TTD_CFG.CACHE_PCAP_RESULTS]
         self.dissection_level = dissector_config[TTD_CFG.DISSECTION_LEVEL]
         # self.between_times = config[TTC_CFG.BETWEEN_TIMES]
         self.bin_size = dissector_config[TTD_CFG.BIN_SIZE]
