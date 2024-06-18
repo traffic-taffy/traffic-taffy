@@ -55,7 +55,7 @@ class PcapCompare:
 
         dissector_config = config[TTD_CFG.KEY_DISSECTOR]
         compare_config = config[TTC_CFG.KEY_COMPARE]
-        config[pcap_files] = pcap_files
+        config["pcap_files"] = pcap_files
 
         self.deep = config.get("deep", True)
         self.maximum_count = compare_config[TTD_CFG.PACKET_COUNT]
