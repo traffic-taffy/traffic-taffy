@@ -32,7 +32,7 @@ def compare_default(name: str, value: Any) -> None:
 
 
 compare_default("only_positive", False)
-compare_default("only_negative", True)
+compare_default("only_negative", False)
 compare_default("print_threshold", 0.0)
 compare_default("top_records", None)
 compare_default("reverse_sort", False)
