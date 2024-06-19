@@ -57,6 +57,7 @@ class PCAPDissectMany:
         self,
         pcap_file: str,
         split_size: int | None = None,
+        dont_fork: bool = False,
     ) -> Dissection:
         """Load one pcap file."""
         pd = PCAPDissector(
@@ -71,8 +72,9 @@ class PCAPDissectMany:
             return dissection
 
         info(f"processing {pcap_file}")
-        if isinstance(pcap_file, str) and (
-            pcap_file.endswith(".dnstap") or pcap_file.endswith(".tap")
+        if dont_fork or (
+            isinstance(pcap_file, str)
+            and (pcap_file.endswith(".dnstap") or pcap_file.endswith(".tap"))
         ):
             # deal with dnstap files
 
@@ -86,7 +88,7 @@ class PCAPDissectMany:
                 split_size=split_size,
                 callback=self.load_pcap_piece,
                 maximum_count=self.config.get("packet_count", 0),
-                maximum_cores=self.maximum_cores,
+                maximum_cores=self.config.get("maximum_cores", 20),
             )
             results = ps.split()
 
@@ -118,7 +120,7 @@ class PCAPDissectMany:
             # handle each one individually -- typically for inserting debugging stops
             dissections = []
             for pcap_file in self.pcap_files:
-                dissection = self.load_pcap(pcap_file)
+                dissection = self.load_pcap(pcap_file, dont_fork=dont_fork)
                 dissections.append(dissection)
             return dissections
 

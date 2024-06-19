@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from collections import Counter, defaultdict
-from logging import error, warning
+from logging import error, warning, debug
 from typing import List
 import importlib
 from typing import TYPE_CHECKING, Any
@@ -208,7 +208,9 @@ class PCAPDissector:
 
             engine = DissectionEngineDpkt(*args)
 
+        debug(f"dissecting using {engine}")
         self.dissection = engine.load()
+        debug("done dissecting")
         call_hooks(POST_DISSECT_HOOK, dissection=self.dissection)
 
         if self.cache_results:

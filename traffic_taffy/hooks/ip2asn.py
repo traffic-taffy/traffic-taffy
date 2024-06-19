@@ -36,7 +36,7 @@ def ip_to_asn(dissection: Dissection, **kwargs):
                     try:
                         details = i2a.lookup_address(value)
                     except Exception:
-                        debug("failed to parse address: {value}")
+                        debug(f"failed to parse address: {value}")
                     if not details:
                         continue
 

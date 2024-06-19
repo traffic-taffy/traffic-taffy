@@ -50,15 +50,15 @@ class PcapCompare:
     ) -> None:
         """Create a compare object."""
         self.config = config
+        self._pcap_files = pcap_files
         if not self.config:
             config = TaffyConfig()
 
         dissector_config = config[TTD_CFG.KEY_DISSECTOR]
-        compare_config = config[TTC_CFG.KEY_COMPARE]
-        config["pcap_files"] = pcap_files
+        # compare_config = config[TTC_CFG.KEY_COMPARE]
 
         self.deep = config.get("deep", True)
-        self.maximum_count = compare_config[TTD_CFG.PACKET_COUNT]
+        self.maximum_count = dissector_config[TTD_CFG.PACKET_COUNT]
         self.pcap_filter = dissector_config[TTD_CFG.CACHE_PCAP_RESULTS]
         self.dissection_level = dissector_config[TTD_CFG.DISSECTION_LEVEL]
         # self.between_times = config[TTC_CFG.BETWEEN_TIMES]
