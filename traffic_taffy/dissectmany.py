@@ -80,6 +80,7 @@ class PCAPDissectMany:
 
             # the Dissector already handles loading a dnstap engine
             # TODO(hardaker): see if we can use a splitter here with the framing chunks
+            info("loading without forking -- may be slow")
             dissection = pd.load()
 
         else:  # assume pcap
