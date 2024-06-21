@@ -16,10 +16,10 @@ if TYPE_CHECKING:
     from pandas import DataFrame
     from numpy import ndarray
 
-taffy_default("algorithm.correlationchanges.minimum_change", 0.5)
-taffy_default("algorithm.correlationchanges.correlation_method", "spearman")
-taffy_default("algorithm.correlationchanges.comparison_width", 15)
-taffy_default("algorithm.correlationchanges.slide_length", None)
+taffy_default("algorithms.correlationchanges.minimum_change", 0.5)
+taffy_default("algorithms.correlationchanges.correlation_method", "spearman")
+taffy_default("algorithms.correlationchanges.comparison_width", 15)
+taffy_default("algorithms.correlationchanges.slide_length", None)
 
 
 class CompareCorrelationChanges(ComparisonSeriesAlgorithm):
@@ -72,19 +72,19 @@ class CompareCorrelationChanges(ComparisonSeriesAlgorithm):
 
         config = TaffyConfig()
         minimum_change = float(
-            config.get_dotnest("algorithm.correlationchanges.minimum_change", 0.3)
+            config.get_dotnest("algorithms.correlationchanges.minimum_change", 0.3)
         )
         self.minimum_change = minimum_change
 
-        method = config.get_dotnest("algorithm.correlationchanges.correlation_method")
+        method = config.get_dotnest("algorithms.correlationchanges.correlation_method")
         self.method = method
 
         comparison_width = config.get_dotnest(
-            "algorithm.correlationchanges.comparison_width"
+            "algorithms.correlationchanges.comparison_width"
         )
         self.comparison_width = comparison_width
 
-        slide_length = config.get_dotnest("algorithm.correlationchanges.slide_length")
+        slide_length = config.get_dotnest("algorithms.correlationchanges.slide_length")
         if not slide_length:
             slide_length = comparison_width
         self.slide_length = slide_length
@@ -160,7 +160,7 @@ class CompareCorrelationChanges(ComparisonSeriesAlgorithm):
         column_right: str,
         series_right: list,
     ) -> CorrelationChangeReport | None:
-        """Compare two series using the dataframe correlation algorithm."""
+        """Compare two series using the dataframe correlation algorithms."""
         debug(f"correlation comparing {column_left} and {column_right}")
         both = pd.concat([series_left, series_right], axis=1)
         both.fillna(0, inplace=True)

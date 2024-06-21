@@ -16,9 +16,9 @@ if TYPE_CHECKING:
     from pandas import DataFrame
     from numpy import ndarray
 
-taffy_default("algorithm.correlation.minimum_correlation", 0.8)
-taffy_default("algorithm.correlation.correlation_method", "spearman")
-taffy_default("algorithm.correlation.max_pivot", 1000)
+taffy_default("algorithms.correlation.minimum_correlation", 0.8)
+taffy_default("algorithms.correlation.correlation_method", "spearman")
+taffy_default("algorithms.correlation.max_pivot", 1000)
 
 
 class CompareCorrelation(ComparisonSeriesAlgorithm):
@@ -67,12 +67,12 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
 
         config = TaffyConfig()
         minimum_correlation = float(
-            config.get_dotnest("algorithm.correlation.minimum_correlation")
+            config.get_dotnest("algorithms.correlation.minimum_correlation")
         )
         self.minimum_correlation = minimum_correlation
 
-        max_pivot = int(config.get_dotnest("algorithm.correlation.max_pivot"))
-        method = config.get_dotnest("algorithm.correlation.correlation_method")
+        max_pivot = int(config.get_dotnest("algorithms.correlation.max_pivot"))
+        method = config.get_dotnest("algorithms.correlation.correlation_method")
         self.method = method
 
         indexes = df["index"].unique()
@@ -142,7 +142,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         series_right: list,
         reports: OrganizedReports = None,
     ) -> dict:
-        """Compare two series using the dataframe correlation algorithm."""
+        """Compare two series using the dataframe correlation algorithms."""
         debug(f"correlation comparing {column_left} and {column_right}")
         both = pd.concat([series_left, series_right], axis=1)
         both.fillna(0, inplace=True)
