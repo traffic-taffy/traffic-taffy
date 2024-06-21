@@ -7,7 +7,7 @@ to speed future loading of pcap files.  Normally this cache file is
 saved with a *.taffy* extension.
 
 example usage
--------------
+^^^^^^^^^^^^^
 
 ::
 
