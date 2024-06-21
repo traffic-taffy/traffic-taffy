@@ -66,9 +66,11 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         """
 
         config = TaffyConfig()
-        minimum_value = float(
+        minimum_correlation = float(
             config.get_dotnest("algorithm.correlation.minimum_correlation")
         )
+        self.minimum_correlation = minimum_correlation
+
         max_pivot = int(config.get_dotnest("algorithm.correlation.max_pivot"))
         method = config.get_dotnest("algorithm.correlation.correlation_method")
         self.method = method
@@ -110,19 +112,20 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             for numx, column_left in enumerate(indexes):
                 for numy, column_right in enumerate(indexes[numx + 1 :]):
                     value = results[numx][numy]
-                    # if value > minimum_value:
+                    # if value > minimum_correlation:
                     #     print(
                     #         f"{column_left:<30} similar to {column_right:<30}: {value}"
                     #     )
             return reports
 
         # default to using the datafram corr method instead
+        df.fillna(0, inplace=True)
         results = df.corr(method=method)
 
         for num, column_left in enumerate(indexes):
             for column_right in indexes[num + 1 :]:
                 value = results[column_left][column_right]
-                if value > minimum_value:
+                if value > minimum_correlation:
                     # print(f"{column_left:<30} similar to {column_right:<30}: {value}")
                     if column_left not in reports:
                         reports[column_left] = {}
@@ -137,6 +140,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         series_left: list,
         column_right: str,
         series_right: list,
+        reports: OrganizedReports = None,
     ) -> dict:
         """Compare two series using the dataframe correlation algorithm."""
         debug(f"correlation comparing {column_left} and {column_right}")
@@ -151,3 +155,10 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         results = both.corr(method=self.method)
         value = results["left"][1]
         debug(f"{column_left:<30} similar to {column_right:<30}: {value}")
+
+        if value > self.minimum_correlation:
+            # print(f"{column_left:<30} similar to {column_right:<30}: {value}")
+
+            return CorrelationReport(value)
+
+        return

@@ -4,12 +4,12 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 from traffic_taffy.algorithms import ComparisonAlgorithm
 from traffic_taffy.graphdata import PcapGraphData
+from traffic_taffy.comparison import Comparison, OrganizedReports
 
 from logging import error
 
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
-    from traffic_taffy.comparison import Comparison
     from pandas import DataFrame
     from numpy import ndarray
 
@@ -80,7 +80,7 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
     ) -> List[Comparison]:
         """Compares the series found in a dataframe, two at a time."""
 
-        reports = []
+        reports: OrganizedReports = {}
 
         if indexes is None:
             indexes = df["index"].unique()
@@ -101,7 +101,16 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
                 series_right = series_right["count"]
                 series_right.name = "right"
 
-                self.compare_two_series(
+                report = self.compare_two_series(
                     column_left, series_left, column_right, series_right
                 )
-        return reports
+                if column_left not in reports:
+                    reports[column_left] = {}
+
+                if isinstance(report, list):
+                    # TODO(hardaker): we don't actually handle arrays yet
+                    reports[column_left][column_right].extend(report)
+                elif report:
+                    reports[column_left][column_right] = report
+
+        return [Comparison(reports, "Correlation Report", "correlation")]
