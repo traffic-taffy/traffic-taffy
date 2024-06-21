@@ -1,4 +1,4 @@
-taffy-dissect - dissect and count packet types within a pcap file
+taffy-cache-info - display details of a taffy cache file
 -----------------------------------------------------------------
 
 `taffy-cache-info` shows the details of a traffic-taffy cache file.
