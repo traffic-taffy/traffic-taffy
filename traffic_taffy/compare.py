@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
 from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
+from traffic_taffy.algorithms.comparecorrelationchanges import CompareCorrelationChanges
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 from traffic_taffy.dissector import TTD_CFG, TTL_CFG
 
@@ -90,6 +91,10 @@ class PcapCompare:
             )
         elif algorithm == "correlation":
             self.algorithm = CompareCorrelation(
+                **algorithm_arguments,
+            )
+        elif algorithm == "correlationchanges":
+            self.algorithm = CompareCorrelationChanges(
                 **algorithm_arguments,
             )
         else:
