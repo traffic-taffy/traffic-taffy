@@ -9,7 +9,7 @@ from logging import debug, info
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
-from traffic_taffy.dissector import TTD_CFG
+from traffic_taffy.dissector import TTD_CFG, TTL_CFG
 
 
 class TTG_CFG:
@@ -37,12 +37,13 @@ class PcapGraph(PcapGraphData):
         self.config = config
 
         dissector_config = config[TTD_CFG.KEY_DISSECTOR]
+        limitor_config = config[TTL_CFG.KEY_LIMITOR]
         graph_config = config[TTG_CFG.KEY_GRAPH]
         super().__init__(
-            match_string=dissector_config[TTD_CFG.MATCH_STRING],
-            match_value=dissector_config[TTD_CFG.MATCH_VALUE],
-            minimum_count=dissector_config[TTD_CFG.MINIMUM_COUNT],
-            match_expression=dissector_config[TTD_CFG.MATCH_EXPRESSION],
+            match_string=limitor_config[TTL_CFG.MATCH_STRING],
+            match_value=limitor_config[TTL_CFG.MATCH_VALUE],
+            minimum_count=limitor_config[TTL_CFG.MINIMUM_COUNT],
+            match_expression=limitor_config[TTL_CFG.MATCH_EXPRESSION],
         )
 
         self.pcap_files = pcap_files
@@ -80,7 +81,6 @@ class PcapGraph(PcapGraphData):
             options = {}
 
         df = self.get_dataframe(merge=True, calculate_load_fraction=self.by_percentage)
-
         hue_variable = "index"
         if df[hue_variable].nunique() == 1:
             hue_variable = None
@@ -90,8 +90,9 @@ class PcapGraph(PcapGraphData):
         else:
             y_column = "count"
 
-        str(self.bin_size or 1) + "s"
-        df = df.set_index("time")
+        # TODO(hardaker): support re-indexing and hole filling (this doesn't work)
+        # str(self.bin_size or 1) + "s"
+        # df = df.set_index("time")
         # df.index = df.index.to_period(freq=freq)
         # timeindex = pd.period_range(min(df.index), max(df.index), freq=freq)
         # df = df.reindex(timeindex)  # , fill_value=0
@@ -99,7 +100,7 @@ class PcapGraph(PcapGraphData):
         ax = sns.relplot(
             data=df,
             kind="line",
-            x="index",
+            x="time",
             y=y_column,
             hue=hue_variable,
             aspect=1.77,

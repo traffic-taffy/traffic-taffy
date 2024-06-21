@@ -1,8 +1,8 @@
 """Read a PCAP file and graph it or parts of it."""
 
-import sys
 import logging
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
+from argparse_with_config import ArgumentParserWithConfig
 from rich_argparse import RichHelpFormatter
 
 from traffic_taffy.graph import PcapGraph
@@ -18,20 +18,19 @@ def parse_args() -> Namespace:
     """Parse the command line arguments."""
 
     config: TaffyConfig = TaffyConfig()
-    config.config_option_names = ["-y", "--config"]
 
-    config.read_configfile_from_arguments(sys.argv)
-
-    parser = ArgumentParser(
+    parser = ArgumentParserWithConfig(
         formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-graph -C -m __TOTAL__ -M packet -o graph.png file.pcap",
+        default_config=config,
     )
 
     parser.add_argument(
         "-o",
         "--output-file",
         default=None,
+        config_path="graph.output_file",
         type=str,
         help="Where to save the output (png)",
     )
@@ -39,6 +38,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "-p",
         "--by-percentage",
+        config_path="graph.by_percentage",
         action="store_true",
         help="Graph by percentage of traffic rather than by value",
     )
@@ -46,22 +46,16 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "-i",
         "--interactive",
+        config_path="graph.interactive",
         action="store_true",
         help="Prompt repeatedly for graph data to create",
-    )
-
-    parser.add_argument(
-        "-y",
-        "--config",
-        default=None,
-        type=str,
-        help="Configuration file (YAML) to load.",
     )
 
     parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
+        config_path="log_level",
         help="Define verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
@@ -76,15 +70,13 @@ def parse_args() -> Namespace:
     logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 
     dissector_handle_arguments(args)
-    config.load_namespace(args)
 
-    return config
+    return parser.config, args
 
 
 def main() -> None:
     """Run taffy-graph."""
-    config = parse_args()
-    args = config.as_namespace()
+    config, args = parse_args()
 
     pc = PcapGraph(
         args.input_pcaps,
