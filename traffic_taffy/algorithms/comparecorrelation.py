@@ -18,12 +18,11 @@ if TYPE_CHECKING:
 
 taffy_default("algorithm.correlation.minimum_correlation", 0.8)
 taffy_default("algorithm.correlation.correlation_method", "spearman")
+taffy_default("algorithm.correlation.max_pivot", 1000)
 
 
 class CompareCorrelation(ComparisonSeriesAlgorithm):
     """Compare series using the pandas correlation."""
-
-    MAX_PIVOT = 1000
 
     def __init__(
         self,
@@ -70,16 +69,17 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         minimum_value = float(
             config.get_dotnest("algorithm.correlation.minimum_correlation")
         )
+        max_pivot = int(config.get_dotnest("algorithm.correlation.max_pivot"))
         method = config.get_dotnest("algorithm.correlation.correlation_method")
         self.method = method
 
         indexes = df["index"].unique()
         num_indexes = len(indexes)
-        if num_indexes > self.MAX_PIVOT:
+        if num_indexes > max_pivot:
             # we assume this is arbitrarily too large
             # use the slower parent version instead
             warning(
-                f"too many indexes ({num_indexes} > {self.MAX_PIVOT}) == using slower routine to conserve memory"
+                f"too many indexes ({num_indexes} > {max_pivot}) == using slower routine to conserve memory"
             )
             return super().compare_series(df, indexes)
 
