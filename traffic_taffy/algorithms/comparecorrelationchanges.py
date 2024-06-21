@@ -91,7 +91,9 @@ class CompareCorrelationChanges(ComparisonSeriesAlgorithm):
 
         indexes = df["index"].unique()
         num_indexes = len(indexes)
-        info("starting correlation changes comparison")
+        info(
+            f"starting correlation changes comparison: min_change={self.minimum_change}"
+        )
 
         if True or num_indexes > self.MAX_PIVOT:
             # we assume this is arbitrarily too large
