@@ -4,7 +4,6 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING
 from traffic_taffy.algorithms import ComparisonAlgorithm
 import itertools
-import datetime
 import datetime as dt
 
 from logging import debug, error, exception
@@ -103,10 +102,10 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
                     reference[time_right],
                 )
 
-                title_left = datetime.fromtimestamp(time_left, dt.UTC).strftime(
+                title_left = dt.datetime.fromtimestamp(time_left, dt.UTC).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
-                title_right = datetime.fromtimestamp(time_right, dt.UTC).strftime(
+                title_right = dt.datetime.fromtimestamp(time_right, dt.UTC).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 )
 

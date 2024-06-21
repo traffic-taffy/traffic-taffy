@@ -6,16 +6,18 @@ import pandas as pd
 import numpy as np
 
 from logging import debug, warning, info
-from rich import print
 
 from traffic_taffy.algorithms.compareseries import ComparisonSeriesAlgorithm
 from traffic_taffy.reports.correlationreport import CorrelationReport
 from traffic_taffy.comparison import Comparison, OrganizedReports
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 
 if TYPE_CHECKING:
     from pandas import DataFrame
     from numpy import ndarray
+
+taffy_default("algorithm.correlation.minimum_correlation", 0.8)
+taffy_default("algorithm.correlation.correlation_method", "spearman")
 
 
 class CompareCorrelation(ComparisonSeriesAlgorithm):
@@ -65,9 +67,10 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
         """
 
         config = TaffyConfig()
-        our_section = config.get("correlation", {})
-        minimum_value = float(our_section.get("minimum_correlation", 0.8))
-        method = our_section.get("correlation_method", "spearman")
+        minimum_value = float(
+            config.get_dotnest("algorithm.correlation.minimum_correlation")
+        )
+        method = config.get_dotnest("algorithm.correlation.correlation_method")
         self.method = method
 
         indexes = df["index"].unique()
@@ -107,10 +110,10 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             for numx, column_left in enumerate(indexes):
                 for numy, column_right in enumerate(indexes[numx + 1 :]):
                     value = results[numx][numy]
-                    if value > minimum_value:
-                        print(
-                            f"{column_left:<30} similar to {column_right:<30}: {value}"
-                        )
+                    # if value > minimum_value:
+                    #     print(
+                    #         f"{column_left:<30} similar to {column_right:<30}: {value}"
+                    #     )
             return reports
 
         # default to using the datafram corr method instead
@@ -120,7 +123,7 @@ class CompareCorrelation(ComparisonSeriesAlgorithm):
             for column_right in indexes[num + 1 :]:
                 value = results[column_left][column_right]
                 if value > minimum_value:
-                    print(f"{column_left:<30} similar to {column_right:<30}: {value}")
+                    # print(f"{column_left:<30} similar to {column_right:<30}: {value}")
                     if column_left not in reports:
                         reports[column_left] = {}
                     reports[column_left][column_right] = CorrelationReport(

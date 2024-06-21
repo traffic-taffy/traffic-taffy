@@ -43,8 +43,8 @@ def compare_parse_args() -> Namespace:
         help="Print results in an FSDB formatted output",
     )
 
-    limitor_parser = limitor_add_parseargs(parser, config)
-    compare_add_parseargs(limitor_parser, config, add_subgroup=False)
+    limitor_add_parseargs(parser, config)
+    compare_add_parseargs(parser, config)
     dissector_add_parseargs(parser, config)
 
     debugging_group = parser.add_argument_group("Debugging options")

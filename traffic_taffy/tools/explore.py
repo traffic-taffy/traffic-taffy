@@ -620,8 +620,8 @@ def parse_args() -> Namespace:
         epilog="Example Usage: taffy-explore -C file1.pcap file2.pcap",
     )
 
-    limitor_parser = limitor_add_parseargs(parser)
-    compare_add_parseargs(limitor_parser, add_subgroup=False)
+    limitor_add_parseargs(parser)
+    compare_add_parseargs(parser)
 
     dissector_add_parseargs(parser)
 
