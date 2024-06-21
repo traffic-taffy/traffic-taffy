@@ -10,6 +10,7 @@ from argparse import ArgumentParser, Namespace
 from traffic_taffy.dissector import TTD_CFG as TTD_CFG
 from traffic_taffy.compare import TTC_CFG as TTC_CFG
 from traffic_taffy.graph import TTG_CFG as TTG_CFG
+from traffic_taffy.tools.compare import compare_parse_args as compare_parse_args
 
 
 def main() -> None:

@@ -124,5 +124,10 @@ class Config(dict):
     def set_dotnest(self, parameter: str, value: Any):
         self.dotnest.set(parameter, value)
 
-    def get_dotnest(self, parameter):
-        self.dotnest.get(parameter)
+    def get_dotnest(
+        self, parameter: str, default: Any = None, return_none: bool = True
+    ):
+        result = self.dotnest.get(parameter, return_none=return_none)
+        if result is not None:
+            return result
+        return default

@@ -7,13 +7,13 @@ from logging import error
 if TYPE_CHECKING:
     from traffic_taffy.dissection import Dissection
     from traffic_taffy.comparison import Comparison
-    from argparse import ArgumentParser, Namespace
+    from argparse_with_config import ArgumentParserWithConfig
 
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.algorithms.statistical import ComparisonStatistical
 from traffic_taffy.algorithms.comparecorrelation import CompareCorrelation
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
-from traffic_taffy.dissector import TTD_CFG
+from traffic_taffy.dissector import TTD_CFG, TTL_CFG
 
 
 class TTC_CFG:
@@ -31,13 +31,14 @@ def compare_default(name: str, value: Any) -> None:
     taffy_default(TTC_CFG.KEY_COMPARE + "." + name, value)
 
 
-compare_default("only_positive", False)
-compare_default("only_negative", False)
-compare_default("print_threshold", 0.0)
-compare_default("top_records", None)
-compare_default("reverse_sort", False)
-compare_default("sort_by", "delta%")
-compare_default("algorithm", "statistical")
+compare_default(TTC_CFG.ONLY_POSITIVE, False)
+compare_default(TTC_CFG.ONLY_NEGATIVE, False)
+compare_default(TTC_CFG.PRINT_THRESHOLD, 0.0)
+compare_default(TTC_CFG.TOP_RECORDS, None)
+compare_default(TTC_CFG.REVERSE_SORT, False)
+compare_default(TTC_CFG.SORT_BY, "delta%")
+compare_default(TTC_CFG.ALGORITHM, "statistical")
+compare_default(TTC_CFG.PRINT_THRESHOLD, 0.0)
 
 
 class PcapCompare:
@@ -55,9 +56,7 @@ class PcapCompare:
             config = TaffyConfig()
 
         dissector_config = config[TTD_CFG.KEY_DISSECTOR]
-        # compare_config = config[TTC_CFG.KEY_COMPARE]
 
-        self.deep = config.get("deep", True)
         self.maximum_count = dissector_config[TTD_CFG.PACKET_COUNT]
         self.pcap_filter = dissector_config[TTD_CFG.CACHE_PCAP_RESULTS]
         self.dissection_level = dissector_config[TTD_CFG.DISSECTION_LEVEL]
@@ -73,7 +72,8 @@ class PcapCompare:
         self.filter_arguments = dissector_config[TTD_CFG.FILTER_ARGUMENTS]
         self.merge_files = dissector_config[TTD_CFG.MERGE]
 
-        algorithm = config[TTC_CFG.ALGORITHM]
+        compare_config = config[TTC_CFG.KEY_COMPARE]
+        algorithm = compare_config[TTC_CFG.ALGORITHM]
 
         algorithm_arguments = {
             "timestamps": None,
@@ -137,23 +137,26 @@ class PcapCompare:
 
 
 def compare_add_parseargs(
-    compare_parser: ArgumentParser,
+    compare_parser: ArgumentParserWithConfig,
     config: TaffyConfig | None = None,
     add_subgroup: bool = True,
-) -> ArgumentParser:
+) -> ArgumentParserWithConfig:
     """Add common comparison arguments."""
 
     if not config:
         config = TaffyConfig()
-    compare_config = config["compare"]
+    compare_config = config[TTC_CFG.KEY_COMPARE]
 
     if add_subgroup:
-        compare_parser = compare_parser.add_argument_group("Comparison result options")
+        compare_parser = compare_parser.add_argument_group(
+            "Comparison result options", config_path=TTC_CFG.KEY_COMPARE
+        )
 
     compare_parser.add_argument(
         "-t",
         "--print-threshold",
         default=compare_config[TTC_CFG.PRINT_THRESHOLD],
+        config_path=TTC_CFG.PRINT_THRESHOLD,
         type=float,
         help="Don't print results with abs(percent) less than this threshold",
     )
@@ -164,6 +167,7 @@ def compare_add_parseargs(
         action="store_true",
         help="Only show positive entries",
         default=compare_config[TTC_CFG.ONLY_POSITIVE],
+        config_path=TTC_CFG.ONLY_POSITIVE,
     )
 
     compare_parser.add_argument(
@@ -172,12 +176,14 @@ def compare_add_parseargs(
         action="store_true",
         help="Only show negative entries",
         default=compare_config[TTC_CFG.ONLY_NEGATIVE],
+        config_path=TTC_CFG.ONLY_NEGATIVE,
     )
 
     compare_parser.add_argument(
         "-R",
         "--top-records",
         default=compare_config[TTC_CFG.TOP_RECORDS],
+        config_path=TTC_CFG.TOP_RECORDS,
         type=int,
         help="Show the top N records from each section.",
     )
@@ -187,6 +193,7 @@ def compare_add_parseargs(
         "--reverse_sort",
         action="store_true",
         default=compare_config[TTC_CFG.REVERSE_SORT],
+        config_path=TTC_CFG.REVERSE_SORT,
         help="Reverse the sort order of reports",
     )
 
@@ -194,6 +201,7 @@ def compare_add_parseargs(
         "-s",
         "--sort-by",
         default=compare_config[TTC_CFG.SORT_BY],
+        config_path=TTC_CFG.SORT_BY,
         type=str,
         help="Sort report entries by this column",
     )
@@ -202,6 +210,7 @@ def compare_add_parseargs(
         "-A",
         "--algorithm",
         default=compare_config[TTC_CFG.ALGORITHM],
+        config_path=TTC_CFG.ALGORITHM,
         type=str,
         help="The algorithm to apply for data comparison (statistical, correlation)",
     )
@@ -213,20 +222,24 @@ def compare_add_parseargs(
     return compare_parser
 
 
-def get_comparison_args(args: Namespace) -> dict:
+def get_comparison_args(config: dict) -> dict:
     """Return a dict of comparison parameters from arguments."""
+    dissect_config = config[TTD_CFG.KEY_DISSECTOR]
+    compare_config = config[TTC_CFG.KEY_COMPARE]
+    limitor_config = config[TTL_CFG.KEY_LIMITOR]
+
     return {
-        "maximum_count": args.packet_count or 0,
-        "print_threshold": float(args.print_threshold) / 100.0,
-        "minimum_count": args.minimum_count,
-        "match_string": args.match_string,
-        "match_value": args.match_value,
-        "only_positive": args.only_positive,
-        "only_negative": args.only_negative,
-        "top_records": args.top_records,
-        "reverse_sort": args.reverse_sort,
-        "sort_by": args.sort_by,
-        "merge_files": args.merge,
-        "algorithm": args.algorithm,
-        "match_expression": args.match_expression,
+        "maximum_count": dissect_config[TTD_CFG.PACKET_COUNT] or 0,
+        "match_string": limitor_config[TTL_CFG.MATCH_STRING],
+        "match_value": limitor_config[TTL_CFG.MATCH_VALUE],
+        "match_expression": limitor_config[TTL_CFG.MATCH_EXPRESSION],
+        "minimum_count": limitor_config[TTL_CFG.MINIMUM_COUNT],
+        "print_threshold": float(compare_config[TTC_CFG.PRINT_THRESHOLD]) / 100.0,
+        "only_positive": compare_config[TTC_CFG.ONLY_POSITIVE],
+        "only_negative": compare_config[TTC_CFG.ONLY_NEGATIVE],
+        "top_records": compare_config[TTC_CFG.TOP_RECORDS],
+        "reverse_sort": compare_config[TTC_CFG.REVERSE_SORT],
+        "sort_by": compare_config[TTC_CFG.SORT_BY],
+        "merge_files": dissect_config[TTD_CFG.MERGE],
+        "algorithm": compare_config[TTC_CFG.ALGORITHM],
     }

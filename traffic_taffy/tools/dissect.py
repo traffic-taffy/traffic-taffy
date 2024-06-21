@@ -11,7 +11,8 @@ from traffic_taffy.dissector import (
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from rich_argparse import RichHelpFormatter
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
+from argparse_with_config import ArgumentParserWithConfig
 
 
 def main() -> None:
@@ -21,29 +22,20 @@ def main() -> None:
         """Parse the command line arguments."""
 
         config: TaffyConfig = TaffyConfig()
-        config.config_option_names = ["-y", "--config"]
         config[TT_CFG.LOG_LEVEL] = "info"
 
-        config.read_configfile_from_arguments(sys.argv)
-
-        parser = ArgumentParser(
+        parser = ArgumentParserWithConfig(
             formatter_class=RichHelpFormatter,
             description=__doc__,
             epilog="Example Usage: taffy-dissect -C -d 10 -n 10000 file.pcap",
-        )
-
-        parser.add_argument(
-            "-y",
-            "--config",
-            default=None,
-            type=str,
-            help="Configuration file (YAML) to load.",
+            default_config=config,
         )
 
         parser.add_argument(
             "--log-level",
             "--ll",
             default="info",
+            config_path="log_level",
             help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
         )
 
@@ -57,6 +49,7 @@ def main() -> None:
         parser.add_argument(
             "--dont-fork",
             action="store_true",
+            config_path="dissect.dont_fork",
             help="Do not fork into multiple processes per file (still fork per file)",
         )
 
@@ -69,11 +62,9 @@ def main() -> None:
         log_level = args.log_level.upper()
         logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
 
-        config.load_namespace(args)
-        return config
+        return (parser.config, args)
 
-    config = parse_args()
-    args = config.as_namespace()
+    config, args = parse_args()
 
     dissector_handle_arguments(args)
 

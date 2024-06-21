@@ -32,13 +32,18 @@ class TTD_CFG:
     FORCE_OVERWRITE: str = "force_overwrite"
     IGNORE_LIST: str = "ignore_list"
     LAYERS: str = "layers"
+    MERGE: str = "merge"
+    MODULES: str = "modules"
+    PACKET_COUNT: str = "packet_count"
+
+
+class TTL_CFG:
+    KEY_LIMITOR: str = "limit_output"
+
     MATCH_EXPRESSION: str = "match_expression"
     MATCH_STRING: str = "match_string"
     MATCH_VALUE: str = "match_value"
-    MERGE: str = "merge"
     MINIMUM_COUNT: str = "minimum_count"
-    MODULES: str = "modules"
-    PACKET_COUNT: str = "packet_count"
 
 
 POST_DISSECT_HOOK: str = "post_dissect"
@@ -60,10 +65,15 @@ dissector_default("force_overwrite", False)
 dissector_default("force_load", False)
 dissector_default("cache_file_suffix", "taffy")
 
-dissector_default("match_string", None)
-dissector_default("match_value", None)
-dissector_default("match_expression", None)
-dissector_default("minimum_count", None)
+
+def limitor_default(name: str, value: Any) -> None:
+    taffy_default(TTL_CFG.KEY_LIMITOR + "." + name, value)
+
+
+limitor_default("match_string", None)
+limitor_default("match_value", None)
+limitor_default("match_expression", None)
+limitor_default("minimum_count", None)
 
 dissector_default(
     "ignore_list",
@@ -273,7 +283,7 @@ def dissector_add_parseargs(
 ) -> None:
     """Add arguments related to disection."""
     if add_subgroup:
-        parser = parser.add_argument_group("Parsing Options")
+        parser = parser.add_argument_group("Dissection Options", config_path="dissect")
 
     if not config:
         config = TaffyConfig()
@@ -282,6 +292,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-d",
         "--dissection-level",
+        config_path=TTD_CFG.DISSECTION_LEVEL,
         default=dissection_config[TTD_CFG.DISSECTION_LEVEL],
         type=int,
         help="Dump to various levels of detail (1-10, with 10 is the most detailed and slowest)",
@@ -290,6 +301,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-I",
         "--ignore-list",
+        config_path=TTD_CFG.IGNORE_LIST,
         default=dissection_config[TTD_CFG.IGNORE_LIST],
         nargs="*",
         type=str,
@@ -299,6 +311,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-n",
         "--packet-count",
+        config_path=TTD_CFG.PACKET_COUNT,
         default=dissection_config[TTD_CFG.PACKET_COUNT],
         type=int,
         help="Maximum number of packets to analyze",
@@ -307,6 +320,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-b",
         "--bin-size",
+        config_path=TTD_CFG.BIN_SIZE,
         default=dissection_config[TTD_CFG.BIN_SIZE],
         type=int,
         help="Bin results into this many seconds",
@@ -315,6 +329,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-F",
         "--filter",
+        config_path=TTD_CFG.FILTER,
         default=dissection_config[TTD_CFG.FILTER],
         type=str,
         help="filter to apply to the pcap file when processing",
@@ -323,6 +338,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-L",
         "--layers",
+        config_path=TTD_CFG.LAYERS,
         default=dissection_config[TTD_CFG.LAYERS],
         type=str,
         nargs="*",
@@ -332,6 +348,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-x",
         "--modules",
+        config_path=TTD_CFG.MODULES,
         default=dissection_config[TTD_CFG.MODULES],
         type=str,
         nargs="*",
@@ -341,6 +358,8 @@ def dissector_add_parseargs(
     parser.add_argument(
         "--merge",
         "--merge-files",
+        config_path=TTD_CFG.MERGE,
+        default=dissection_config[TTD_CFG.MERGE],
         action="store_true",
         help="Dissect multiple files as one.  (compare by time)",
     )
@@ -348,6 +367,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-C",
         "--cache-pcap-results",
+        config_path="cache_pcap_results",
         action="store_true",
         help="Cache and use PCAP results into/from a cache file file",
     )
@@ -356,6 +376,7 @@ def dissector_add_parseargs(
         "--cache-file-suffix",
         "--cs",
         type=str,
+        config_path=TTD_CFG.CACHE_FILE_SUFFIX,
         default=dissection_config[TTD_CFG.CACHE_FILE_SUFFIX],
         help="The suffix file to use when creating cache files",
     )
@@ -363,12 +384,14 @@ def dissector_add_parseargs(
     parser.add_argument(
         "--force-overwrite",
         action="store_true",
+        config_path="force_overwrite",
         help="Force continuing with an incompatible cache (and rewriting it)",
     )
 
     parser.add_argument(
         "--force-load",
         action="store_true",
+        config_path="force_load",
         help="Force continuing with an incompatible cache (trying to load it anyway)",
     )
 
@@ -379,16 +402,19 @@ def limitor_add_parseargs(
     parser, config: TaffyConfig = None, add_subgroup: bool = True
 ):
     if add_subgroup:
-        parser = parser.add_argument_group("Limiting options")
+        parser = parser.add_argument_group(
+            "Limiting options", config_path=TTL_CFG.KEY_LIMITOR
+        )
 
     if not config:
         config = TaffyConfig()
 
-    dissection_config = config[TTD_CFG.KEY_DISSECTOR]
+    limitor_config = config[TTL_CFG.KEY_LIMITOR]
     parser.add_argument(
         "-m",
         "--match-string",
-        default=dissection_config[TTD_CFG.MATCH_STRING],
+        config_path=TTL_CFG.MATCH_STRING,
+        default=limitor_config[TTL_CFG.MATCH_STRING],
         type=str,
         help="Only report on data with this substring in the header",
     )
@@ -396,7 +422,8 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-M",
         "--match-value",
-        default=dissection_config[TTD_CFG.MATCH_VALUE],
+        config_path=TTL_CFG.MATCH_VALUE,
+        default=limitor_config[TTL_CFG.MATCH_VALUE],
         type=str,
         nargs="*",
         help="Only report on data with this substring in the packet value field",
@@ -405,7 +432,8 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-E",
         "--match-expression",
-        default=dissection_config[TTD_CFG.MATCH_EXPRESSION],
+        config_path=TTL_CFG.MATCH_EXPRESSION,
+        default=limitor_config[TTL_CFG.MATCH_EXPRESSION],
         type=str,
         help="Match expression to be evaluated at runtime for returning data",
     )
@@ -413,7 +441,8 @@ def limitor_add_parseargs(
     parser.add_argument(
         "-c",
         "--minimum-count",
-        default=dissection_config[TTD_CFG.MINIMUM_COUNT],
+        config_path=TTL_CFG.MINIMUM_COUNT,
+        default=limitor_config[TTL_CFG.MINIMUM_COUNT],
         type=float,
         help="Don't include results without this high of a record count",
     )

@@ -1,13 +1,14 @@
 """Takes a set of pcap files to compare and creates a report."""
 
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
+from argparse_with_config import ArgumentParserWithConfig
 from rich_argparse import RichHelpFormatter
 import logging
 from logging import error
 from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
-from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 
 from traffic_taffy.compare import compare_add_parseargs, get_comparison_args
 from traffic_taffy.dissector import (
@@ -18,27 +19,19 @@ from traffic_taffy.dissector import (
 )
 from traffic_taffy.compare import PcapCompare
 
+taffy_default("compare.fsdb", False)
 
-def parse_args() -> Namespace:
+
+def compare_parse_args() -> Namespace:
     """Parse the command line arguments."""
 
     config: TaffyConfig = TaffyConfig()
-    config.config_option_names = ["-y", "--config"]
 
-    config.read_configfile_from_arguments(sys.argv)
-
-    parser = ArgumentParser(
+    parser = ArgumentParserWithConfig(
         formatter_class=RichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-compare -C file1.pcap file2.pcap",
-    )
-
-    parser.add_argument(
-        "-y",
-        "--config",
-        default=None,
-        type=str,
-        help="Configuration file (YAML) to load.",
+        default_config=config,
     )
 
     output_options = parser.add_argument_group("Output format")
@@ -46,6 +39,7 @@ def parse_args() -> Namespace:
         "-f",
         "--fsdb",
         action="store_true",
+        config_path="compare.output_fsdb",
         help="Print results in an FSDB formatted output",
     )
 
@@ -59,6 +53,7 @@ def parse_args() -> Namespace:
         "--log-level",
         "--ll",
         default="info",
+        config_path="log_level",
         help="Define the logging verbosity level (debug, info, warning, error, ...).",
     )
 
@@ -70,17 +65,17 @@ def parse_args() -> Namespace:
 
     dissector_handle_arguments(args)
 
-    config.load_namespace(args)
-    return config
+    return parser.config, args
 
 
 def main() -> None:
     """Run taffy-compare."""
-    config = parse_args()
-    args = config.as_namespace()
+    config, args = compare_parse_args()
 
     # setup output options
-    config[TTD_CFG.KEY_DISSECTOR][TTD_CFG.FILTER_ARGUMENTS] = get_comparison_args(args)
+    config[TTD_CFG.KEY_DISSECTOR][TTD_CFG.FILTER_ARGUMENTS] = get_comparison_args(
+        config
+    )
 
     # get our files to compare (maybe just one)
     left = args.pcap_files.pop(0)

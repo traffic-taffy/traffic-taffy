@@ -29,7 +29,9 @@ def taffy_default(parameter: str, value: Any) -> bool:
     """"""
     config = TaffyConfig()
     try:
-        value = config.get_dotnest(parameter) is not None  # ignore any value
+        value = (
+            config.get_dotnest(parameter, return_none=False) is not None
+        )  # ignore any value
     except ValueError:
         # a value doesn't exist, so create it
         config.set_dotnest(parameter, value)

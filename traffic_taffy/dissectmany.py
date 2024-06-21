@@ -65,8 +65,8 @@ class PCAPDissectMany:
             self.config,
         )
         dissection = pd.load_from_cache(
-            force_overwrite=self.config.get("force_overwrite", False),
-            force_load=self.config.get("force_load", False),
+            force_overwrite=self.config.get_dotnest("dissect.force_overwrite", False),
+            force_load=self.config.get_dotnest("dissect.force_load", False),
         )
         if dissection:
             return dissection
