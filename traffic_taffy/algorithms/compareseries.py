@@ -33,6 +33,7 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
         self.minimum_count = minimum_count
         self.make_printable = make_printable
         self.match_expression = (match_expression,)
+        self.sort_by = "correlation"
 
     def compare_two_series(
         self,
@@ -113,4 +114,4 @@ class ComparisonSeriesAlgorithm(ComparisonAlgorithm):
                 elif report:
                     reports[column_left][column_right] = report
 
-        return [Comparison(reports, "Correlation Report", "correlation")]
+        return [Comparison(reports, "Correlation Report", self.sort_by)]
