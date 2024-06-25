@@ -11,6 +11,7 @@ from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 
 
 taffy_default("dissect.engines.scapy.use_temp_files", False)
+taffy_default("dissect.engines.scapy.temp_file_directory", None)
 
 
 class DissectionEngineScapy(DissectionEngine):
@@ -41,7 +42,10 @@ class DissectionEngineScapy(DissectionEngine):
                 load_layer(layer)
 
         if use_temp_files:
-            with NamedTemporaryFile() as tmpf:
+            tmp_directory = self.taffy_config.get_dotnest(
+                "dissect.engines.scapy.temp_file_directory"
+            )
+            with NamedTemporaryFile(dir=tmp_directory) as tmpf:
                 tmpf.write(load_this.read())
                 tmpf.flush()
 
