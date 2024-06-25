@@ -92,18 +92,20 @@ class CompareCorrelationChanges(ComparisonSeriesAlgorithm):
         indexes = df["index"].unique()
         num_indexes = len(indexes)
         info(
-            f"starting correlation changes comparison: min_change={self.minimum_change}"
+            f"starting correlation changes comparison: num_indexes={num_indexes}, min_change={self.minimum_change}"
         )
 
-        if True or num_indexes > self.MAX_PIVOT:
+        # TODO(hardaker): use a full sweeping comparison for faster correlations
+        # now we just revert to the slower non-pivot method for proof of concept
+        return super().compare_series(df, indexes)
+
+        if num_indexes > self.MAX_PIVOT:
             # we assume this is arbitrarily too large
             # use the slower parent version instead
             warning(
                 f"too many indexes ({num_indexes} > {self.MAX_PIVOT}) == using slower routine to conserve memory"
             )
             return super().compare_series(df, indexes)
-
-        info(f"Studying correlation of {num_indexes} indexes")
 
         for key in ["subkey", "index", "filename"]:
             del df[key]
