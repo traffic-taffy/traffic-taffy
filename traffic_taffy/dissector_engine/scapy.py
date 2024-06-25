@@ -29,11 +29,18 @@ class DissectionEngineScapy(DissectionEngine):
         else:
             load_this = self.pcap_file
 
+        use_temp_files: bool = self.taffy_config.get_dotnest(
+            "dissect.engines.scapy.use_temp_files"
+        )
+        if self.pcap_filter is None or self.pcap_filter == "":
+            # somehow scapy hangs when a filter is applied to a memory object
+            use_temp_files = True
+
         if self.layers:
             for layer in self.layers:
                 load_layer(layer)
 
-        if self.taffy_config.get_dotnest("dissect.engines.scapy.use_temp_files"):
+        if use_temp_files:
             with NamedTemporaryFile() as tmpf:
                 tmpf.write(load_this.read())
                 tmpf.flush()
