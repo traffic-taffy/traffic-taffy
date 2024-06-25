@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
 
 
-taffy_default("dissect.use_temp_files", False)
+taffy_default("dissect.scapy.use_temp_files", False)
 
 
 class DissectionEngineScapy(DissectionEngine):
@@ -33,7 +33,7 @@ class DissectionEngineScapy(DissectionEngine):
             for layer in self.layers:
                 load_layer(layer)
 
-        if self.taffy_config.get_dotnest("dissect.use_temp_files"):
+        if self.taffy_config.get_dotnest("dissect.scapy.use_temp_files"):
             with NamedTemporaryFile() as tmpf:
                 tmpf.write(load_this.read())
                 tmpf.flush()
