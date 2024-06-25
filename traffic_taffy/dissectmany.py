@@ -88,8 +88,8 @@ class PCAPDissectMany:
                 pcap_file,
                 split_size=split_size,
                 callback=self.load_pcap_piece,
-                maximum_count=self.config.get("packet_count", 0),
-                maximum_cores=self.config.get("maximum_cores", 20),
+                maximum_count=self.config.get_dotnest("dissect.packet_count", 0),
+                maximum_cores=self.config.get_dotnest("dissect.maximum_cores", 20),
             )
             results = ps.split()
 
