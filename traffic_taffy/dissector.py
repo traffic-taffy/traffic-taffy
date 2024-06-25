@@ -64,6 +64,7 @@ dissector_default("cache_pcap_results", False)
 dissector_default("force_overwrite", False)
 dissector_default("force_load", False)
 dissector_default("cache_file_suffix", "taffy")
+dissector_default("maximum_cores", 20)  # TODO(hardaker): fix double forking
 
 
 def limitor_default(name: str, value: Any) -> None:
