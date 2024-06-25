@@ -33,7 +33,7 @@ class DissectionEngineScapy(DissectionEngine):
         use_temp_files: bool = self.taffy_config.get_dotnest(
             "dissect.engines.scapy.use_temp_files"
         )
-        if self.pcap_filter is None or self.pcap_filter == "":
+        if self.pcap_filter is not None and self.pcap_filter != "":
             # somehow scapy hangs when a filter is applied to a memory object
             use_temp_files = True
 
