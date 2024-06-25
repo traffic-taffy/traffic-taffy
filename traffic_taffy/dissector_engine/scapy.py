@@ -6,6 +6,11 @@ from pcap_parallel import PCAPParallel
 from logging import warning
 
 from scapy.all import sniff, load_layer
+from tempfile import NamedTemporaryFile
+from traffic_taffy.taffy_config import TaffyConfig, taffy_default
+
+
+taffy_default("dissect.use_temp_files", False)
 
 
 class DissectionEngineScapy(DissectionEngine):
@@ -14,6 +19,8 @@ class DissectionEngineScapy(DissectionEngine):
     def __init__(self, *args: list, **kwargs: dict):
         """Create a scapy engine class."""
         super().__init__(*args, **kwargs)
+
+        self.taffy_config = TaffyConfig()
 
     def load_data(self) -> None:
         """Load a pcap file into a nested dictionary of statistical counts."""
@@ -26,14 +33,29 @@ class DissectionEngineScapy(DissectionEngine):
             for layer in self.layers:
                 load_layer(layer)
 
-        sniff(
-            offline=load_this,
-            prn=self.callback,
-            store=0,
-            count=self.maximum_count,
-            filter=self.pcap_filter,
-        )
-        # TODO(hardaker): for some reason this fails on xz compressed files when processing in parallel
+        if self.taffy_config.get_dotnest("dissect.use_temp_files"):
+            with NamedTemporaryFile() as tmpf:
+                tmpf.write(load_this.read())
+                tmpf.flush()
+
+                sniff(
+                    offline=tmpf.name,
+                    prn=self.callback,
+                    store=0,
+                    count=self.maximum_count,
+                    filter=self.pcap_filter,
+                )
+
+        else:
+            sniff(
+                offline=load_this,
+                prn=self.callback,
+                store=0,
+                count=self.maximum_count,
+                filter=self.pcap_filter,
+            )
+
+            # TODO(hardaker): for some reason this fails on xz compressed files when processing in parallel
 
     def add_item(self, field_value: str | int, prefix: str) -> None:
         """Add an item to the self.dissection regardless of it's various types"""
