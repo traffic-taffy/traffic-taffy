@@ -42,8 +42,9 @@ The default sort order is by *Delta %*, but can be changed with the
 Command Line Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. sphinx_argparse_cli::
-   :module: traffic_taffy.tools.compare
-   :func: parse_args
-   :hook:
-   :prog: taffy-compare
+..
+   .. sphinx_argparse_cli::
+      :module: traffic_taffy.tools.compare
+      :func: compare_parse_args
+      :hook:
+      :prog: taffy-compare

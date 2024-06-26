@@ -9,8 +9,9 @@ of traffic.
 Command Line Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. sphinx_argparse_cli::
-   :module: traffic_taffy.tools.compare
-   :func: parse_args
-   :hook:
-   :prog: taffy-dissect
+..
+   .. sphinx_argparse_cli::
+      :module: traffic_taffy.tools.dissect
+      :func: dissect_parse_args
+      :hook:
+      :prog: taffy-dissect

@@ -13,8 +13,9 @@ etc), and a table of generated differences based on these parameters.
 Command Line Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. sphinx_argparse_cli::
-   :module: traffic_taffy.tools.explore
-   :func: parse_args
-   :hook:
-   :prog: taffy-explorer
+..
+   .. sphinx_argparse_cli::
+      :module: traffic_taffy.tools.explore
+      :func: parse_args
+      :hook:
+      :prog: taffy-explorer
