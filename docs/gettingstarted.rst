@@ -30,7 +30,7 @@ caused a spike.  The following example command line uses: the
 
    taffy-compare -n 10000 -R 10 -c 100 file1.pcap file2.pcap
 
-Input File Types Supported
+Input file types supported
 --------------------------
 
 The *traffic-taffy* tools currently support reading these types of
@@ -40,7 +40,7 @@ files:
 * DNSTAP files (0.6 and later)
 * xz, gzip or bzip2 compressed PCAP files
 
-Important Command Line Options
+Important command line options
 ------------------------------
 
 All of the tools contain a number of important options that are
@@ -134,3 +134,59 @@ Typical workflow
    use the UI configuration to change the values at run-time.
 
 See :doc:`the case study <casestudy>` for a complete example.
+
+Dealing with endless configuration options
+------------------------------------------
+
+If you run any of the tools with `--help`, you may be quickly
+overwhelmed with the available options.  To save you from needing to
+type them all repeatedly every time you use the toolset, all the tools
+also support a `--config` flag for specifying a configuration file to
+use for defaults.  Note that all **the other options always override the
+configuration file settings!**  Finally, there is a `taffy-config`
+tool that can dump out a default configuration file you can use as a
+template.
+
+::
+
+   $ taffy-config > defaults.yml
+
+An example configuration file might look like:
+
+.. code-block:: yaml
+
+    dissect:
+      packet_count: 1000000
+      cache_pcap_results: true
+      dissection_level: 10
+      filter: src net not 127.0.0.0/24 and src net not 10.0.0.0/8
+      layers:
+        - tls
+      modules:
+        - ip2asn
+        - psl
+        - labels
+    compare:
+      algorithm: statistical
+      print_threshold: 10
+      top_records: 10
+
+Thus you can then run:
+
+::
+
+   $ taffy-compare --config defaults.yml -- file1.pcap file2.pcap
+
+And if you want to override any of those options, just specify them
+with command line flags:
+
+::
+
+   $ taffy-compare --config defaults.yml -n 50000 file1.pcap file2.pcap
+
+And the ``--set-default`` flag also contains depth-based config settings as well
+as files:
+
+::
+
+   $ taffy-compare --config defaults.yml --set-default dissect.packet_count=50000 -- file1.pcap file2.pcap
