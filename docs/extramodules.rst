@@ -25,3 +25,12 @@ the DNS names found within the dissected traffic.  Specifically, with
 `-x psl` information about the domain name's *prefix* (e.g. "www"),
 registered *domain* (e.g. "example.com") and the *public suffix*
 (e.g. "com" or "co.uk").
+
+labels
+------
+
+The `labels` module takes DNS names found in the packet and breaks
+them into pieces.  Specifically, a packet field name ending in
+`_qname` (for example) will create multiple other sub-records called
+`_qname_tld`, `_qname_sld`, `_qname_3ld`, `_qname_4ld`, and
+`_qname_5ld`.
