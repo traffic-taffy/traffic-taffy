@@ -190,3 +190,6 @@ as files:
 ::
 
    $ taffy-compare --config defaults.yml --set-default dissect.packet_count=50000 -- file1.pcap file2.pcap
+
+**Note:   Some configuration is only available via configuration file
+or --set-default directives.**
