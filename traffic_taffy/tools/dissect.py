@@ -15,56 +15,57 @@ from argparse import Namespace
 from argparse_with_config import ArgumentParserWithConfig
 
 
+def dissect_parse_args() -> Namespace:
+    """Parse the command line arguments."""
+
+    config: TaffyConfig = TaffyConfig()
+    config[TT_CFG.LOG_LEVEL] = "info"
+
+    parser = ArgumentParserWithConfig(
+        formatter_class=RichHelpFormatter,
+        description=__doc__,
+        epilog="Example Usage: taffy-dissect -C -d 10 -n 10000 file.pcap",
+        default_config=config,
+    )
+
+    parser.add_argument(
+        "--log-level",
+        "--ll",
+        default="info",
+        config_path="log_level",
+        help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
+    )
+
+    parser.add_argument(
+        "-f",
+        "--fsdb",
+        action="store_true",
+        help="Print results in an FSDB formatted output",
+    )
+
+    parser.add_argument(
+        "--dont-fork",
+        action="store_true",
+        config_path="dissect.dont_fork",
+        help="Do not fork into multiple processes per file (still fork per file)",
+    )
+
+    dissector_add_parseargs(parser, config)
+    limitor_add_parseargs(parser, config)
+
+    parser.add_argument("input_pcaps", type=str, help="input pcap file", nargs="*")
+
+    args = parser.parse_args()
+    log_level = args.log_level.upper()
+    logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
+
+    return (parser.config, args)
+
+
 def main() -> None:
     """Dissect a pcap file and report contents."""
 
-    def parse_args() -> Namespace:
-        """Parse the command line arguments."""
-
-        config: TaffyConfig = TaffyConfig()
-        config[TT_CFG.LOG_LEVEL] = "info"
-
-        parser = ArgumentParserWithConfig(
-            formatter_class=RichHelpFormatter,
-            description=__doc__,
-            epilog="Example Usage: taffy-dissect -C -d 10 -n 10000 file.pcap",
-            default_config=config,
-        )
-
-        parser.add_argument(
-            "--log-level",
-            "--ll",
-            default="info",
-            config_path="log_level",
-            help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
-        )
-
-        parser.add_argument(
-            "-f",
-            "--fsdb",
-            action="store_true",
-            help="Print results in an FSDB formatted output",
-        )
-
-        parser.add_argument(
-            "--dont-fork",
-            action="store_true",
-            config_path="dissect.dont_fork",
-            help="Do not fork into multiple processes per file (still fork per file)",
-        )
-
-        dissector_add_parseargs(parser, config)
-        limitor_add_parseargs(parser, config)
-
-        parser.add_argument("input_pcaps", type=str, help="input pcap file", nargs="*")
-
-        args = parser.parse_args()
-        log_level = args.log_level.upper()
-        logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
-
-        return (parser.config, args)
-
-    config, args = parse_args()
+    config, args = dissect_parse_args()
 
     dissector_handle_arguments(args)
 
