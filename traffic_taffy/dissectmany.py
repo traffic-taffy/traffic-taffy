@@ -30,7 +30,7 @@ class PCAPDissectMany:
         self.kwargs = kwargs
         self.futures = {}
 
-        self.maximum_cores = self.config.get("maximum_cores")
+        self.maximum_cores = self.config.get_dotnest("dissect.maximum_cores")
         if not self.maximum_cores:
             # since we're loading multiple files in parallel, reduce the
             # maximum number of cores available to the splitter
@@ -103,12 +103,14 @@ class PCAPDissectMany:
             # recalculate metadata now that merges have happened
             dissection.calculate_metadata()
 
-        if self.config.get("cache_pcap_results"):
+        if self.config.get_dotnest("dissect.cache_pcap_results"):
             # create a dissector just to save the cache
             # (we don't call load())
             dissection.pcap_file = pcap_file
             dissection.save_to_cache(
-                pcap_file + "." + self.config.get("cache_file_suffix", "taffy")
+                pcap_file
+                + "."
+                + self.config.get_dotnest("dissect.cache_file_suffix", "taffy")
             )
 
         return dissection
@@ -130,7 +132,7 @@ class PCAPDissectMany:
             dissections = executor.map(self.load_pcap, self.pcap_files)
 
             # all loaded files should be merged as if they are one
-            if self.config.get("merge", False):
+            if self.config.get_dotnest("dissect.merge", False):
                 dissection = next(dissections)
                 for to_be_merged in dissections:
                     dissection.merge(to_be_merged)

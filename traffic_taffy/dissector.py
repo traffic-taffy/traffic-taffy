@@ -368,7 +368,7 @@ def dissector_add_parseargs(
     parser.add_argument(
         "-C",
         "--cache-pcap-results",
-        config_path="cache_pcap_results",
+        config_path=TTD_CFG.CACHE_PCAP_RESULTS,
         action="store_true",
         help="Cache and use PCAP results into/from a cache file file",
     )
