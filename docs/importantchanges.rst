@@ -4,6 +4,13 @@ Significant Version Changes
 The following versions contained significant changes worthy of special
 callout:
 
+- 0.9
+    - Massive code rewrite for various improvements
+    - An entirely new `--config` flag for loading configuration from YAML
+    - three algorithms for doing comparisons: `statistical`,
+      `correlation`, and `correlationchanges` (see the `-A` flag).
+    - A new `labels` extra processing module to split DNS names into pieces.
+
 - 0.8.5
     - Added support for reporting a number of IANA numeric->name translations
 
