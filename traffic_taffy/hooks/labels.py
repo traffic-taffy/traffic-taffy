@@ -30,6 +30,8 @@ def split_dns_names(dissection: Dissection, **kwargs):
                     parts = value.split(".")
                     if parts[-1] == "":
                         parts = parts[:-1]  # drop the empty end "." split
+                    if len(parts) == 0:
+                        continue
                     dissection.data[timestamp][key + "_tld"][parts[-1]] += count
                     if len(parts) > 1:
                         dissection.data[timestamp][key + "_sld"][parts[-2]] += count
