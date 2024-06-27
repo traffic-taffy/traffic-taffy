@@ -7,10 +7,6 @@ from traffic_taffy.dissector import POST_DISSECT_HOOK
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 
-if not Path("ip2asn-combined.tsv").exists():
-    error("The ip2asn plugin requires a ip2asn-combined.tsv in this directory")
-    error("Please download it from https://iptoasn.com/")
-
 i2a = None
 
 taffy_default("modules.ip2asn.database", "ip2asn-combined.tsv")
@@ -22,9 +18,14 @@ def ip_to_asn(dissection: Dissection, **kwargs):
 
     if not i2a:
         config = TaffyConfig()
-        config.get_dotnest("modules.ip2asn.database")
-        info("loading ip2asn-combined.tsv")
-        i2a = ip2asn.IP2ASN("ip2asn-combined.tsv")
+        db_path = config.get_dotnest("modules.ip2asn.database")
+
+        if not Path(db_path).exists():
+            error("The ip2asn plugin requires a ip2asn-combined.tsv in this directory")
+            error("Please download it from https://iptoasn.com/")
+
+        info(f"loading {db_path}")
+        i2a = ip2asn.IP2ASN(db_path)
         info("  ... loaded")
 
     timestamps = dissection.data.keys()
