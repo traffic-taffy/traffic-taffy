@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from collections import Counter, defaultdict
-from logging import error, warning, debug
+from logging import error, warning, debug, info
 from typing import List
 import importlib
 from typing import TYPE_CHECKING, Any
@@ -464,6 +464,7 @@ def dissector_load_extra_modules(modules: List[str]) -> None:
     for module in modules:
         try:
             importlib.import_module(f"traffic_taffy.hooks.{module}")
+            info(f"loaded module: {module}")
         except Exception as exp:
             error(f"failed to load module {module}: {exp}")
 
