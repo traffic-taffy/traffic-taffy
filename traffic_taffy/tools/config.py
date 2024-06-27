@@ -12,6 +12,9 @@ from traffic_taffy.compare import TTC_CFG as TTC_CFG
 from traffic_taffy.graph import TTG_CFG as TTG_CFG
 from traffic_taffy.tools.compare import compare_parse_args as compare_parse_args
 
+
+# we try to load a number of modules, but if the missing requirements aren't available
+# we don't fail here
 try:
     from traffic_taffy.dissector_engine.scapy import (
         DissectionEngineScapy as DissectionEngineScapy,
@@ -23,6 +26,11 @@ try:
     from traffic_taffy.hooks.ip2asn import ip_to_asn as ip_to_asn
 except ModuleNotFoundError:
     logging.debug("ip2asn module not loadable")
+
+try:
+    from traffic_taffy.hooks.psl import split_dns_names as split_dns_names
+except ModuleNotFoundError:
+    logging.debug("psl module not loadable")
 
 
 def main() -> None:
