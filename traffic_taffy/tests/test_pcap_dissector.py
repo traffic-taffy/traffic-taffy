@@ -50,10 +50,20 @@ def test_dissector_simple_callback() -> None:
     dpkt_engine.dissection.save(save_file)
 
     # create a new one to make sure it's blank
+    from traffic_taffy.taffy_config import TaffyConfig
+
+    config = TaffyConfig(
+        {
+            "dissect": {
+                "dissection_level": PCAPDissectorLevel.COUNT_ONLY.value,
+                "cache_results": True,
+            }
+        }
+    )
+
     pd = PCAPDissector(
         base_pcap,
-        dissector_level=PCAPDissectorLevel.COUNT_ONLY.value,
-        cache_results=True,
+        config,
     )
 
     pd.load()
