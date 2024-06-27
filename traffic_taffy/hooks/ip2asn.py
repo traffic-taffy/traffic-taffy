@@ -16,7 +16,7 @@ taffy_default("modules.ip2asn.database", "ip2asn-combined.tsv")
 def ip_to_asn(dissection: Dissection, **kwargs):
     global i2a
 
-    if not i2a:
+    if i2a is None:
         config = TaffyConfig()
         db_path = config.get_dotnest("modules.ip2asn.database")
 
