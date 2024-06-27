@@ -4,12 +4,17 @@ from traffic_taffy.dissection import Dissection
 
 import dnssplitter
 
-splitter = dnssplitter.DNSSplitter()
-splitter.init_tree()
+splitter = None
 
 
 @register_hook(POST_DISSECT_HOOK)
 def split_dns_names(dissection: Dissection, **kwargs):
+    global splitter
+
+    if not splitter:
+        splitter = dnssplitter.DNSSplitter()
+        splitter.init_tree()
+
     timestamps = dissection.data.keys()
 
     for timestamp in timestamps:
