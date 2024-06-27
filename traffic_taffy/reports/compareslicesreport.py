@@ -36,9 +36,7 @@ class CompareSlicesReport(Report):
         """Header string."""
         line = "  {style}{subkey:<50}{endstyle}"
         line += " {left_count:>8} {right_count:>8} {delta_absolute:>8}"
-        line += (
-            " {left_percentage:>7.2} {right_percentage:>7.2}  {delta_percentage:>7.2}"
-        )
+        line += " {left_percentage:>7} {right_percentage:>7}  {delta_percentage:>7}"
 
         return line
 
