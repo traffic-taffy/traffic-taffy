@@ -4,23 +4,27 @@ import logging
 from logging import debug
 from traffic_taffy.dissector import PCAPDissector, pcap_data_merge
 from traffic_taffy.dissection import Dissection
+from traffic_taffy.taffy_config import TaffyConfig
 from pcap_parallel import PCAPParallel
 
 test_pkl = "/tmp/test.pcap.pkl"
 
-
-default_config = {
-    "dissection_level": 10,
-    "filter": None,
-    "packet_count": 0,
-    "cache_pcap_results": False,
-    "bin_size": 1,
-    "cache_file_suffix": "taffy",
-    "ignore_list": [],
-    "layers": [],
-    "force_overwrite": False,
-    "force_load": False,
-}
+default_config = TaffyConfig(
+    {
+        "dissect": {
+            "dissection_level": 10,
+            "filter": None,
+            "packet_count": 0,
+            "cache_pcap_results": False,
+            "bin_size": 1,
+            "cache_file_suffix": "taffy",
+            "ignore_list": [],
+            "layers": [],
+            "force_overwrite": False,
+            "force_load": False,
+        }
+    }
+)
 
 
 def buffer_callback(pcap_io_buffer):
