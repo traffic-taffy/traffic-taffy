@@ -33,7 +33,7 @@ class TTD_CFG:
     IGNORE_LIST: str = "ignore_list"
     LAYERS: str = "layers"
     MERGE: str = "merge"
-    MODULES: str = "modules"
+    MODULES: str = "use_modules"
     PACKET_COUNT: str = "packet_count"
 
 
@@ -58,7 +58,7 @@ dissector_default("packet_count", 0)
 dissector_default("bin_size", None)
 dissector_default("filter", None)
 dissector_default("layers", [])
-dissector_default("modules", None)
+dissector_default("use_modules", None)
 dissector_default("merge", False)
 dissector_default("cache_pcap_results", False)
 dissector_default("force_overwrite", False)
