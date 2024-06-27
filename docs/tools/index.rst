@@ -12,4 +12,5 @@ traffic-taffy suite.
    taffy-cache-info
    taffy-compare
    taffy-graph
+   taffy-config
    taffy-explorer

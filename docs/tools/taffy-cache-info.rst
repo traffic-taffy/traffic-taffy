@@ -11,7 +11,7 @@ example usage
 
 ::
 
-   taffy-cache-info dns-traffic.pcap
+   $ taffy-cache-info dns-traffic.pcap
    ===== dns-traffic.pcap ======
    PCAP_DISSECTION_VERSION 7
    file                 dns-traffic.pcap
