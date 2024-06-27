@@ -3,7 +3,7 @@ from logging import error, info, debug
 import ip2asn
 
 from traffic_taffy.hooks import register_hook
-from traffic_taffy.dissector import POST_DISSECT_HOOK
+from traffic_taffy.dissector import POST_DISSECT_HOOK, INIT_HOOK
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 
@@ -12,8 +12,8 @@ i2a = None
 taffy_default("modules.ip2asn.database", "ip2asn-combined.tsv")
 
 
-@register_hook(POST_DISSECT_HOOK)
-def ip_to_asn(dissection: Dissection, **kwargs):
+@register_hook(INIT_HOOK)
+def init_ip2asn(**kwargs):
     global i2a
 
     if i2a is None:
@@ -27,6 +27,11 @@ def ip_to_asn(dissection: Dissection, **kwargs):
         info(f"loading {db_path}")
         i2a = ip2asn.IP2ASN(db_path)
         info("  ... loaded")
+
+
+@register_hook(POST_DISSECT_HOOK)
+def ip_to_asn(dissection: Dissection, **kwargs):
+    init_ip2asn()
 
     timestamps = dissection.data.keys()
 

@@ -47,6 +47,7 @@ class TTL_CFG:
 
 
 POST_DISSECT_HOOK: str = "post_dissect"
+INIT_HOOK: str = "init_hooks"
 
 
 def dissector_default(name: str, value: Any) -> None:
@@ -455,6 +456,7 @@ def dissector_handle_arguments(args) -> None:
     """Handle checking and loading arguments."""
     check_dissector_level(args.dissection_level)
     dissector_load_extra_modules(args.modules)
+    call_hooks(INIT_HOOK)
 
 
 def dissector_load_extra_modules(modules: List[str]) -> None:

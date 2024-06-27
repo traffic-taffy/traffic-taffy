@@ -2,7 +2,7 @@ from logging import info
 import dnssplitter
 
 from traffic_taffy.hooks import register_hook
-from traffic_taffy.dissector import POST_DISSECT_HOOK
+from traffic_taffy.dissector import POST_DISSECT_HOOK, INIT_HOOK
 from traffic_taffy.dissection import Dissection
 from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 
@@ -11,8 +11,8 @@ splitter = None
 taffy_default("modules.psl.database", "__internal__")
 
 
-@register_hook(POST_DISSECT_HOOK)
-def split_dns_names(dissection: Dissection, **kwargs):
+@register_hook(INIT_HOOK)
+def init_splitter(**kwargs):
     global splitter
 
     if not splitter:
@@ -27,6 +27,11 @@ def split_dns_names(dissection: Dissection, **kwargs):
         else:
             info(f"loading PSL from {path}")
             splitter.load_psl_file(path)
+
+
+@register_hook(POST_DISSECT_HOOK)
+def split_dns_names(dissection: Dissection, **kwargs):
+    init_splitter()
 
     timestamps = dissection.data.keys()
 
