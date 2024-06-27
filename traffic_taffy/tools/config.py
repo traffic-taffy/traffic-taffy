@@ -19,6 +19,11 @@ try:
 except ModuleNotFoundError:
     logging.debug("scapy module not loadable")
 
+try:
+    from traffic_taffy.hooks.ip2asn import ip_to_asn as ip_to_asn
+except ModuleNotFoundError:
+    logging.debug("ip2asn module not loadable")
+
 
 def main() -> None:
     """Dissect a pcap file and report contents."""
