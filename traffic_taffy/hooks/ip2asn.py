@@ -5,18 +5,28 @@ import ip2asn
 from traffic_taffy.hooks import register_hook
 from traffic_taffy.dissector import POST_DISSECT_HOOK
 from traffic_taffy.dissection import Dissection
+from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 
 if not Path("ip2asn-combined.tsv").exists():
     error("The ip2asn plugin requires a ip2asn-combined.tsv in this directory")
     error("Please download it from https://iptoasn.com/")
 
-info("loading ip2asn-combined.tsv")
-i2a = ip2asn.IP2ASN("ip2asn-combined.tsv")
-info("  ... loaded")
+i2a = None
+
+taffy_default("modules.ip2asn.database", "ip2asn-combined.tsv")
 
 
 @register_hook(POST_DISSECT_HOOK)
 def ip_to_asn(dissection: Dissection, **kwargs):
+    global i2a
+
+    if not i2a:
+        config = TaffyConfig()
+        config.get_dotnest("modules.ip2asn.database")
+        info("loading ip2asn-combined.tsv")
+        i2a = ip2asn.IP2ASN("ip2asn-combined.tsv")
+        info("  ... loaded")
+
     timestamps = dissection.data.keys()
 
     for timestamp in timestamps:
@@ -33,6 +43,8 @@ def ip_to_asn(dissection: Dissection, **kwargs):
                 for value in dissection.data[timestamp][key]:
                     count = dissection.data[timestamp][key][value]
                     details = None
+
+                    # TODO(hardaker): doesn't handle bytes addresses from dpkt
                     try:
                         details = i2a.lookup_address(value)
                     except Exception:
