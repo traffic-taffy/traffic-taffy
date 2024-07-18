@@ -64,7 +64,10 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                     left_count = 0
                     right_count = right_side[key][subkey]
                     left_percentage = 0.0
-                    right_percentage = right_side[key][subkey] / right_side_total
+                    if right_side_total == 0:
+                        right_percentage = 100
+                    else:
+                        right_percentage = right_side[key][subkey] / right_side_total
                     new_right_count += 1  # this value wasn't in the left
 
                     report[key][subkey] = CompareSlicesReport(
