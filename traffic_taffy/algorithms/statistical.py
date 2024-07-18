@@ -65,7 +65,7 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                     right_count = right_side[key][subkey]
                     left_percentage = 0.0
                     if right_side_total == 0:
-                        right_percentage = 100
+                        right_percentage = 1.0
                     else:
                         right_percentage = right_side[key][subkey] / right_side_total
                     new_right_count += 1  # this value wasn't in the left
@@ -81,12 +81,12 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                     )
 
             if right_side_total == 0:
-                right_percent = 100
+                right_percent = 1.0
             else:
                 right_percent = new_right_count / right_side_total
 
             if left_side_total == 0:
-                left_percent = 100
+                left_percent = 1.0
             else:
                 left_percent = new_left_count / left_side_total
 
