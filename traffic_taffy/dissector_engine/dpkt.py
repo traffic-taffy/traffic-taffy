@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from logging import debug
+from logging import debug, error
 from traffic_taffy.dissector_engine import DissectionEngine
 from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
 from pcap_parallel import PCAPParallel
@@ -20,6 +20,7 @@ class DissectionEngineDpkt(DissectionEngine):
     def __init__(self, *args: list, **kwargs: dict):
         """Create a dissection engine for quickly parsing and counting packets."""
         super().__init__(*args, **kwargs)
+        self.data_link_type = None
 
     def load_data(self) -> None:
         """Load the specified PCAP into memory."""
@@ -29,6 +30,9 @@ class DissectionEngineDpkt(DissectionEngine):
         else:
             # it's an open handle already
             pcap = dpkt.pcap.Reader(self.pcap_file)
+
+        self.data_link_type = pcap.datalink()
+
         if self.pcap_filter:
             pcap.setfilter(self.pcap_filter)
         pcap.dispatch(self.maximum_count, self.callback)
@@ -144,14 +148,30 @@ class DissectionEngineDpkt(DissectionEngine):
             level = level.value
 
         if level >= PCAPDissectorLevel.THROUGH_IP.value:
-            eth = dpkt.ethernet.Ethernet(packet)
-            # these names are designed to match scapy names
-            self.incr("Ethernet_dst", eth.dst)
-            self.incr("Ethernet_src", eth.src)
-            self.incr("Ethernet_type", eth.type)
+            if self.data_link_type == 1:
+                # Ethernet based encapsulation
+                eth = dpkt.ethernet.Ethernet(packet)
+                # these names are designed to match scapy names
+                self.incr("Ethernet_dst", eth.dst)
+                self.incr("Ethernet_src", eth.src)
+                self.incr("Ethernet_type", eth.type)
+                data = eth.data
+            elif self.data_link_type == 101:
+                # Raw IP encapsulation
+                if packet[0] == 0x45:
+                    data = dpkt.ip.IP(packet)
+                elif packet[0] == 0x60:
+                    data = dpkt.ip6.IP6(packet)
+                else:
+                    error("Unknown IP version in data")
+                    raise ValueError("unknown IP version")
+            else:
+                error(f"unknown link type: {self.data_link_type}")
+                raise ValueError("unknown link type")
 
-            if isinstance(eth.data, dpkt.ip.IP):
-                ip = eth.data
+            # TODO(hardaker): add ip6.IP6 support
+            if isinstance(data, dpkt.ip.IP):
+                ip = data
                 udp = None
                 tcp = None
 
