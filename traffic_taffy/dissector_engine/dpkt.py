@@ -172,6 +172,9 @@ class DissectionEngineDpkt(DissectionEngine):
 
             # TODO(hardaker): add ip6.IP6 support
             next_layer = None
+            udp = None
+            tcp = None
+
             if isinstance(data, dpkt.ip.IP):
                 ip = data
                 udp = None
