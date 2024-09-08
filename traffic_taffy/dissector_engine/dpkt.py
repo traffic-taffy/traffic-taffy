@@ -8,6 +8,7 @@ from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
 from pcap_parallel import PCAPParallel
 
 import dpkt
+import socket
 
 
 class DissectionEngineDpkt(DissectionEngine):
@@ -170,6 +171,7 @@ class DissectionEngineDpkt(DissectionEngine):
                 raise ValueError("unknown link type")
 
             # TODO(hardaker): add ip6.IP6 support
+            next_layer = None
             if isinstance(data, dpkt.ip.IP):
                 ip = data
                 udp = None
@@ -197,8 +199,32 @@ class DissectionEngineDpkt(DissectionEngine):
                 self.incr(prefix + "version", ip.v)
                 self.incr(prefix + "ttl", ip.ttl)
 
-                if isinstance(ip.data, dpkt.udp.UDP):
-                    udp = ip.data
+                next_layer = ip.data
+
+            elif isinstance(data, dpkt.ip6.IP6):
+                ip6 = data
+
+                ipver = "IPv6"
+                prefix = f"Ethernet_{ipver}_"
+
+                # TODO(hardaker): make sure all these match scapy
+                socket.inet_ntop(
+                    socket.AF_INET6,
+                    b"\x20\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01",
+                )
+
+                self.incr(prefix + "dst", socket.inet_ntop(socket.AF_INET6, ip6.dst))
+                self.incr(prefix + "src", socket.inet_ntop(socket.AF_INET6, ip6.src))
+                self.incr(prefix + "fl", ip6.flow)
+                self.incr(prefix + "hlim", ip6.hlim)
+                self.incr(prefix + "nh", ip6.nxt)
+                self.incr(prefix + "plen", ip6.plen)
+                self.incr(prefix + "tc", ip6.fc)
+                next_layer = ip6.data
+
+            if next_layer:
+                if isinstance(next_layer, dpkt.udp.UDP):
+                    udp = next_layer
                     self.incr(prefix + "UDP_sport", udp.sport)
                     self.incr(prefix + "UDP_dport", udp.dport)
                     self.incr(prefix + "UDP_len", udp.ulen)
@@ -206,8 +232,8 @@ class DissectionEngineDpkt(DissectionEngine):
 
                     # TODO(hardaker): handle DNS and others for level 3
 
-                elif isinstance(ip.data, dpkt.tcp.TCP):
-                    tcp = ip.data
+                elif isinstance(next_layer, dpkt.tcp.TCP):
+                    tcp = next_layer
                     self.incr(prefix + "TCP_sport", tcp.sport)
                     self.incr(prefix + "TCP_dport", tcp.dport)
                     self.incr(prefix + "TCP_seq", tcp.seq)
