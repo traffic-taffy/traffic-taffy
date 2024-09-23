@@ -134,8 +134,6 @@ class Dissection:
         # note: there should be no recorded tcpdump files from 1970 Jan 01 :-)
         self.data[0][key][value] += count
         if self.timestamp:
-            if self.timestamp not in self.data:
-                self.data[self.timestamp] = defaultdict(Counter)
             self.data[self.timestamp][key][value] += count
 
     def calculate_metadata(self: Dissection) -> None:
@@ -159,16 +157,6 @@ class Dissection:
         for timestamp in other_dissection.data:
             for key in other_dissection.data[timestamp]:
                 for subkey in other_dissection.data[timestamp][key]:
-                    # TODO(hardaker): this is horribly inefficient
-                    if timestamp not in self.data:
-                        self.data[timestamp] = defaultdict(Counter)
-                    elif key not in self.data[timestamp]:
-                        self.data[timestamp][key] = Counter()
-                    elif (
-                        isinstance(self.data[timestamp][key], dict)
-                        and subkey not in self.data[timestamp][key]
-                    ):
-                        self.data[timestamp][key][subkey] = 0
                     self.data[timestamp][key][subkey] += other_dissection.data[
                         timestamp
                     ][key][subkey]
