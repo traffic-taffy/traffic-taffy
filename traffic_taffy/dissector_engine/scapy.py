@@ -113,6 +113,8 @@ class DissectionEngineScapy(DissectionEngine):
 
             try:
                 field_value = getattr(layer, field_name)
+                if not field_value:  ## can return empty field values like []
+                    continue
                 if hasattr(field_value, "fields"):
                     self.add_layer(field_value, new_prefix + "_")
                 else:
