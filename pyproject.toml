@@ -7,7 +7,10 @@ name = "traffic-taffy"
 dynamic = ["version"]
 description = "A tool for doing differential analysis of pcap files"
 readme = "README.md"
-license = ""
+# license = "Apache License, Version 2.0"
+# license = { file = "LICENSE.txt" }
+# license-expression = "Apache 2.0"
+# license-file = "LICENSE.txt"
 requires-python = ">=3.7"
 authors = [
     { name = "Wes Hardaker", email = "opensource@hardakers.net" },
@@ -15,6 +18,7 @@ authors = [
 classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
 ]
 dependencies = [
     "dpkt",
