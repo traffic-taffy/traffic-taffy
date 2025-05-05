@@ -15,7 +15,9 @@ each address's *ASN*, *country* and *owner* will be added to the
 output.
 
 Note that this requires downloading the ip2asn-combined.tsv file and
-decompressing it from https://ip2asn.com/ .
+decompressing it from https://ip2asn.com/ .  To get started, install
+ip2asn and then run `ip2asn --fetch`.  Then run `taffy-dissect` or
+similar with `-x ip2asn` plugin.
 
 psl
 ---
@@ -34,3 +36,14 @@ them into pieces.  Specifically, a packet field name ending in
 `_qname` (for example) will create multiple other sub-records called
 `_qname_tld`, `_qname_sld`, `_qname_3ld`, `_qname_4ld`, and
 `_qname_5ld`.
+
+blag
+----
+
+The `blag` plugin allows searching for addresses inside the BLAG
+blocklist and requires the `blagbl` python package
+(https://github.com/hardaker/blagbl).
+
+To get started, install the `blagbl` package and run `blagbl --fetch`
+and then `taffy-dissect` or similar with -x blag and the output will
+mark addresses found blocklists.
