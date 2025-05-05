@@ -42,7 +42,9 @@ blag
 
 The `blag` plugin allows searching for addresses inside the BLAG
 blocklist and requires the `blagbl` python package
-(https://github.com/hardaker/blagbl).
+(https://github.com/hardaker/blagbl).  The BLAG blocklist itself, the
+research behind it, and why it is proportionally a betterblock list,
+is described at https://steel.isi.edu/projects/BLAG/.
 
 To get started, install the `blagbl` package and run `blagbl --fetch`
 and then `taffy-dissect` or similar with -x blag and the output will
