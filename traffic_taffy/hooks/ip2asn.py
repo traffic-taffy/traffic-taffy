@@ -9,7 +9,7 @@ from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 
 i2a = None
 
-taffy_default("modules.ip2asn.database", "ip2asn-combined.tsv")
+taffy_default("modules.ip2asn.database", ip2asn.DEFAULT_IP2ASN_FILE)
 
 
 @register_hook(INIT_HOOK)
@@ -20,7 +20,7 @@ def init_ip2asn(**kwargs):
         config = TaffyConfig()
         db_path = config.get_dotnest("modules.ip2asn.database")
 
-        if not Path(db_path).exists():
+        if db_path and not Path(db_path).exists():
             error("The ip2asn plugin requires a ip2asn-combined.tsv in this directory")
             error("Please download it from https://iptoasn.com/")
 

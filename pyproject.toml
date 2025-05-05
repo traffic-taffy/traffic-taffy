@@ -34,7 +34,7 @@ dependencies = [
     "cryptography",
     "pyOpenSSL==22.1.0",
     "dnssplitter",
-    "ip2asn",
+    "ip2asn>=1.6.6",
     "dotnest>=1.0",
     "argparse-with-config>=0.1.4",
 ]

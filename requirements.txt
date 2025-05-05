@@ -8,4 +8,4 @@ PyQt6-Charts
 msgpack
 pyfsdb
 dnssplitter
-ip2asn
+ip2asn>=1.6.6
