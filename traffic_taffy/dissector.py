@@ -259,16 +259,14 @@ class PCAPDissector:
         match_expression: str | None = None,
     ) -> None:
         """Output the results in an FSDB file."""
-        if timestamps is None:
-            timestamps = [0]
         import pyfsdb
 
         fh = pyfsdb.Fsdb(
             out_file_handle=sys.stdout,
-            out_column_names=["key", "subkey", "value"],
+            out_column_names=["timestamp", "key", "subkey", "value"],
             converters={"value": int},
         )
-        for _, key, subkey, value in self.dissection.find_data(
+        for timestamp, key, subkey, value in self.dissection.find_data(
             timestamps=timestamps,
             match_string=match_string,
             match_value=match_value,
@@ -276,7 +274,7 @@ class PCAPDissector:
             make_printable=True,
             match_expression=match_expression,
         ):
-            fh.append([key, subkey, value])
+            fh.append([timestamp, key, subkey, value])
         fh.close()
 
 

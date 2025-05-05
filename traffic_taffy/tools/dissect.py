@@ -44,6 +44,12 @@ def dissect_parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-t", "--fsdb-all-timestamps", 
+        action="store_true",
+        help="Print FSDB that includes all timestamps",
+    )
+
+    parser.add_argument(
         "--dont-fork",
         action="store_true",
         config_path="dissect.dont_fork",
@@ -89,9 +95,12 @@ def main() -> None:
     pd.dissection = dissection
 
     # output as requested
-    if args.fsdb:
+    if args.fsdb or args.fsdb_all_timestamps:
+        timestamps = [0]
+        if args.fsdb_all_timestamps:
+            timestamps = None
         pd.print_to_fsdb(
-            timestamps=[0],
+            timestamps,
             match_string=args.match_string,
             match_value=args.match_value,
             minimum_count=args.minimum_count,
