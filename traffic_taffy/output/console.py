@@ -65,6 +65,7 @@ class Console(Output):
     def output_record(self, key: str, subkey: Any, data: Dict[str, Any]) -> None:
         """Print a report to the console."""
 
+        marker = " "
         style = ""
         endstyle = ""
         if getattr(data, "delta_percentage", None):
@@ -73,12 +74,16 @@ class Console(Output):
             # apply some styling depending on range
             if delta_percentage < -Console.BOLD_LIMIT:
                 style = "[bold red]"
+                marker = "v"
             elif delta_percentage < Console.POSITIVE:
                 style = "[red]"
+                marker = "v"
             elif delta_percentage > Console.BOLD_LIMIT:
                 style = "[bold green]"
+                marker = "^"
             elif delta_percentage > Console.POSITIVE:
                 style = "[green]"
+                marker = "^"
             endstyle = style.replace("[", "[/")
 
         # construct the output line with styling
@@ -92,6 +97,7 @@ class Console(Output):
             style=style,
             endstyle=endstyle,
             subkey=subkey,
+            marker=marker,
             **field_values,
         )
 

@@ -28,7 +28,7 @@ class CorrelationChangeReport(Report):
     @property
     def header_string(self) -> str:
         """Formatting string for each printed line."""
-        line = "  {style}{subkey:<50}{endstyle}"
+        line = "  {style}  {subkey:<50}{endstyle}"
         line += " {timestamp:>10}"
         line += " {left_correlation:>17}"
         line += " {right_correlation:>17}"
@@ -39,7 +39,7 @@ class CorrelationChangeReport(Report):
     @property
     def format_string(self) -> str:
         """Formatting string for each printed line."""
-        line = "  {style}{subkey:<50}{endstyle}"
+        line = "  {style}{marker} {subkey:<50}{endstyle}"
         line += " {timestamp:>10}"
         line += " {left_correlation:>17.2f}"
         line += " {right_correlation:>17.2f}"

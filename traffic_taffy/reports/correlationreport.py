@@ -22,7 +22,7 @@ class CorrelationReport(Report):
     @property
     def header_string(self) -> str:
         """Formatting string for each printed line."""
-        line = "  {style}{subkey:<50}{endstyle}"
+        line = "  {style}  {subkey:<50}{endstyle}"
         line += " {correlation:>11}"
 
         return line
@@ -30,7 +30,7 @@ class CorrelationReport(Report):
     @property
     def format_string(self) -> str:
         """Formatting string for each printed line."""
-        line = "  {style}{subkey:<50}{endstyle}"
+        line = "  {style}{marker} {subkey:<50}{endstyle}"
         line += " {correlation:>11.2f}"
 
         return line
