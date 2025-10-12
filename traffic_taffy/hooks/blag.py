@@ -1,13 +1,19 @@
 """Traffic-Taffy plugin to look up addresses in the BLAG blocklist."""
+from pathlib import Path
 from blagbl import BlagBL
+import blagbl
 import ipaddress
+from logging import error
 
 from traffic_taffy.hooks import register_hook
 from traffic_taffy.dissector import POST_DISSECT_HOOK, INIT_HOOK
 from traffic_taffy.dissection import Dissection
+from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 
 blag = None
 blag_ips = None
+
+taffy_default("modules.blag.database", str(blagbl.DEFAULTSTORE))
 
 
 @register_hook(INIT_HOOK)
@@ -17,7 +23,14 @@ def init_blag(**kwargs):
     global blag_ips
 
     if blag is None:
-        blag = BlagBL()
+        config = TaffyConfig()
+        blag_db_path = config.get_dotnest("modules.blag.database")
+
+        if blag_db_path and not Path(blag_db_path).exists():
+            error(f"The ip2asn plugin requires a blag.zip file in {blag_db_path}")
+            error("Please run blagbl --fetch to download it")
+
+        blag = BlagBL(database=blag_db_path)
         blag.parse_blag_contents()
         blag_ips = blag.ips
 

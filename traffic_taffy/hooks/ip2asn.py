@@ -21,8 +21,8 @@ def init_ip2asn(**kwargs):
         db_path = config.get_dotnest("modules.ip2asn.database")
 
         if db_path and not Path(db_path).exists():
-            error("The ip2asn plugin requires a ip2asn-combined.tsv in this directory")
-            error("Please download it from https://iptoasn.com/")
+            error(f"The ip2asn plugin requires a ip2asn-combined.tsv file in {db_path}")
+            error("Please run ip2asn --fetch to download it")
 
         info(f"loading {db_path}")
         i2a = ip2asn.IP2ASN(db_path)
