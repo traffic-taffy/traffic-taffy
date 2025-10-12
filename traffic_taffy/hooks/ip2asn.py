@@ -9,7 +9,7 @@ from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 
 i2a = None
 
-taffy_default("modules.ip2asn.database", ip2asn.DEFAULT_IP2ASN_FILE)
+taffy_default("modules.ip2asn.database", str(ip2asn.DEFAULT_IP2ASN_FILE))
 
 
 @register_hook(INIT_HOOK)
