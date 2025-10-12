@@ -32,6 +32,11 @@ try:
 except ModuleNotFoundError:
     logging.debug("psl module not loadable")
 
+try:
+    from traffic_taffy.hooks.blag import ip_blagbl_lookup as ip_blagbl_lookup
+except ModuleNotFoundError:
+    logging.debug("blag module not loadable")
+
 
 def taffy_config_parse_args() -> Namespace:
     """Parse the command line arguments."""
