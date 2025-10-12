@@ -13,7 +13,7 @@ from traffic_taffy.taffy_config import taffy_default, TaffyConfig
 blag = None
 blag_ips = None
 
-taffy_default("modules.blag.database", str(blagbl.DEFAULTSTORE))
+taffy_default("modules.blag.database", str(blagbl.DEFAULT_STORE.joinpath("blag.zip")))
 
 
 @register_hook(INIT_HOOK)
