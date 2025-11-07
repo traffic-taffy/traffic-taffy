@@ -9,6 +9,7 @@ from collections import defaultdict
 import logging
 import xmltodict
 import msgpack
+import re
 
 # optionally use rich
 try:
@@ -95,6 +96,24 @@ def main():
         if "name" in record:
             protocols[record["value"]] = record["name"]
     iana_data["protocols"] = protocols
+
+    #
+    # ethernet types
+    #
+    data = get_data(base, "ieee-802-numbers")
+    records = data["registry"][0]["record"]
+    ether_types = {}
+    for record in records:
+        if "type_decimal" in record:
+            description = record["description"]
+            if "(" in description:
+                # shorten the description to the minimal version
+                # TODO: not ideal, but ...
+                description = re.sub(".*\\(", "", description)
+                description = re.sub("\\).*", "", description)
+            ether_types[record["type_decimal"]] = description
+
+    iana_data["ieee-802-numbers"] = ether_types
 
     #
     # load UDP/TCP port numbers
