@@ -19,7 +19,7 @@ import pkgutil
 iana_data = None
 if not iana_data:
     # try a local copy first
-    if Path("traffic_taffy/iana/tables.msgpakx").exists():
+    if Path("traffic_taffy/iana/tables.msgpak").exists():
         iana_data = msgpack.load(Path.open("traffic_taffy/iana/tables.msgpak", "rb"))
     else:
         content = pkgutil.get_data("traffic_taffy", "iana/tables.msgpak")
@@ -519,6 +519,7 @@ class Dissection:
     }
 
     IANA_TRANSLATORS: ClassVar[Dict[str, str]] = {
+        "Ethernet_type": "ieee-802-numbers",
         "Ethernet_IP_proto": "protocols",
         "Ethernet_IPv6_proto": "protocols",
         "Ethernet_IP_UDP_sport": "udp_ports",
@@ -555,19 +556,24 @@ class Dissection:
     @staticmethod
     def print_iana_values(value_type: str, value: bytes) -> str:
         """Use IANA lookup tables for converting protocol enumerations to human readable types."""
-        table_name = Dissection.IANA_TRANSLATORS.get(value_type)
 
-        if not table_name:
+        try:
+            table_name = Dissection.IANA_TRANSLATORS.get(value_type)
+
+            if not table_name:
+                return value
+
+            table = iana_data[table_name]
+            value = str(value)
+            if value not in table:
+                return value
+
+            return f"{value} ({table[value]})"
+        except Exception:
             return value
-
-        table = iana_data[table_name]
-        value = str(value)
-        if value not in table:
-            return value
-
-        return f"{value} ({table[value]})"
 
     ENUM_TRANSLATORS: ClassVar[Dict[str, callable]] = {
+        "Ethernet_type": print_iana_values,
         "Ethernet_IP_proto": print_iana_values,
         "Ethernet_IPv6_proto": print_iana_values,
         "Ethernet_IP_UDP_sport": print_iana_values,
