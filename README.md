@@ -11,12 +11,15 @@ This tool is designed to do just that.
 
 ## Installation
 
+    uv tool install traffic-taffy
+
+or
+
     pip install traffic-taffy
 
 ## Usage
 
-See the online [readthedocs
-documentation](https://traffic-taffy.readthedocs.io/).
+See the online [readthedocs documentation](https://traffic-taffy.readthedocs.io/).
 
 ## Development
 

@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "traffic-taffy"
-copyright = "2023-2025, USC/ISI"
+copyright = "2023-2026, USC/ISI"
 author = "Wes Hardaker"
-release = "0.9.9"
+release = "1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
