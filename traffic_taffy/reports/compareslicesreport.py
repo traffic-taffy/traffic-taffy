@@ -18,6 +18,18 @@ class CompareSlicesReport(Report):
     left_percentage: float
     right_percentage: float
 
+    def __post_init__(self, *args, **kwargs):
+        """Initialize the report"""
+        super().__post_init__(*args, **kwargs)
+        self.field_header_names = {
+            "left_count": "left#",
+            "right_count": "right#",
+            "delta_absolute": "delta#",
+            "left_percentage": "left%",
+            "right_percentage": "right%",
+            "delta_percentage": "delta%",
+        }
+
     @property
     def formatting(self) -> Dict[str, str]:
         """Formatting field recommendations."""

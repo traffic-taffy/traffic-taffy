@@ -47,7 +47,10 @@ class Console(Output):
         subkey = "Value"
         endstyle = ""
 
-        field_values = {field.name: field.name for field in dataclasses.fields(report)}
+        field_values = {
+            field.name: report.field_header_names.get(field.name, field.name)
+            for field in dataclasses.fields(report)
+        }
 
         line = report.header_string.format(
             style=style,
