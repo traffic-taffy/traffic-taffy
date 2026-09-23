@@ -239,7 +239,7 @@ def get_comparison_args(config: dict) -> dict:
         "match_value": limitor_config[TTL_CFG.MATCH_VALUE],
         "match_expression": limitor_config[TTL_CFG.MATCH_EXPRESSION],
         "minimum_count": limitor_config[TTL_CFG.MINIMUM_COUNT],
-        "print_threshold": float(compare_config[TTC_CFG.PRINT_THRESHOLD]) / 100.0,
+        "print_threshold": float(compare_config[TTC_CFG.PRINT_THRESHOLD]),
         "only_positive": compare_config[TTC_CFG.ONLY_POSITIVE],
         "only_negative": compare_config[TTC_CFG.ONLY_NEGATIVE],
         "top_records": compare_config[TTC_CFG.TOP_RECORDS],

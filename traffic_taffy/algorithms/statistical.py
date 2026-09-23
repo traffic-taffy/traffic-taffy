@@ -30,15 +30,17 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                 delta_percentage = 0.0
                 total = 0
                 if subkey in right_side[key]:
-                    left_percentage = left_side[key][subkey] / left_side_total
-                    right_percentage = right_side[key][subkey] / right_side_total
+                    left_percentage = 100 * (left_side[key][subkey] / left_side_total)
+                    right_percentage = 100 * (
+                        right_side[key][subkey] / right_side_total
+                    )
                     delta_percentage = right_percentage - left_percentage
                     total = right_side[key][subkey] + left_side[key][subkey]
                     left_count = left_side[key][subkey]
                     right_count = right_side[key][subkey]
                 else:
                     delta_percentage = -1.0
-                    left_percentage = left_side[key][subkey] / left_side_total
+                    left_percentage = 100 * (left_side[key][subkey] / left_side_total)
                     right_percentage = 0.0
                     total = -left_side[key][subkey]
                     left_count = left_side[key][subkey]
@@ -88,7 +90,7 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
             if left_side_total == 0:
                 left_percent = 1.0
             else:
-                left_percent = new_left_count / left_side_total
+                left_percent = 100 * (new_left_count / left_side_total)
 
             report[key][Dissection.NEW_RIGHT_SUBKEY] = CompareSlicesReport(
                 delta_absolute=new_right_count - new_left_count,
