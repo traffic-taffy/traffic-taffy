@@ -36,7 +36,7 @@ class CompareSlicesReport(Report):
         """Header string."""
         line = "  {style}  {subkey:<50}{endstyle}"
         line += " {left_count:>8} {right_count:>8} {delta_absolute:>8}"
-        line += " {left_percentage:>7} {right_percentage:>7}  {delta_percentage:>7}"
+        line += " {100*left_percentage:>7} {100*right_percentage:>7}  {100*delta_percentage:>7}"
 
         return line
 
@@ -45,7 +45,7 @@ class CompareSlicesReport(Report):
         """Formatting string for each printed line."""
         line = "  {style}{marker} {subkey:<50}{endstyle}"
         line += " {left_count:>8} {right_count:>8} {delta_absolute:>8}"
-        line += " {left_percentage:>7.2f} {right_percentage:>7.2f}  {delta_percentage:>7.2f}"
+        line += " {100*left_percentage:>7.2f} {100*right_percentage:>7.2f}  {100*delta_percentage:>7.2f}"
 
         return line
 
