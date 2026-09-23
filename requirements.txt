@@ -9,3 +9,4 @@ msgpack
 pyfsdb
 dnssplitter
 ip2asn>=1.6.6
+argparse-with-config>=0.1.4
