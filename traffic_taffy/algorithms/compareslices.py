@@ -5,6 +5,7 @@ from typing import List, TYPE_CHECKING
 from traffic_taffy.algorithms import ComparisonAlgorithm
 import itertools
 import datetime as dt
+from pathlib import Path
 
 from logging import debug, error, exception
 
@@ -65,7 +66,21 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
                 comparison = self.compare_two_dissections(
                     reference.data[0], other.data[0]
                 )
-                comparison.title = f"{reference.pcap_file} vs {other.pcap_file}"
+
+                # could be stdin or something, so don't assume this will work
+                left_file = reference.pcap_file
+                try:
+                    left_file = Path(left_file).name
+                except Exception:
+                    pass
+
+                right_file = reference.pcap_file
+                try:
+                    right_file = Path(right_file).name
+                except Exception:
+                    pass
+
+                comparison.title = f"{left_file} vs {right_file}"
 
                 comparisons.append(comparison)
         else:
