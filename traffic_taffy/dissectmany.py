@@ -8,7 +8,7 @@ import multiprocessing
 from pcap_parallel import PCAPParallel
 from typing import List, TYPE_CHECKING
 
-from traffic_taffy.dissector import PCAPDissector
+from traffic_taffy.dissector import PCAPDissector, dissector_load_extra_modules
 from traffic_taffy.taffy_config import TT_CFG
 
 if TYPE_CHECKING:
@@ -42,13 +42,14 @@ class PCAPDissectMany:
         config = copy.deepcopy(self.config)
         # force false for actually loading
         config[TT_CFG.CACHE_RESULTS] = False
-
         pd = PCAPDissector(
             pcap_io_buffer,
             config,
             *self.args,
             **self.kwargs,
         )
+        # TODO: there may be other argument/config parsing we should do too....
+        dissector_load_extra_modules(self.config.get_dotnest("dissect.use_modules"))
         pd.load()
         pd.dissection.pcap_file = "bogus"
         return pd.dissection
@@ -142,4 +143,4 @@ class PCAPDissectMany:
             elif return_as_list:  # convert from generator
                 dissections = list(dissections)
 
-            return dissections
+        return dissections
