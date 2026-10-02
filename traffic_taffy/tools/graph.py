@@ -3,7 +3,7 @@
 import logging
 from argparse import Namespace
 from argparse_with_config import ArgumentParserWithConfig
-from rich_argparse import RichHelpFormatter
+from rich_argparse import ArgumentDefaultsRichHelpFormatter
 
 from traffic_taffy.graph import PcapGraph
 from traffic_taffy.taffy_config import TaffyConfig
@@ -20,7 +20,7 @@ def parse_args() -> Namespace:
     config: TaffyConfig = TaffyConfig()
 
     parser = ArgumentParserWithConfig(
-        formatter_class=RichHelpFormatter,
+        formatter_class=ArgumentDefaultsRichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-graph -C -m __TOTAL__ -M packet -o graph.png file.pcap",
         default_config=config,

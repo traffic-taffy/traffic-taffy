@@ -3,7 +3,7 @@ import sys
 import logging
 import yaml
 from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
-from rich_argparse import RichHelpFormatter
+from rich_argparse import ArgumentDefaultsRichHelpFormatter
 from argparse import ArgumentParser, Namespace
 
 # these force configuration token loading in a way ruff won't "fix"
@@ -48,7 +48,7 @@ def taffy_config_parse_args() -> Namespace:
     config.read_configfile_from_arguments(sys.argv)
 
     parser = ArgumentParser(
-        formatter_class=RichHelpFormatter,
+        formatter_class=ArgumentDefaultsRichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-config > defaults.yml",
     )
