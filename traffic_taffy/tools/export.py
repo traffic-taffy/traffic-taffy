@@ -3,7 +3,7 @@
 import logging
 import sys
 from argparse import ArgumentParser, FileType, Namespace
-from rich_argparse import RichHelpFormatter
+from rich_argparse import ArgumentDefaultsRichHelpFormatter
 
 import pyfsdb
 
@@ -26,7 +26,7 @@ def parse_args() -> Namespace:
     config.read_configfile_from_arguments(sys.argv)
 
     parser = ArgumentParser(
-        formatter_class=RichHelpFormatter,
+        formatter_class=ArgumentDefaultsRichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-export -C -m IP.UDP.sport file.pcap",
     )

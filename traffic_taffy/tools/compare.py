@@ -3,7 +3,7 @@
 import sys
 from argparse import Namespace
 from argparse_with_config import ArgumentParserWithConfig
-from rich_argparse import RichHelpFormatter
+from rich_argparse import ArgumentDefaultsRichHelpFormatter
 import logging
 from logging import error
 from traffic_taffy.output.console import Console
@@ -28,7 +28,7 @@ def compare_parse_args() -> Namespace:
     config: TaffyConfig = TaffyConfig()
 
     parser = ArgumentParserWithConfig(
-        formatter_class=RichHelpFormatter,
+        formatter_class=ArgumentDefaultsRichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-compare -C file1.pcap file2.pcap",
         default_config=config,

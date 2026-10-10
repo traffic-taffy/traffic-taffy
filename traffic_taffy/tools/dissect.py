@@ -10,7 +10,7 @@ from traffic_taffy.dissector import (
 )
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
-from rich_argparse import RichHelpFormatter
+from rich_argparse import ArgumentDefaultsRichHelpFormatter
 from argparse import Namespace
 from argparse_with_config import ArgumentParserWithConfig
 
@@ -22,7 +22,7 @@ def dissect_parse_args() -> Namespace:
     config[TT_CFG.LOG_LEVEL] = "info"
 
     parser = ArgumentParserWithConfig(
-        formatter_class=RichHelpFormatter,
+        formatter_class=ArgumentDefaultsRichHelpFormatter,
         description=__doc__,
         epilog="Example Usage: taffy-dissect -C -d 10 -n 10000 file.pcap",
         default_config=config,
@@ -44,7 +44,8 @@ def dissect_parse_args() -> Namespace:
     )
 
     parser.add_argument(
-        "-t", "--fsdb-all-timestamps", 
+        "-t",
+        "--fsdb-all-timestamps",
         action="store_true",
         help="Print FSDB that includes all timestamps",
     )
