@@ -157,6 +157,8 @@ class Dissection:
         for timestamp in other_dissection.data:
             for key in other_dissection.data[timestamp]:
                 for subkey in other_dissection.data[timestamp][key]:
+                    if timestamp not in self.data:
+                        self.data[timestamp] = defaultdict(Counter)
                     self.data[timestamp][key][subkey] += other_dissection.data[
                         timestamp
                     ][key][subkey]
