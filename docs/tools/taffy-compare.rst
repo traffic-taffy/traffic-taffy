@@ -64,8 +64,8 @@ In tabular form:
 ======= ================= ====
 Capture What              Count
 ======= ================= ====
-left    IPv4 UDP port 53  900
-left    IPv4 UDP port 123 100
+left    IPv4 UDP port 53  600
+left    IPv4 UDP port 123 400
 right   IPv4 UDP port 53  400
 right   IPv4 UDP port 123 100
 right   IPv6 UDP port 53  500
@@ -77,12 +77,18 @@ comparison output we find (note: just ipv4 udp shown):
 ================= ===== ====== ====== ===== ====== ======
 What              left# right# Delta# left% right% Delta%
 ================= ===== ====== ====== ===== ====== ======
-IPv4 UDP port 53  900   400    -500   90    80     -10
-IPv4 UDP port 123 100   100       0   10    20     10
+IPv4 UDP port 53  600   400    -200   60    80     20
+IPv4 UDP port 123 400   100    -300   40    20     -20
 ================= ===== ====== ====== ===== ====== ======
 
-- left% port 53  = 900 / (900 + 100) = 90%
+
+- left# port 53  = 600
+- right# port 53 = 400
+- delta# port 53 = 400 - 600 = 200
+
+- left% port 53  = 600 / (600 + 400) = 60%
 - right% port 53 = 400 / (400 + 100) = 80%
+- delta% port 53 = 80% - 60% = 20%
 
 You might want to read this description twice.
 
