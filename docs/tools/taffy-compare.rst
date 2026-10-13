@@ -39,6 +39,55 @@ Delta %  The different between the *Left* and *Right* percentage columns
 The default sort order is by *Delta %*, but can be changed with the
 `-s` command line switch.
 
+Sometimes *delta#* is negative, but *delta%* is positive.  Why?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A common case when analyzing data with `taffy-compare` is that the
+*delta#* may be positive, and the *delta%* may be negative.
+
+The thing to remember is that the *delta%* shows the percentage of the
+total number of values seen **for that variable**.  If there are less
+actual numbers of that variable in the second capture, then the
+percentage of a value can be higher or lower and that is independent
+of the total count of that value, which is what *delta#* shows.
+
+As an example, if you have two recordings of Internet traffic and the
+first has 900 IPv4 UDP packets to port 53 in it and 100 UDP packets to
+port 123, and the second has 400 IPv4 UDP packets to port 53, 100
+packets to IPv4 UDP port 123 and 500 IPv6 UDP packets to port 53, then
+the total number of packets for IPv4 UDP packets to port 53 *will go
+down*, but the fraction of IPv4 UDP packets to port 53 vs port 123
+will actually go up (because 900/1000 is higher than 400/500).
+
+In tabular form:
+
+======= ================= ====
+Capture What              Count
+======= ================= ====
+left    IPv4 UDP port 53  900
+left    IPv4 UDP port 123 100
+right   IPv4 UDP port 53  400
+right   IPv4 UDP port 123 100
+right   IPv6 UDP port 53  500
+======= ================= ====
+
+So if we use these numbers to calculate the results seen from the
+comparison output we find (note: just ipv4 udp shown):
+
+================= ===== ====== ====== ===== ====== ======
+What              left# right# Delta# left% right% Delta%
+================= ===== ====== ====== ===== ====== ======
+IPv4 UDP port 53  900   400    -500   90    80     -10
+IPv4 UDP port 123 100   100       0   10    20     10
+================= ===== ====== ====== ===== ====== ======
+
+- left% port 53  = 900 / (900 + 100) = 90%
+- right% port 53 = 400 / (400 + 100) = 80%
+
+You might want to read this description twice.
+
+
+
 Command Line Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
 
