@@ -82,6 +82,7 @@ dissector_default(
     [
         "Ethernet_IP_TCP_seq",
         "Ethernet_IP_TCP_ack",
+        "Ethernet_IP_TCP_options",
         "Ethernet_IPv6_TCP_seq",
         "Ethernet_IPv6_TCP_ack",
         "Ethernet_IPv6_TCP_Raw_load",
