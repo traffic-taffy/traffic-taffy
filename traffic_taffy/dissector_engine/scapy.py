@@ -70,6 +70,7 @@ class DissectionEngineScapy(DissectionEngine):
 
     def add_item(self, field_value: str | int, prefix: str) -> None:
         """Add an item to the self.dissection regardless of it's various types"""
+        prefix = prefix.replace(" ", "_")
         if isinstance(field_value, list):
             if len(field_value) > 0:
                 # if it's a list of tuples, count the (eg TCP option) names
