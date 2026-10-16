@@ -454,7 +454,9 @@ class Dissection:
                         subkey = Dissection.make_printable(key, subkey)
                         count = Dissection.make_printable(None, count)
 
-                    if match_value and not any(x in subkey for x in match_value):
+                    if match_value and not any(
+                        x.lower() in subkey.lower() for x in match_value
+                    ):
                         continue
 
                     if match_eval_compiled:
