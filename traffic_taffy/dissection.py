@@ -422,7 +422,7 @@ class Dissection:
         for timestamp in timestamps:
             for key in data[timestamp]:
                 # if they requested a match string
-                if match_string and match_string not in key:
+                if match_string and match_string.lower() not in key.lower():
                     continue
 
                 # ensure at least one of the count valuse for the
