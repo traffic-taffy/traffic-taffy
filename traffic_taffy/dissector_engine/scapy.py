@@ -130,5 +130,7 @@ class DissectionEngineScapy(DissectionEngine):
         self.start_packet(int(packet.time))
 
         for payload in packet.iterpayloads():
-            prefix = f"{prefix}{payload.name}_"
+            # don't allow double-wording
+            if not prefix.endswith(payload.name + "_"):
+                prefix = f"{prefix}{payload.name}_"
             self.add_layer(payload, prefix[1:])
