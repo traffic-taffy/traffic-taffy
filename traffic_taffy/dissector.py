@@ -118,10 +118,9 @@ dissector_default(
         "Ethernet_IPv6_TCP_Encrypted Content_load",
         "Ethernet_IPv6_TCP_Padding_load",
         "Ethernet_IPv6_TCP_TLS_Padding_load",
-        "Ethernet_IPv6_TCP_TLS_TLS_Padding_load",
-        "Ethernet_IPv6_TCP_TLS_TLS_Raw_load",
-        "Ethernet_IPv6_TCP_TLS_TLS_TLS_mac",
-        "Ethernet_IPv6_TCP_TLS_TLS_TLS_msg_load",
+        "Ethernet_IPv6_TCP_TLS_Raw_load",
+        "Ethernet_IPv6_TCP_TLS_mac",
+        "Ethernet_IPv6_TCP_TLS_msg_load",
         "Ethernet_IPv6_UDP_Raw_load",
     ],
 )
