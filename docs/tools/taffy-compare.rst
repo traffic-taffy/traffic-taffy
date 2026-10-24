@@ -61,26 +61,35 @@ will actually go up (because 900/1000 is higher than 400/500).
 
 In tabular form:
 
-======= ================= ====
-Capture What              Count
-======= ================= ====
-left    IPv4 UDP port 53  600
-left    IPv4 UDP port 123 400
-right   IPv4 UDP port 53  400
-right   IPv4 UDP port 123 100
-right   IPv6 UDP port 53  500
-======= ================= ====
+======= ============= ===== =====
+Capture What          Value Count
+======= ============= ===== =====
+left    IPv4 UDP port 53    600
+left    IPv4 UDP port 123   400
+right   IPv4 UDP port 53    400
+right   IPv4 UDP port 123   100
+======= ============= ===== ====
 
 So if we use these numbers to calculate the results seen from the
 comparison output we find (note: just ipv4 udp shown):
 
-================= ===== ====== ====== ===== ====== ======
-What              left# right# Delta# left% right% Delta%
-================= ===== ====== ====== ===== ====== ======
-IPv4 UDP port 53  600   400    -200   60    80     20
-IPv4 UDP port 123 400   100    -300   40    20     -20
-================= ===== ====== ====== ===== ====== ======
+============= ===== ===== ====== ====== ===== ====== ======
+What          Value left# right# Delta# left% right% Delta%
+============= ===== ===== ====== ====== ===== ====== ======
+IPv4 UDP port    53   600   400    -200   60    80     20
+IPv4 UDP port   123   400   100    -300   40    20     -20
+============= ===== ===== ====== ====== ===== ====== ======
 
+The important take aways:
+
+- the total count went down in UDP traffic between the left and the right
+- there was a shift in the percentage of that traffic toward port 53
+- thus, the *delta#* was always lower, but the *delta%* for port 53 went up
+
+You might want to read this description twice, and read the math below:
+
+The Raw Math
+^^^^^^^^^^^^
 
 - left# port 53  = 600
 - right# port 53 = 400
@@ -89,10 +98,6 @@ IPv4 UDP port 123 400   100    -300   40    20     -20
 - left% port 53  = 600 / (600 + 400) = 60%
 - right% port 53 = 400 / (400 + 100) = 80%
 - delta% port 53 = 80% - 60% = 20%
-
-You might want to read this description twice.
-
-
 
 Command Line Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
