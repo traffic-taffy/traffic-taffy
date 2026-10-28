@@ -93,7 +93,7 @@ The Raw Math
 
 - left# port 53  = 600
 - right# port 53 = 400
-- delta# port 53 = 400 - 600 = 200
+- delta# port 53 = 400 - 600 = -200
 
 - left% port 53  = 600 / (600 + 400) = 60%
 - right% port 53 = 400 / (400 + 100) = 80%
