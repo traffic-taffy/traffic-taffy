@@ -107,6 +107,8 @@ dissector_default(
         "Ethernet_IP_ICMP_chksum",
         "Ethernet_IP_ICMP_id",
         "Ethernet_IP_ICMP_seq",
+        "Ethernet_IP_ICMP_Raw_load",
+        "Ethernet_IPv6_UDP_Raw_load",
         "Ethernet_IP_TCP_Padding_load",
         "Ethernet_IP_TCP_window",
         "Ethernet_IPv6_TCP_chksum",
