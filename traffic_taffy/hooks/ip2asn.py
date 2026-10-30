@@ -1,5 +1,5 @@
 from pathlib import Path
-from logging import error, info, debug
+from logging import error, debug
 import ip2asn
 
 from traffic_taffy.hooks import register_hook
@@ -24,9 +24,8 @@ def init_ip2asn(**kwargs):
             error(f"The ip2asn plugin requires a ip2asn-combined.tsv file in {db_path}")
             error("Please run ip2asn --fetch to download it")
 
-        info(f"loading {db_path}")
+        debug(f"loading {db_path}")
         i2a = ip2asn.IP2ASN(db_path)
-        info("  ... loaded")
 
 
 @register_hook(POST_DISSECT_HOOK)
