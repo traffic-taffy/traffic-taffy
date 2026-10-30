@@ -59,10 +59,14 @@ def parse_args() -> Namespace:
         help="Define verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
+    parser.add_argument(
+        "--version", action="store_true", help="print the Traffic-Taffy version number."
+    )
+
     dissector_add_parseargs(parser, config)
     limitor_add_parseargs(parser, config)
 
-    parser.add_argument("input_pcaps", type=str, help="PCAP file to graph", nargs="+")
+    parser.add_argument("input_pcaps", type=str, help="PCAP file to graph", nargs="*")
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
@@ -70,6 +74,9 @@ def parse_args() -> Namespace:
     logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 
     dissector_handle_arguments(args)
+
+    if len(args.input_pcaps) == 0:
+        logging.error("Run without PCAP files to graph")
 
     return parser.config, args
 

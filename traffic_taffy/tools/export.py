@@ -2,13 +2,15 @@
 
 import logging
 import sys
-from argparse import ArgumentParser, FileType, Namespace
+from argparse_with_config import ArgumentParserWithConfig as ArgumentParser
+from argparse import FileType, Namespace
 from rich_argparse import ArgumentDefaultsRichHelpFormatter
 
 import pyfsdb
 
 from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from traffic_taffy.dissectmany import PCAPDissectMany
+from traffic_taffy import print_version
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -32,18 +34,14 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
-        "-y",
-        "--config",
-        default=None,
-        type=str,
-        help="Configuration file (YAML) to load.",
-    )
-
-    parser.add_argument(
         "--log-level",
         "--ll",
         default="info",
         help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
+    )
+
+    parser.add_argument(
+        "--version", action="store_true", help="print the Traffic-Taffy version number."
     )
 
     dissector_add_parseargs(parser, config)
@@ -62,6 +60,9 @@ def parse_args() -> Namespace:
     args = parser.parse_args()
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
+
+    if args.version:
+        print_version()
 
     config.load_namespace(args)
     return config
