@@ -74,7 +74,7 @@ class ComparisonSlicesAlgorithm(ComparisonAlgorithm):
                 except Exception:
                     pass
 
-                right_file = reference.pcap_file
+                right_file = other.pcap_file
                 try:
                     right_file = Path(right_file).name
                 except Exception:
