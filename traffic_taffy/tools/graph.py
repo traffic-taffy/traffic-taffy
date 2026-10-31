@@ -45,6 +45,20 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "-t",
+        "--graph-type",
+        config_path="graph.graph_type",
+        help="Graph type (line or scatter)",
+    )
+
+    parser.add_argument(
+        "--ps",
+        "--point-size",
+        config_path="graph.graph_point_size",
+        help="Graph point size to use",
+    )
+
+    parser.add_argument(
         "-i",
         "--interactive",
         config_path="graph.interactive",

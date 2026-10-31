@@ -25,7 +25,7 @@ taffy_default("graph.output_file", None)
 taffy_default("graph.by_percentage", False)
 taffy_default("graph.interactive", False)
 taffy_default("graph.graph_type", "line")
-taffy_default("graph.graph_point_size", 2)
+taffy_default("graph.graph_point_size", 2.0)
 
 
 class PcapGraph(PcapGraphData):
@@ -67,7 +67,7 @@ class PcapGraph(PcapGraphData):
         self.interactive = graph_config[TTG_CFG.INTERACTIVE]
         self.by_percentage = graph_config[TTG_CFG.BY_PERCENTAGE]
         self.graph_type = graph_config[TTG_CFG.GRAPH_TYPE]
-        self.graph_point_size = graph_config[TTG_CFG.GRAPH_POINT_SIZE]
+        self.graph_point_size = float(graph_config[TTG_CFG.GRAPH_POINT_SIZE])
 
     def load_pcaps(self) -> None:
         """Load the pcap and counts things into bins."""
@@ -118,6 +118,7 @@ class PcapGraph(PcapGraphData):
         full_grid = categories.merge(pd.Series(full_time, name="time"), how="cross")
         df = full_grid.merge(df, on=["time", "index", "key", "subkey"], how="left")
         df["count"] = df["count"].fillna(0).astype(int)
+        df["size"] = float(self.graph_point_size)
 
         ax = sns.relplot(
             data=df,
@@ -126,7 +127,7 @@ class PcapGraph(PcapGraphData):
             hue=hue_variable,
             aspect=1.77,
             kind=self.graph_type,
-            size=self.graph_point_size,
+            size="size",
         )
         ax.set(xlabel="time", ylabel=options.get("ylabel", y_column))
         plt.xticks(rotation=45)
