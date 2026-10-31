@@ -6,7 +6,8 @@ import logging
 from logging import debug
 from datetime import datetime
 import datetime as dt
-from argparse import ArgumentParser, Namespace
+from argparse_with_config import ArgumentParserWithConfig as ArgumentParser
+from argparse import Namespace
 from rich_argparse import ArgumentDefaultsRichHelpFormatter
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
@@ -634,13 +635,21 @@ def parse_args() -> Namespace:
         help="Define the logging verbosity level (debug, info, warning, error, ...).",
     )
 
-    parser.add_argument("pcap_files", type=str, nargs="+", help="PCAP files to analyze")
+    parser.add_argument(
+        "--version", action="store_true", help="print the Traffic-Taffy version number."
+    )
+
+    parser.add_argument("pcap_files", type=str, nargs="*", help="PCAP files to analyze")
 
     args = parser.parse_args()
+
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
 
     dissector_handle_arguments(args)
+
+    if len(args.pcap_files) == 0:
+        logging.error("Run without PCAP files to explore")
 
     return args
 

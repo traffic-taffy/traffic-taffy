@@ -27,7 +27,7 @@ def split_dns_names(dissection: Dissection, **kwargs):
                 for value in dissection.data[timestamp][key]:
                     count = dissection.data[timestamp][key][value]
 
-                    parts = value.split(".")
+                    parts = [x.lower() for x in value.split(".")]
                     if parts[-1] == "":
                         parts = parts[:-1]  # drop the empty end "." split
                     if len(parts) == 0:

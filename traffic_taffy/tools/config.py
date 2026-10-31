@@ -11,6 +11,7 @@ from traffic_taffy.dissector import TTD_CFG as TTD_CFG
 from traffic_taffy.compare import TTC_CFG as TTC_CFG
 from traffic_taffy.graph import TTG_CFG as TTG_CFG
 from traffic_taffy.tools.compare import compare_parse_args as compare_parse_args
+from traffic_taffy import print_version
 
 
 # we try to load a number of modules, but if the missing requirements aren't available
@@ -68,11 +69,17 @@ def taffy_config_parse_args() -> Namespace:
         help="Define the logging verbosity level (debug, info, warning, error, fotal, critical).",
     )
 
+    parser.add_argument(
+        "--version", action="store_true", help="print the Traffic-Taffy version number."
+    )
+
     args = parser.parse_args()
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
 
     config.load_namespace(args)
+    if args.version:
+        print_version()
     return config
 
 

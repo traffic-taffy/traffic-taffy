@@ -39,7 +39,7 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                     left_count = left_side[key][subkey]
                     right_count = right_side[key][subkey]
                 else:
-                    delta_percentage = -1.0
+                    delta_percentage = -100.0
                     left_percentage = 100 * (left_side[key][subkey] / left_side_total)
                     right_percentage = 0.0
                     total = -left_side[key][subkey]
@@ -61,13 +61,13 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
             new_right_count = 0
             for subkey in right_side[key]:
                 if subkey not in report[key]:
-                    delta_percentage = 1.0
+                    delta_percentage = 100.0
                     total = right_side[key][subkey]
                     left_count = 0
                     right_count = right_side[key][subkey]
                     left_percentage = 0.0
                     if right_side_total == 0:
-                        right_percentage = 1.0
+                        right_percentage = 100.0
                     else:
                         right_percentage = right_side[key][subkey] / right_side_total
                     new_right_count += 1  # this value wasn't in the left
@@ -82,13 +82,15 @@ class ComparisonStatistical(ComparisonSlicesAlgorithm):
                         right_percentage=right_percentage,
                     )
 
+            # the above uses "percentage" but is passed to slices,
+            # this uses "percent" which is confusing but correct.  I think.
             if right_side_total == 0:
-                right_percent = 1.0
+                right_percent = 100.0
             else:
                 right_percent = new_right_count / right_side_total
 
             if left_side_total == 0:
-                left_percent = 1.0
+                left_percent = 100.0
             else:
                 left_percent = 100 * (new_left_count / left_side_total)
 

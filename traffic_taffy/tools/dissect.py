@@ -37,6 +37,10 @@ def dissect_parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "--version", action="store_true", help="print the Traffic-Taffy version number."
+    )
+
+    parser.add_argument(
         "-f",
         "--fsdb",
         action="store_true",

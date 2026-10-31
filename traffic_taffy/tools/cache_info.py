@@ -6,6 +6,7 @@ from pathlib import Path
 from rich import print
 import logging
 import msgpack
+from traffic_taffy import print_version
 
 
 def parse_args() -> Namespace:
@@ -24,15 +25,23 @@ def parse_args() -> Namespace:
     )
 
     parser.add_argument(
+        "--version", action="store_true", help="print the Traffic-Taffy version number."
+    )
+
+    parser.add_argument(
         "cache_file",
         type=str,
-        nargs="+",
+        nargs="*",
         help="The cache file (or pcap file) to load and display information about",
     )
 
     args = parser.parse_args()
     log_level = args.log_level.upper()
     logging.basicConfig(level=log_level, format="%(levelname)-10s:\t%(message)s")
+    if args.version:
+        print_version()
+    if len(args.cache_file) == 0:
+        logging.error("Run without taffy cache files to analyze")
     return args
 
 

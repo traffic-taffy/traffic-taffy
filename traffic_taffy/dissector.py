@@ -14,6 +14,7 @@ from rich import print
 from traffic_taffy.dissection import Dissection, PCAPDissectorLevel
 from traffic_taffy.hooks import call_hooks
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
+from traffic_taffy import print_version
 
 if TYPE_CHECKING:
     from argparse import Parser
@@ -477,6 +478,8 @@ def limitor_add_parseargs(
 
 def dissector_handle_arguments(args) -> None:
     """Handle checking and loading arguments."""
+    if args.version:
+        print_version()
     check_dissector_level(args.dissection_level)
     dissector_load_extra_modules(args.modules)
     call_hooks(INIT_HOOK)
