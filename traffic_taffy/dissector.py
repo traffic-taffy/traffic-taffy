@@ -264,6 +264,7 @@ class PCAPDissector:
         """Print the results to the console."""
         if timestamps is None:
             timestamps = [0]
+        print(f"{'Protocol_field':<30} {'Value':<30} Count")
         for _, key, subkey, value in self.dissection.find_data(
             timestamps=timestamps,
             match_string=match_string,
