@@ -97,7 +97,7 @@ class PcapGraph(PcapGraphData):
         freq = str(bin_size) + "s"
 
         # Ensure time is datetime and snap to the bin start
-        df["time"] = pd.to_datetime(df["time"]).dt.to_period(freq).dt.start_time
+        df["time"] = pd.to_datetime(df["time"]).dt.floor(freq)
 
         # Group first in case multiple entries exist for the same bin + category
         df = df.groupby(["time", "index", "key", "subkey"], as_index=False)[
