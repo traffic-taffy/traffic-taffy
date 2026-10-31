@@ -11,6 +11,7 @@ import pyfsdb
 from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy import print_version
+from traffic_taffy import main_wrapper
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -101,4 +102,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_wrapper(main)

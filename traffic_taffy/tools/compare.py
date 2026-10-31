@@ -9,6 +9,7 @@ from logging import error
 from traffic_taffy.output.console import Console
 from traffic_taffy.output.fsdb import Fsdb
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
+from traffic_taffy import main_wrapper
 
 from traffic_taffy.compare import compare_add_parseargs, get_comparison_args
 from traffic_taffy.dissector import (
@@ -128,7 +129,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_wrapper(main)
     config = TaffyConfig()
     if config.get("dump", False):
         config.dump()

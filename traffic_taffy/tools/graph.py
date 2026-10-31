@@ -7,6 +7,7 @@ from rich_argparse import ArgumentDefaultsRichHelpFormatter
 
 from traffic_taffy.graph import PcapGraph
 from traffic_taffy.taffy_config import TaffyConfig
+from traffic_taffy import main_wrapper
 from traffic_taffy.dissector import (
     dissector_add_parseargs,
     limitor_add_parseargs,
@@ -94,4 +95,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_wrapper(main)

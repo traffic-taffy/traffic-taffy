@@ -7,6 +7,7 @@ from rich import print
 import logging
 import msgpack
 from traffic_taffy import print_version
+from traffic_taffy import main_wrapper
 
 
 def parse_args() -> Namespace:
@@ -75,4 +76,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_wrapper(main)

@@ -12,6 +12,7 @@ from traffic_taffy.compare import TTC_CFG as TTC_CFG
 from traffic_taffy.graph import TTG_CFG as TTG_CFG
 from traffic_taffy.tools.compare import compare_parse_args as compare_parse_args
 from traffic_taffy import print_version
+from traffic_taffy import main_wrapper
 
 
 # we try to load a number of modules, but if the missing requirements aren't available
@@ -92,4 +93,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_wrapper(main)

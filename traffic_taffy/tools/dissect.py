@@ -13,6 +13,7 @@ from traffic_taffy.taffy_config import TaffyConfig, TT_CFG
 from rich_argparse import ArgumentDefaultsRichHelpFormatter
 from argparse import Namespace
 from argparse_with_config import ArgumentParserWithConfig
+from traffic_taffy import main_wrapper
 
 
 def dissect_parse_args() -> Namespace:
@@ -122,4 +123,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main_wrapper(main)
