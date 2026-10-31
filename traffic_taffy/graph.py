@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import seaborn as sns
+import pandas as pd
 import matplotlib.pyplot as plt
 from logging import debug, info
-
 from traffic_taffy.dissectmany import PCAPDissectMany
 from traffic_taffy.graphdata import PcapGraphData
 from traffic_taffy.taffy_config import TaffyConfig, taffy_default
@@ -90,12 +90,28 @@ class PcapGraph(PcapGraphData):
         else:
             y_column = "count"
 
-        # TODO(hardaker): support re-indexing and hole filling (this doesn't work)
-        # str(self.bin_size or 1) + "s"
-        # df = df.set_index("time")
-        # df.index = df.index.to_period(freq=freq)
-        # timeindex = pd.period_range(min(df.index), max(df.index), freq=freq)
-        # df = df.reindex(timeindex)  # , fill_value=0
+        # set the frequency as a string
+        bin_size = self.bin_size
+        if not bin_size:
+            bin_size = 1
+        freq = str(bin_size) + "s"
+
+        # Ensure time is datetime and snap to the bin start
+        df["time"] = pd.to_datetime(df["time"]).dt.to_period(freq).dt.start_time
+
+        # Group first in case multiple entries exist for the same bin + category
+        df = df.groupby(["time", "index", "key", "subkey"], as_index=False)[
+            "count"
+        ].sum()
+
+        # Build the full grid of (every time bin) x (every unique category tuple)
+        full_time = pd.date_range(df["time"].min(), df["time"].max(), freq=freq)
+        categories = df[["index", "key", "subkey"]].drop_duplicates()
+
+        # Cross-join time grid with categories and merge existing counts
+        full_grid = categories.merge(pd.Series(full_time, name="time"), how="cross")
+        df = full_grid.merge(df, on=["time", "index", "key", "subkey"], how="left")
+        df["count"] = df["count"].fillna(0).astype(int)
 
         ax = sns.relplot(
             data=df,
