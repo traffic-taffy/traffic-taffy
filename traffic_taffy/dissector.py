@@ -329,7 +329,7 @@ def dissector_add_parseargs(
         "--ignore-list",
         config_path=TTD_CFG.IGNORE_LIST,
         default=dissection_config[TTD_CFG.IGNORE_LIST],
-        nargs="*",
+        action="append",
         type=str,
         help="A list of (unlikely to be useful) packet fields to ignore",
     )
@@ -367,7 +367,7 @@ def dissector_add_parseargs(
         config_path=TTD_CFG.LAYERS,
         default=dissection_config[TTD_CFG.LAYERS],
         type=str,
-        nargs="*",
+        action="append",
         help="List of extra layers to load (eg: tls, http, etc)",
     )
 
@@ -377,7 +377,7 @@ def dissector_add_parseargs(
         config_path=TTD_CFG.MODULES,
         default=dissection_config[TTD_CFG.MODULES],
         type=str,
-        nargs="*",
+        action="append",
         help="Extra processing modules to load (currently: psl) ",
     )
 
@@ -451,7 +451,7 @@ def limitor_add_parseargs(
         config_path=TTL_CFG.MATCH_VALUE,
         default=limitor_config[TTL_CFG.MATCH_VALUE],
         type=str,
-        nargs="*",
+        action="append",
         help="Only report on data with this substring in the packet value field",
     )
 
