@@ -1,7 +1,7 @@
 import traceback
 from logging import warning
 
-__VERSION__ = "1.11"
+__VERSION__ = "1.12"
 
 
 def print_version():
