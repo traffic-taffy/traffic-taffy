@@ -410,7 +410,8 @@ class Dissection:
         if match_value and not isinstance(match_value, list):
             match_value = [match_value]
 
-        match_value = [str(x) for x in match_value]
+        if match_value:
+            match_value = [str(x) for x in match_value]
 
         if not timestamps:
             timestamps = data.keys()
