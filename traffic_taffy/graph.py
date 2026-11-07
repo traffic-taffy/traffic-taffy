@@ -118,7 +118,7 @@ class PcapGraph(PcapGraphData):
         full_grid = categories.merge(pd.Series(full_time, name="time"), how="cross")
         df = full_grid.merge(df, on=["time", "index", "key", "subkey"], how="left")
         df["count"] = df["count"].fillna(0).astype(int)
-        df["size"] = float(self.graph_point_size)
+        # df["size"] = float(self.graph_point_size)
 
         ax = sns.relplot(
             data=df,
@@ -127,7 +127,7 @@ class PcapGraph(PcapGraphData):
             hue=hue_variable,
             aspect=1.77,
             kind=self.graph_type,
-            size="size",
+            # size="size",
         )
         ax.set(xlabel="time", ylabel=options.get("ylabel", y_column))
         plt.xticks(rotation=45)
